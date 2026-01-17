@@ -1,6 +1,9 @@
 import { supabase } from './supabase';
 import { Guest } from '@/types/invoice';
 
+// Re-export Guest type for convenience
+export type { Guest };
+
 // Mock guest data - In production, this would come from an API/database
 const defaultGuests: Guest[] = [
   {

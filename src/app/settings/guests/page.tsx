@@ -64,7 +64,7 @@ export default function GuestsPage() {
 
   const filteredGuests = guests.filter(
     (guest) =>
-      guest.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      guest.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       guest.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       guest.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       guest.country?.toLowerCase().includes(searchTerm.toLowerCase())

@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getInvoices } from "@/lib/invoices";
+import { getInvoices, deleteInvoice } from "@/lib/invoices";
 import { formatCurrency } from "@/lib/currency";
 import Link from "next/link";
 import { Eye, Plus, Filter, X, Pencil, Trash2, AlertCircle } from "lucide-react";
