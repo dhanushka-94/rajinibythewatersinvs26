@@ -167,7 +167,6 @@ export default function ReportsPage() {
       inv.total.toFixed(2),
       inv.status,
       inv.paymentMethods
-        .filter((method) => method !== "offline")
         .map((method) => formatPaymentMethod(method))
         .join(", "),
       new Date(inv.createdAt).toLocaleDateString(),
@@ -524,13 +523,11 @@ export default function ReportsPage() {
                       <TableCell>{getStatusBadge(invoice.status)}</TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
-                          {invoice.paymentMethods
-                            .filter((method) => method !== "offline")
-                            .map((method) => (
-                              <Badge key={method} variant="outline" className="text-xs">
-                                {formatPaymentMethod(method)}
-                              </Badge>
-                            ))}
+                          {invoice.paymentMethods.map((method) => (
+                            <Badge key={method} variant="outline" className="text-xs">
+                              {formatPaymentMethod(method)}
+                            </Badge>
+                          ))}
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
