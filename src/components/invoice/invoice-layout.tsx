@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
-import { hotelInfo } from "@/lib/hotel-info";
+import { getHotelInfo, type HotelInfo } from "@/lib/hotel-info";
 import { formatCurrency } from "@/lib/currency";
 import { getBankDetailById } from "@/lib/bank-details";
 import { getTravelCompanyById } from "@/lib/travel-companies";
@@ -27,10 +27,15 @@ interface InvoiceLayoutProps {
 }
 
 export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps) {
+  const [hotelInfo, setHotelInfo] = useState<HotelInfo | null>(null);
   const [bankDetail, setBankDetail] = useState<BankDetail | null>(null);
   const [travelCompany, setTravelCompany] = useState<TravelCompany | null>(null);
 
   useEffect(() => {
+    const loadHotelInfo = async () => {
+      const info = await getHotelInfo();
+      setHotelInfo(info);
+    };
     const loadBankDetail = async () => {
       if (invoice.selectedBankDetailId) {
         const bank = await getBankDetailById(invoice.selectedBankDetailId);
@@ -43,6 +48,7 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
         setTravelCompany(company || null);
       }
     };
+    loadHotelInfo();
     loadBankDetail();
     loadTravelCompany();
   }, [invoice.selectedBankDetailId, invoice.billingType, invoice.travelCompanyId]);
@@ -78,21 +84,60 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
         <div className="mb-6 print:mb-4 invoice-header">
           <div className="flex justify-between items-start mb-4 print:mb-2">
             <div className="flex-1">
-              <div className="mb-2 print:mb-1">
-                <Image
-                  src={hotelInfo.logoPath}
-                  alt={hotelInfo.name}
-                  width={140}
-                  height={56}
-                  className="h-auto print:w-24 print:h-auto"
-                  priority
-                />
-              </div>
-              <div className="text-xs text-gray-600 leading-tight print:text-[7pt] print:leading-tight">
-                <p className="mb-0.5 print:mb-0">{hotelInfo.address}, {hotelInfo.city}, {hotelInfo.country}</p>
-                <p className="mb-0.5 print:mb-0">Tel: {hotelInfo.telephone} | Hotline: {hotelInfo.hotline} | USA: {hotelInfo.usaContact}</p>
-                <p className="mb-0 print:mb-0">Email: {hotelInfo.email} | Web: {hotelInfo.website}</p>
-              </div>
+              {hotelInfo && (
+                <>
+                  <div className="mb-2 print:mb-1">
+                    <Image
+                      src={hotelInfo.logoPath || "/images/rajini-logo-flat-color.png"}
+                      alt={hotelInfo.name}
+                      width={140}
+                      height={56}
+                      className="h-auto print:w-24 print:h-auto"
+                      priority
+                    />
+                  </div>
+                  <div className="text-xs text-gray-600 leading-tight print:text-[7pt] print:leading-tight space-y-1 print:space-y-0.5">
+                    <div className="flex items-start gap-1.5 print:gap-1">
+                      <MapPin className="h-3.5 w-3.5 text-gray-500 mt-0.5 print:h-2.5 print:w-2.5 flex-shrink-0" />
+                      <p className="mb-0 print:mb-0">{hotelInfo.address}, {hotelInfo.city}, {hotelInfo.country}</p>
+                    </div>
+                    <div className="flex items-center gap-3 print:gap-2 flex-wrap">
+                      {hotelInfo.telephone && (
+                        <div className="flex items-center gap-1 print:gap-0.5">
+                          <Phone className="h-3.5 w-3.5 text-gray-500 print:h-2.5 print:w-2.5" />
+                          <span className="print:text-[7pt]">Tel: {hotelInfo.telephone}</span>
+                        </div>
+                      )}
+                      {hotelInfo.hotline && (
+                        <div className="flex items-center gap-1 print:gap-0.5">
+                          <Phone className="h-3.5 w-3.5 text-gray-500 print:h-2.5 print:w-2.5" />
+                          <span className="print:text-[7pt]">Hotline: {hotelInfo.hotline}</span>
+                        </div>
+                      )}
+                      {hotelInfo.usaContact && (
+                        <div className="flex items-center gap-1 print:gap-0.5">
+                          <Phone className="h-3.5 w-3.5 text-gray-500 print:h-2.5 print:w-2.5" />
+                          <span className="print:text-[7pt]">USA: {hotelInfo.usaContact}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3 print:gap-2 flex-wrap">
+                      {hotelInfo.email && (
+                        <div className="flex items-center gap-1 print:gap-0.5">
+                          <Mail className="h-3.5 w-3.5 text-gray-500 print:h-2.5 print:w-2.5" />
+                          <span className="print:text-[7pt]">{hotelInfo.email}</span>
+                        </div>
+                      )}
+                      {hotelInfo.website && (
+                        <div className="flex items-center gap-1 print:gap-0.5">
+                          <Globe className="h-3.5 w-3.5 text-gray-500 print:h-2.5 print:w-2.5" />
+                          <span className="print:text-[7pt]">{hotelInfo.website}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
             <div className="text-right ml-6 print:ml-4">
               <h2 className="text-xl font-bold mb-1 text-gray-900 print:text-[14pt] print:mb-0.5">INVOICE</h2>
@@ -179,35 +224,13 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
               {travelCompany.contactPerson && (
                 <div className="flex items-start gap-2">
                   <UserCircle className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
-                  <p className="text-gray-600">Contact: {travelCompany.contactPerson}</p>
-                </div>
-              )}
-              {travelCompany.email && (
-                <div className="flex items-start gap-2">
-                  <Mail className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
-                  <p className="text-gray-600">{travelCompany.email}</p>
+                  <p className="text-gray-600">{travelCompany.contactPerson}</p>
                 </div>
               )}
               {travelCompany.phone && (
                 <div className="flex items-start gap-2">
                   <Phone className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
                   <p className="text-gray-600">{travelCompany.phone}</p>
-                </div>
-              )}
-              {(travelCompany.address || travelCompany.city || travelCompany.country) && (
-                <div className="flex items-start gap-2">
-                  <MapPin className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
-                  <p className="text-gray-600">
-                    {travelCompany.address}
-                    {travelCompany.city && `, ${travelCompany.city}`}
-                    {travelCompany.country && `, ${travelCompany.country}`}
-                  </p>
-                </div>
-              )}
-              {travelCompany.taxId && (
-                <div className="flex items-start gap-2">
-                  <IdCard className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
-                  <p className="text-gray-600">Tax ID: {travelCompany.taxId}</p>
                 </div>
               )}
             </div>
@@ -243,38 +266,32 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
           )}
         </div>
 
-        {invoice.billingType === "company" && (
+        {(invoice.billingType === "company" || (invoice.guests && invoice.guests.length > 0)) && (
           <div className="break-inside-avoid">
             <h3 className="font-semibold text-lg mb-4 text-gray-900 print:text-base print:mb-2 flex items-center gap-2">
               <UserCircle className="h-5 w-5 text-gray-600 print:h-4 print:w-4" />
               Guest Information:
             </h3>
-            <div className="space-y-2 text-sm print:text-xs">
-              <div className="flex items-start gap-2">
-                <User className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
-                <p className="text-gray-600">{invoice.guest.name}</p>
-              </div>
-              {invoice.guest.email && (
+            <div className="space-y-1.5 text-sm print:text-xs">
+              {/* Show primary guest if billing to company OR if there are additional guests */}
+              {(invoice.billingType === "company" || (invoice.guests && invoice.guests.length > 0)) && invoice.guest.name && (
                 <div className="flex items-start gap-2">
-                  <Mail className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
-                  <p className="text-gray-600">{invoice.guest.email}</p>
+                  <User className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
+                  <p className="text-gray-600">{invoice.guest.name}</p>
                 </div>
               )}
-              {invoice.guest.phone && (
-                <div className="flex items-start gap-2">
-                  <Phone className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
-                  <p className="text-gray-600">{invoice.guest.phone}</p>
-                </div>
-              )}
-              {invoice.guest.idNumber && (
-                <div className="flex items-start gap-2">
-                  <IdCard className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
-                  <p className="text-gray-600">
-                    ID: {invoice.guest.idNumber.length > 2 
-                      ? "*".repeat(Math.max(0, invoice.guest.idNumber.length - 2)) + invoice.guest.idNumber.slice(-2)
-                      : invoice.guest.idNumber}
-                  </p>
-                </div>
+              {/* Show additional guests (only names) */}
+              {invoice.guests && invoice.guests.length > 0 && (
+                <>
+                  {invoice.guests.map((guest, index) => (
+                    guest.name && (
+                      <div key={index} className="flex items-start gap-2">
+                        <User className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
+                        <p className="text-gray-600">{guest.name}</p>
+                      </div>
+                    )
+                  ))}
+                </>
               )}
             </div>
           </div>
@@ -298,7 +315,9 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
                 <TableCell className="font-medium text-gray-900">
                   {item.description}
                 </TableCell>
-                <TableCell className="text-right text-gray-600">{item.quantity}</TableCell>
+                <TableCell className="text-right text-gray-600">
+                  {item.quantity} {item.quantityType === "days" ? "Days" : "Qty"}
+                </TableCell>
                 <TableCell className="text-right text-gray-600">
                   {formatCurrency(item.unitPrice, invoice.currency)}
                 </TableCell>
@@ -369,40 +388,40 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
       )}
 
       {(invoice.paymentMethods.length > 0 || invoice.selectedBankDetailId) && (
-        <div className="mt-8 pt-6 border-t print:mt-4 print:pt-3">
-          <h3 className="font-semibold text-lg mb-4 text-gray-900 print:text-base print:mb-2">Payment Information</h3>
+        <div className="mt-6 pt-4 border-t print:mt-4 print:pt-3">
+          <h3 className="font-semibold text-base mb-3 text-gray-900 print:text-sm print:mb-2">Payment Information</h3>
           
           {invoice.paymentMethods.length > 0 && (
-            <div className="mb-4 print:mb-2">
-              <p className="text-sm font-medium text-gray-700 mb-2 print:text-xs print:mb-1">Accepted Payment Methods:</p>
-              <div className="flex flex-wrap gap-2 print:gap-1">
+            <div className="mb-3 print:mb-2">
+              <p className="text-xs font-medium text-gray-700 mb-1.5 print:text-xs print:mb-1">Accepted Payment Methods:</p>
+              <div className="flex flex-wrap gap-1.5 print:gap-1">
                 {invoice.paymentMethods.includes("bank_account") && (
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 rounded-md text-sm print:text-xs print:px-2 print:py-1">
-                    <Building2 className="h-4 w-4 text-blue-600 print:h-3 print:w-3" />
+                  <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-50 rounded-md text-xs print:text-xs print:px-1.5 print:py-0.5">
+                    <Building2 className="h-3.5 w-3.5 text-blue-600 print:h-2.5 print:w-2.5" />
                     <span className="text-gray-900">Bank Transfer/Deposit</span>
                   </div>
                 )}
                 {invoice.paymentMethods.includes("cheque") && (
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 rounded-md text-sm print:text-xs print:px-2 print:py-1">
-                    <FileText className="h-4 w-4 text-green-600 print:h-3 print:w-3" />
+                  <div className="flex items-center gap-1.5 px-2 py-1 bg-green-50 rounded-md text-xs print:text-xs print:px-1.5 print:py-0.5">
+                    <FileText className="h-3.5 w-3.5 text-green-600 print:h-2.5 print:w-2.5" />
                     <span className="text-gray-900">Cheque Payment</span>
                   </div>
                 )}
                 {invoice.paymentMethods.includes("online") && (
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-orange-50 rounded-md text-sm print:text-xs print:px-2 print:py-1">
-                    <Globe className="h-4 w-4 text-orange-600 print:h-3 print:w-3" />
+                  <div className="flex items-center gap-1.5 px-2 py-1 bg-orange-50 rounded-md text-xs print:text-xs print:px-1.5 print:py-0.5">
+                    <Globe className="h-3.5 w-3.5 text-orange-600 print:h-2.5 print:w-2.5" />
                     <span className="text-gray-900">Online Payment</span>
                   </div>
                 )}
                 {invoice.paymentMethods.includes("cash") && (
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 rounded-md text-sm print:text-xs print:px-2 print:py-1">
-                    <Banknote className="h-4 w-4 text-emerald-600 print:h-3 print:w-3" />
+                  <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-50 rounded-md text-xs print:text-xs print:px-1.5 print:py-0.5">
+                    <Banknote className="h-3.5 w-3.5 text-emerald-600 print:h-2.5 print:w-2.5" />
                     <span className="text-gray-900">Cash Payment</span>
                   </div>
                 )}
                 {invoice.paymentMethods.includes("card") && (
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 rounded-md text-sm print:text-xs print:px-2 print:py-1">
-                    <CreditCard className="h-4 w-4 text-indigo-600 print:h-3 print:w-3" />
+                  <div className="flex items-center gap-1.5 px-2 py-1 bg-indigo-50 rounded-md text-xs print:text-xs print:px-1.5 print:py-0.5">
+                    <CreditCard className="h-3.5 w-3.5 text-indigo-600 print:h-2.5 print:w-2.5" />
                     <span className="text-gray-900">
                       Card Payment{invoice.cardLast4Digits ? ` (****${invoice.cardLast4Digits})` : ''}
                     </span>
@@ -413,39 +432,39 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
           )}
 
           {invoice.checksPayableTo && (
-            <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200 print:p-2 print:mb-2">
-              <p className="text-sm font-medium text-gray-700 mb-1 print:text-xs print:mb-0.5">Make Checks Payable To:</p>
-              <p className="text-base font-semibold text-gray-900 print:text-sm">{invoice.checksPayableTo}</p>
+            <div className="mb-3 p-2.5 bg-blue-50 rounded-lg border border-blue-200 print:p-2 print:mb-2">
+              <p className="text-xs font-medium text-gray-700 mb-0.5 print:text-xs print:mb-0.5">Make Checks Payable To:</p>
+              <p className="text-sm font-semibold text-gray-900 print:text-xs">{invoice.checksPayableTo}</p>
             </div>
           )}
 
           {bankDetail && (
-            <div className="p-4 bg-gray-50 rounded-lg border print:p-2">
-              <h4 className="font-semibold text-sm mb-3 text-gray-900 print:text-xs print:mb-2">Bank Transfer/Deposit Details:</h4>
-              <div className="grid grid-cols-2 gap-3 text-sm print:text-xs print:gap-2">
+            <div className="p-3 bg-gray-50 rounded-lg border print:p-2">
+              <h4 className="font-semibold text-xs mb-2 text-gray-900 print:text-xs print:mb-1">Bank Transfer/Deposit Details:</h4>
+              <div className="grid grid-cols-2 gap-2 text-xs print:text-xs print:gap-1.5">
                 <div>
                   <span className="font-medium text-gray-700">Account Name:</span>
-                  <p className="text-gray-900">{bankDetail.accountName}</p>
+                  <p className="text-gray-900 text-xs">{bankDetail.accountName}</p>
                 </div>
                 <div>
                   <span className="font-medium text-gray-700">Bank Name:</span>
-                  <p className="text-gray-900">{bankDetail.bankName}</p>
+                  <p className="text-gray-900 text-xs">{bankDetail.bankName}</p>
                 </div>
                 <div>
                   <span className="font-medium text-gray-700">Branch:</span>
-                  <p className="text-gray-900">{bankDetail.branch}</p>
+                  <p className="text-gray-900 text-xs">{bankDetail.branch}</p>
                 </div>
                 <div>
                   <span className="font-medium text-gray-700">Account Number:</span>
-                  <p className="text-gray-900">{bankDetail.accountNumber}</p>
+                  <p className="text-gray-900 text-xs">{bankDetail.accountNumber}</p>
                 </div>
                 <div className="col-span-2">
                   <span className="font-medium text-gray-700">Bank Address:</span>
-                  <p className="text-gray-900">{bankDetail.bankAddress}</p>
+                  <p className="text-gray-900 text-xs">{bankDetail.bankAddress}</p>
                 </div>
                 <div>
                   <span className="font-medium text-gray-700">SWIFT Code:</span>
-                  <p className="text-gray-900">{bankDetail.swiftCode}</p>
+                  <p className="text-gray-900 text-xs">{bankDetail.swiftCode}</p>
                 </div>
               </div>
             </div>
@@ -453,28 +472,33 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
         </div>
       )}
 
-      <div className="mt-12 pt-6 border-t print:mt-4 print:pt-3">
-        <div className="text-center mb-4 print:mb-2">
-          <p className="text-sm font-semibold text-gray-900 mb-2 print:text-xs print:mb-1">{hotelInfo.name}</p>
-          <div className="text-xs text-gray-600 space-y-1 print:text-[10px]">
-            <p>{hotelInfo.address}, {hotelInfo.city}, {hotelInfo.country}</p>
-            <p>
-              Tel: {hotelInfo.telephone} | Hotline: {hotelInfo.hotline} | USA: {hotelInfo.usaContact}
+      {hotelInfo && (
+        <div className="mt-12 pt-6 border-t print:mt-4 print:pt-3 hidden print:block">
+          <div className="text-center mb-4 print:mb-2">
+            <p className="text-sm font-semibold text-gray-900 mb-2 print:text-xs print:mb-1">{hotelInfo.name}</p>
+            <div className="text-xs text-gray-600 space-y-1 print:text-[10px]">
+              <p>{hotelInfo.address}, {hotelInfo.city}, {hotelInfo.country}</p>
+              <p>
+                Tel: {hotelInfo.telephone || ""} | Hotline: {hotelInfo.hotline || ""} | USA: {hotelInfo.usaContact || ""}
+              </p>
+              <p>Email: {hotelInfo.email || ""} | Website: {hotelInfo.website || ""}</p>
+            </div>
+          </div>
+          <Separator className="my-4 print:my-2" />
+        </div>
+      )}
+      
+      {/* Thank you message - always visible */}
+      {hotelInfo && (
+        <div className="mt-8 pt-6 border-t print:mt-4 print:pt-3">
+          <div className="text-center text-xs text-gray-500 print:text-[10px]">
+            <p>Thank you for choosing {hotelInfo.name}! We hope to see you again soon.</p>
+            <p className="mt-3 text-gray-400 print:mt-1">
+              {hotelInfo.name} Powered by <span className="font-semibold text-gray-600">Phoenix Global Solutions</span>
             </p>
-            <p>Email: {hotelInfo.email} | Website: {hotelInfo.website}</p>
           </div>
         </div>
-        <Separator className="my-4 print:my-2" />
-        <div className="text-center text-xs text-gray-500 print:text-[10px]">
-          <p>Thank you for choosing {hotelInfo.name}! We hope to see you again soon.</p>
-          <p className="mt-2 print:mt-1">
-            This is a computer-generated invoice and does not require a signature.
-          </p>
-          <p className="mt-3 text-gray-400 print:mt-1">
-            {hotelInfo.name} Powered by <span className="font-semibold text-gray-600">Phoenix Global Solutions</span>
-          </p>
-        </div>
-      </div>
+      )}
     </div>
   );
 }

@@ -31,7 +31,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Plus, Trash2, UserPlus, AlertCircle, Copy } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, UserPlus, AlertCircle, Copy, User } from "lucide-react";
 import Link from "next/link";
 import { calculateInvoiceTotal } from "@/lib/data";
 import { addGuest, getGuestById, getGuests } from "@/lib/guests";
@@ -64,6 +64,8 @@ export default function EditInvoicePage({
   const [selectedGuestId, setSelectedGuestId] = useState<string>("");
   const [isAddGuestDialogOpen, setIsAddGuestDialogOpen] = useState(false);
   const [availableGuests, setAvailableGuests] = useState<Guest[]>([]);
+  const [additionalGuests, setAdditionalGuests] = useState<Guest[]>([]); // Multiple guests array
+  const [selectedAdditionalGuestId, setSelectedAdditionalGuestId] = useState<string>(""); // For adding additional guests
   const [guest, setGuest] = useState<Guest>({
     title: undefined,
     name: "",
@@ -139,6 +141,7 @@ export default function EditInvoicePage({
           setCurrency(data.currency);
           setGuest(data.guest);
           setSelectedGuestId(data.guest.id || "");
+          setAdditionalGuests(data.guests || []); // Load additional guests
           setCheckIn(data.checkIn);
           setCheckOut(data.checkOut);
           setAdults(data.adults);
@@ -245,6 +248,49 @@ export default function EditInvoicePage({
     });
     const guests = await getGuests();
     setAvailableGuests(guests);
+  };
+
+  // Handle adding additional guest
+  const handleAddAdditionalGuest = async () => {
+    if (!selectedAdditionalGuestId || selectedAdditionalGuestId.trim() === '') {
+      return;
+    }
+    
+    try {
+      const selectedGuest = await getGuestById(selectedAdditionalGuestId);
+      if (selectedGuest) {
+        // Check if guest is already added (as primary or additional)
+        const isPrimaryGuest = guest.id && selectedGuest.id && guest.id === selectedGuest.id;
+        const isAlreadyAdded = selectedGuest.id && additionalGuests.some(g => g.id && g.id === selectedGuest.id);
+        
+        if (isPrimaryGuest) {
+          alert("This guest is already set as the primary guest");
+          setSelectedAdditionalGuestId(""); // Reset selector
+          return;
+        }
+        
+        if (isAlreadyAdded) {
+          alert("This guest is already added");
+          setSelectedAdditionalGuestId(""); // Reset selector
+          return;
+        }
+        
+        setAdditionalGuests([...additionalGuests, selectedGuest]);
+        setSelectedAdditionalGuestId(""); // Reset selector
+      } else {
+        alert("Guest not found. Please select a valid guest.");
+        setSelectedAdditionalGuestId(""); // Reset selector
+      }
+    } catch (error) {
+      console.error('Error adding additional guest:', error);
+      alert("Error adding guest. Please try again.");
+      setSelectedAdditionalGuestId(""); // Reset selector
+    }
+  };
+
+  // Handle removing additional guest
+  const handleRemoveAdditionalGuest = (guestId: string) => {
+    setAdditionalGuests(additionalGuests.filter(g => g.id !== guestId));
   };
 
   const handleItemChange = (
@@ -358,6 +404,7 @@ export default function EditInvoicePage({
     try {
       await updateInvoice(id, {
         guest,
+        guests: additionalGuests.length > 0 ? additionalGuests : undefined, // Multiple guests
         billingType: billingType,
         travelCompanyId: billingType === "company" && selectedTravelCompanyId ? selectedTravelCompanyId : undefined,
         currency,
@@ -691,6 +738,87 @@ export default function EditInvoicePage({
                     </DialogContent>
                   </Dialog>
                 </div>
+              </div>
+
+              {/* Additional Guests Section */}
+              <div className="space-y-2">
+                <Label>Additional Guests (Optional)</Label>
+                <div className="flex gap-2">
+                  <Select value={selectedAdditionalGuestId} onValueChange={setSelectedAdditionalGuestId}>
+                    <SelectTrigger className="flex-1">
+                      <SelectValue placeholder="Select additional guest" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableGuests
+                        .filter(g => {
+                          // Only include guests with IDs
+                          if (!g.id) return false;
+                          // Filter out primary guest if it has an id
+                          if (selectedGuestId && g.id === selectedGuestId) {
+                            return false;
+                          }
+                          // Filter out already added additional guests
+                          if (additionalGuests.some(ag => ag.id === g.id)) {
+                            return false;
+                          }
+                          // Include all other guests with IDs
+                          return true;
+                        })
+                        .map((g) => (
+                          <SelectItem key={g.id!} value={g.id!}>
+                            {g.name} {g.email ? `- ${g.email}` : ""}
+                          </SelectItem>
+                        ))}
+                      {availableGuests.filter(g => {
+                        if (!g.id) return false;
+                        if (selectedGuestId && g.id === selectedGuestId) return false;
+                        if (additionalGuests.some(ag => ag.id === g.id)) return false;
+                        return true;
+                      }).length === 0 && (
+                        <div className="px-2 py-1.5 text-sm text-muted-foreground text-center">
+                          No additional guests available
+                        </div>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleAddAdditionalGuest}
+                    disabled={!selectedAdditionalGuestId}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                
+                {/* Display added additional guests */}
+                {additionalGuests.length > 0 && (
+                  <div className="mt-2 space-y-2">
+                    {additionalGuests.map((g) => (
+                      <div
+                        key={g.id}
+                        className="flex items-center justify-between p-2 bg-gray-50 rounded-md border"
+                      >
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4 text-gray-500" />
+                          <span className="text-sm">{g.name}</span>
+                          {g.email && (
+                            <span className="text-xs text-muted-foreground">({g.email})</span>
+                          )}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleRemoveAdditionalGuest(g.id!)}
+                          className="h-6 w-6"
+                        >
+                          <Trash2 className="h-3 w-3 text-red-500" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <Separator />
               <div className="grid grid-cols-2 gap-4">

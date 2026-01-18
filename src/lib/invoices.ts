@@ -15,6 +15,7 @@ const mapDbToInvoice = (data: any): Invoice => {
     id: data.id,
     invoiceNumber: data.invoice_number,
     guest: data.guest,
+    guests: data.guests || undefined, // Multiple guests array
     billingType: data.billing_type || "guest", // Default to "guest" for backward compatibility
     travelCompanyId: data.travel_company_id,
     currency: data.currency,
@@ -86,6 +87,17 @@ const mapInvoiceToDb = (invoice: Invoice): any => {
   // Only include card_last_4_digits if it has a value (to avoid errors if column doesn't exist)
   if (invoice.cardLast4Digits) {
     dbData.card_last_4_digits = invoice.cardLast4Digits;
+  }
+  
+  // Include guests if it exists (to avoid errors if column doesn't exist yet)
+  // After running MIGRATION_ADD_GUESTS_COLUMN.sql, this will always work
+  // For now, only include it if there are guests to avoid errors before migration
+  if (invoice.guests && invoice.guests.length > 0) {
+    dbData.guests = invoice.guests;
+  } else if (invoice.guests !== undefined) {
+    // If guests is explicitly set to empty array, save as null
+    // This allows clearing additional guests
+    dbData.guests = null;
   }
   
   return dbData;

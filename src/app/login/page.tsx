@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { login } from "@/lib/auth";
 import { AlertCircle } from "lucide-react";
-import { hotelInfo } from "@/lib/hotel-info";
+import { getHotelInfo, type HotelInfo } from "@/lib/hotel-info";
 
 function LoginForm() {
   const router = useRouter();
@@ -20,6 +20,15 @@ function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [hotelInfo, setHotelInfo] = useState<HotelInfo | null>(null);
+
+  useEffect(() => {
+    const loadHotelInfo = async () => {
+      const info = await getHotelInfo();
+      setHotelInfo(info);
+    };
+    loadHotelInfo();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,23 +62,27 @@ function LoginForm() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-4">
-          <div className="flex items-center justify-center mb-2">
-            <Image
-              src={hotelInfo.logoPath}
-              alt={hotelInfo.name}
-              width={150}
-              height={60}
-              className="h-auto"
-              priority
-            />
-          </div>
+          {hotelInfo && (
+            <div className="flex items-center justify-center mb-2">
+              <Image
+                src={hotelInfo.logoPath || "/images/rajini-logo-flat-color.png"}
+                alt={hotelInfo.name}
+                width={150}
+                height={60}
+                className="h-auto"
+                priority
+              />
+            </div>
+          )}
           <div className="text-center">
             <CardTitle className="text-2xl font-bold" style={{ color: "#D4AF37" }}>
               Invoice Management System
             </CardTitle>
-            <CardDescription className="text-base mt-2">
-              {hotelInfo.name}
-            </CardDescription>
+            {hotelInfo && (
+              <CardDescription className="text-base mt-2">
+                {hotelInfo.name}
+              </CardDescription>
+            )}
           </div>
         </CardHeader>
         <CardContent>

@@ -18,7 +18,7 @@ import {
   History,
   Package,
 } from "lucide-react";
-import { hotelInfo } from "@/lib/hotel-info";
+import { getHotelInfo, type HotelInfo } from "@/lib/hotel-info";
 import { User as UserType } from "@/types/user";
 
 const allNavigation = [
@@ -39,11 +39,18 @@ const allNavigation = [
 export function Sidebar() {
   const pathname = usePathname();
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
+  const [hotelInfo, setHotelInfo] = useState<HotelInfo | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadCurrentUser();
+    loadHotelInfo();
   }, []);
+
+  const loadHotelInfo = async () => {
+    const info = await getHotelInfo();
+    setHotelInfo(info);
+  };
 
   const loadCurrentUser = async () => {
     try {
@@ -68,15 +75,19 @@ export function Sidebar() {
   return (
     <div className="flex h-full w-64 flex-col border-r bg-card">
       <div className="flex flex-col items-center justify-center border-b px-4 py-4">
-        <Image
-          src={hotelInfo.logoPath}
-          alt={hotelInfo.name}
-          width={120}
-          height={50}
-          className="h-auto mb-2"
-          priority
-        />
-        <h1 className="text-sm font-bold text-center leading-tight">{hotelInfo.name}</h1>
+        {hotelInfo && (
+          <>
+            <Image
+              src={hotelInfo.logoPath || "/images/rajini-logo-flat-color.png"}
+              alt={hotelInfo.name}
+              width={120}
+              height={50}
+              className="h-auto mb-2"
+              priority
+            />
+            <h1 className="text-sm font-bold text-center leading-tight">{hotelInfo.name}</h1>
+          </>
+        )}
         <p className="text-xs text-muted-foreground text-center mt-1">Invoice System</p>
         <p className="text-xs text-muted-foreground text-center mt-1">
           Powered by <span className="font-semibold">Phoenix Global Solutions</span>

@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
-import { hotelInfo } from "@/lib/hotel-info";
+import { getHotelInfo, type HotelInfo } from "@/lib/hotel-info";
 import { formatCurrency } from "@/lib/currency";
 import { getBankDetailById } from "@/lib/bank-details";
 import { getTravelCompanyById } from "@/lib/travel-companies";
@@ -26,10 +26,15 @@ interface InvoicePrintLayoutProps {
 }
 
 export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
+  const [hotelInfo, setHotelInfo] = useState<HotelInfo | null>(null);
   const [bankDetail, setBankDetail] = useState<BankDetail | null>(null);
   const [travelCompany, setTravelCompany] = useState<TravelCompany | null>(null);
 
   useEffect(() => {
+    const loadHotelInfo = async () => {
+      const info = await getHotelInfo();
+      setHotelInfo(info);
+    };
     const loadBankDetail = async () => {
       if (invoice.selectedBankDetailId) {
         const bank = await getBankDetailById(invoice.selectedBankDetailId);
@@ -42,6 +47,7 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
         setTravelCompany(company || null);
       }
     };
+    loadHotelInfo();
     loadBankDetail();
     loadTravelCompany();
   }, [invoice.selectedBankDetailId, invoice.billingType, invoice.travelCompanyId]);
@@ -86,21 +92,60 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
       <div className="mb-4" style={{ marginBottom: '16px' }}>
         <div className="flex justify-between items-start mb-2" style={{ marginBottom: '8px' }}>
           <div className="flex-1">
-            <div className="mb-1" style={{ marginBottom: '4px' }}>
-              <Image
-                src={hotelInfo.logoPath}
-                alt={hotelInfo.name}
-                width={120}
-                height={48}
-                className="h-auto"
-                priority
-              />
-            </div>
-            <div className="text-xs text-gray-600 leading-tight" style={{ fontSize: '7pt', lineHeight: '1.2' }}>
-              <p style={{ margin: '0', padding: '0' }}>{hotelInfo.address}, {hotelInfo.city}, {hotelInfo.country}</p>
-              <p style={{ margin: '0', padding: '0' }}>Tel: {hotelInfo.telephone} | Hotline: {hotelInfo.hotline} | USA: {hotelInfo.usaContact}</p>
-              <p style={{ margin: '0', padding: '0' }}>Email: {hotelInfo.email} | Web: {hotelInfo.website}</p>
-            </div>
+            {hotelInfo && (
+              <>
+                <div className="mb-1" style={{ marginBottom: '4px' }}>
+                  <Image
+                    src={hotelInfo.logoPath || "/images/rajini-logo-flat-color.png"}
+                    alt={hotelInfo.name}
+                    width={120}
+                    height={48}
+                    className="h-auto"
+                    priority
+                  />
+                </div>
+                <div className="text-xs text-gray-600 leading-tight" style={{ fontSize: '7pt', lineHeight: '1.4' }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '4px', marginBottom: '3px' }}>
+                    <MapPin style={{ width: '10px', height: '10px', color: '#6b7280', marginTop: '2px', flexShrink: 0 }} />
+                    <p style={{ margin: '0', padding: '0' }}>{hotelInfo.address}, {hotelInfo.city}, {hotelInfo.country}</p>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '3px' }}>
+                    {hotelInfo.telephone && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                        <Phone style={{ width: '10px', height: '10px', color: '#6b7280' }} />
+                        <span>Tel: {hotelInfo.telephone}</span>
+                      </div>
+                    )}
+                    {hotelInfo.hotline && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                        <Phone style={{ width: '10px', height: '10px', color: '#6b7280' }} />
+                        <span>Hotline: {hotelInfo.hotline}</span>
+                      </div>
+                    )}
+                    {hotelInfo.usaContact && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                        <Phone style={{ width: '10px', height: '10px', color: '#6b7280' }} />
+                        <span>USA: {hotelInfo.usaContact}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                    {hotelInfo.email && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                        <Mail style={{ width: '10px', height: '10px', color: '#6b7280' }} />
+                        <span>{hotelInfo.email}</span>
+                      </div>
+                    )}
+                    {hotelInfo.website && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                        <Globe style={{ width: '10px', height: '10px', color: '#6b7280' }} />
+                        <span>{hotelInfo.website}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
           <div className="text-right ml-4" style={{ marginLeft: '16px' }}>
             <h2 className="text-lg font-bold mb-1 text-gray-900" style={{ fontSize: '14pt', marginBottom: '4px' }}>INVOICE</h2>
@@ -195,35 +240,13 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
               {travelCompany.contactPerson && (
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
                   <UserCircle style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
-                  <p className="text-gray-600">Contact: {travelCompany.contactPerson}</p>
-                </div>
-              )}
-              {travelCompany.email && (
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                  <Mail style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
-                  <p className="text-gray-600">{travelCompany.email}</p>
+                  <p className="text-gray-600">{travelCompany.contactPerson}</p>
                 </div>
               )}
               {travelCompany.phone && (
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
                   <Phone style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
                   <p className="text-gray-600">{travelCompany.phone}</p>
-                </div>
-              )}
-              {(travelCompany.address || travelCompany.city || travelCompany.country) && (
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                  <MapPin style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
-                  <p className="text-gray-600">
-                    {travelCompany.address}
-                    {travelCompany.city && `, ${travelCompany.city}`}
-                    {travelCompany.country && `, ${travelCompany.country}`}
-                  </p>
-                </div>
-              )}
-              {travelCompany.taxId && (
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                  <IdCard style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
-                  <p className="text-gray-600">Tax ID: {travelCompany.taxId}</p>
                 </div>
               )}
             </div>
@@ -259,38 +282,32 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
           )}
         </div>
 
-        {invoice.billingType === "company" && (
+        {(invoice.billingType === "company" || (invoice.guests && invoice.guests.length > 0)) && (
           <div>
             <h3 className="font-semibold text-base mb-3 text-gray-900" style={{ fontSize: '12pt', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <UserCircle style={{ width: '16px', height: '16px', color: '#4b5563' }} />
               Guest Information:
             </h3>
-            <div className="space-y-2 text-xs" style={{ fontSize: '9pt', lineHeight: '1.5' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                <User style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
-                <p className="text-gray-600">{invoice.guest.name}</p>
-              </div>
-              {invoice.guest.email && (
+            <div className="space-y-1.5 text-xs" style={{ fontSize: '9pt', lineHeight: '1.5' }}>
+              {/* Show primary guest if billing to company OR if there are additional guests */}
+              {(invoice.billingType === "company" || (invoice.guests && invoice.guests.length > 0)) && invoice.guest.name && (
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                  <Mail style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
-                  <p className="text-gray-600">{invoice.guest.email}</p>
+                  <User style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
+                  <p className="text-gray-600">{invoice.guest.name}</p>
                 </div>
               )}
-              {invoice.guest.phone && (
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                  <Phone style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
-                  <p className="text-gray-600">{invoice.guest.phone}</p>
-                </div>
-              )}
-              {invoice.guest.idNumber && (
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                  <IdCard style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
-                  <p className="text-gray-600">
-                    ID: {invoice.guest.idNumber.length > 2 
-                      ? "*".repeat(Math.max(0, invoice.guest.idNumber.length - 2)) + invoice.guest.idNumber.slice(-2)
-                      : invoice.guest.idNumber}
-                  </p>
-                </div>
+              {/* Show additional guests (only names) */}
+              {invoice.guests && invoice.guests.length > 0 && (
+                <>
+                  {invoice.guests.map((guest, index) => (
+                    guest.name && (
+                      <div key={index} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                        <User style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
+                        <p className="text-gray-600">{guest.name}</p>
+                      </div>
+                    )
+                  ))}
+                </>
               )}
             </div>
           </div>
@@ -364,7 +381,7 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
                   borderBottom: '1px solid #f3f4f6',
                   pageBreakInside: 'avoid'
                 }}>
-                  {item.quantity}
+                  {item.quantity} {item.quantityType === "days" ? "Days" : "Qty"}
                 </TableCell>
                 <TableCell className="text-right text-gray-600" style={{ 
                   padding: '8px 6px', 
@@ -454,69 +471,97 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
 
       {/* Payment Information */}
       {(invoice.paymentMethods.length > 0 || invoice.selectedBankDetailId) && (
-        <div className="mt-6 pt-4" style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #e5e7eb' }}>
-          <h3 className="font-semibold text-base mb-3 text-gray-900" style={{ fontSize: '12pt', marginBottom: '12px' }}>
+        <div className="mt-4 pt-3" style={{ 
+          marginTop: '16px', 
+          paddingTop: '12px', 
+          borderTop: '1px solid #e5e7eb',
+          pageBreakInside: 'avoid',
+          breakInside: 'avoid',
+          display: 'block',
+          visibility: 'visible',
+          opacity: 1
+        }}>
+          <h3 className="font-semibold text-sm mb-2 text-gray-900" style={{ 
+            fontSize: '10pt', 
+            marginBottom: '8px',
+            pageBreakAfter: 'avoid',
+            display: 'block',
+            visibility: 'visible'
+          }}>
             Payment Information
           </h3>
           
           {invoice.paymentMethods.length > 0 && (
-            <div className="mb-3" style={{ marginBottom: '12px' }}>
-              <p className="text-xs font-medium text-gray-700 mb-2" style={{ fontSize: '9pt', marginBottom: '8px' }}>
+            <div className="mb-2" style={{ 
+              marginBottom: '8px',
+              display: 'block',
+              visibility: 'visible'
+            }}>
+              <p className="text-xs font-medium text-gray-700 mb-1" style={{ 
+                fontSize: '8pt', 
+                marginBottom: '4px',
+                display: 'block',
+                visibility: 'visible'
+              }}>
                 Accepted Payment Methods:
               </p>
-              <div className="flex flex-wrap gap-2" style={{ gap: '8px' }}>
+              <div className="flex flex-wrap gap-1.5" style={{ 
+                gap: '6px',
+                display: 'flex',
+                visibility: 'visible'
+              }}>
                 {invoice.paymentMethods.includes("bank_account") && (
-                  <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-50 rounded text-xs" style={{ 
-                    padding: '4px 8px', 
+                  <div className="flex items-center gap-1 px-1.5 py-0.5 bg-blue-50 rounded text-xs" style={{ 
+                    padding: '2px 6px', 
                     backgroundColor: '#eff6ff',
-                    borderRadius: '4px',
-                    fontSize: '8pt'
+                    borderRadius: '3px',
+                    fontSize: '7pt'
                   }}>
-                    <Building2 className="h-3 w-3 text-blue-600" />
+                    <Building2 className="h-2.5 w-2.5 text-blue-600" style={{ width: '10px', height: '10px' }} />
                     <span className="text-gray-900">Bank Transfer/Deposit</span>
                   </div>
                 )}
                 {invoice.paymentMethods.includes("cheque") && (
-                  <div className="flex items-center gap-1.5 px-2 py-1 bg-green-50 rounded text-xs" style={{ 
-                    padding: '4px 8px', 
+                  <div className="flex items-center gap-1 px-1.5 py-0.5 bg-green-50 rounded text-xs" style={{ 
+                    padding: '2px 6px', 
                     backgroundColor: '#f0fdf4',
-                    borderRadius: '4px',
-                    fontSize: '8pt'
+                    borderRadius: '3px',
+                    fontSize: '7pt'
                   }}>
-                    <FileText className="h-3 w-3 text-green-600" />
+                    <FileText className="h-2.5 w-2.5 text-green-600" style={{ width: '10px', height: '10px' }} />
                     <span className="text-gray-900">Cheque Payment</span>
                   </div>
                 )}
                 {invoice.paymentMethods.includes("online") && (
-                  <div className="flex items-center gap-1.5 px-2 py-1 bg-orange-50 rounded text-xs" style={{ 
-                    padding: '4px 8px', 
+                  <div className="flex items-center gap-1 px-1.5 py-0.5 bg-orange-50 rounded text-xs" style={{ 
+                    padding: '2px 6px', 
                     backgroundColor: '#fff7ed',
-                    borderRadius: '4px',
-                    fontSize: '8pt'
+                    borderRadius: '3px',
+                    fontSize: '7pt'
                   }}>
-                    <Globe className="h-3 w-3 text-orange-600" />
+                    <Globe className="h-2.5 w-2.5 text-orange-600" style={{ width: '10px', height: '10px' }} />
                     <span className="text-gray-900">Online Payment</span>
                   </div>
                 )}
                 {invoice.paymentMethods.includes("cash") && (
-                  <div className="flex items-center gap-1.5 px-2 py-1 bg-emerald-50 rounded text-xs" style={{ 
-                    padding: '4px 8px', 
+                  <div className="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-50 rounded text-xs" style={{ 
+                    padding: '2px 6px', 
                     backgroundColor: '#ecfdf5',
-                    borderRadius: '4px',
-                    fontSize: '8pt'
+                    borderRadius: '3px',
+                    fontSize: '7pt'
                   }}>
-                    <Banknote className="h-3 w-3 text-emerald-600" />
+                    <Banknote className="h-2.5 w-2.5 text-emerald-600" style={{ width: '10px', height: '10px' }} />
                     <span className="text-gray-900">Cash Payment</span>
                   </div>
                 )}
                 {invoice.paymentMethods.includes("card") && (
-                  <div className="flex items-center gap-1.5 px-2 py-1 bg-indigo-50 rounded text-xs" style={{ 
-                    padding: '4px 8px', 
+                  <div className="flex items-center gap-1 px-1.5 py-0.5 bg-indigo-50 rounded text-xs" style={{ 
+                    padding: '2px 6px', 
                     backgroundColor: '#eef2ff',
-                    borderRadius: '4px',
-                    fontSize: '8pt'
+                    borderRadius: '3px',
+                    fontSize: '7pt'
                   }}>
-                    <CreditCard className="h-3 w-3 text-indigo-600" />
+                    <CreditCard className="h-2.5 w-2.5 text-indigo-600" style={{ width: '10px', height: '10px' }} />
                     <span className="text-gray-900">
                       Card Payment{invoice.cardLast4Digits ? ` (****${invoice.cardLast4Digits})` : ''}
                     </span>
@@ -527,59 +572,63 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
           )}
 
           {invoice.checksPayableTo && (
-            <div className="mb-3 p-3 bg-blue-50 rounded" style={{ 
-              marginBottom: '12px', 
-              padding: '12px', 
+            <div className="mb-2 p-2 bg-blue-50 rounded" style={{ 
+              marginBottom: '8px', 
+              padding: '8px', 
               backgroundColor: '#eff6ff',
               borderRadius: '4px'
             }}>
-              <p className="text-xs font-medium text-gray-700 mb-1" style={{ fontSize: '9pt', marginBottom: '4px' }}>
+              <p className="text-xs font-medium text-gray-700 mb-0.5" style={{ fontSize: '8pt', marginBottom: '2px' }}>
                 Make Checks Payable To:
               </p>
-              <p className="text-sm font-semibold text-gray-900" style={{ fontSize: '10pt', fontWeight: '600' }}>
+              <p className="text-xs font-semibold text-gray-900" style={{ fontSize: '9pt', fontWeight: '600' }}>
                 {invoice.checksPayableTo}
               </p>
             </div>
           )}
 
           {bankDetail && (
-            <div className="p-3 bg-gray-50 rounded" style={{ 
-              padding: '12px', 
+            <div className="p-2 bg-gray-50 rounded" style={{ 
+              padding: '8px', 
               backgroundColor: '#f9fafb',
-              borderRadius: '4px'
+              borderRadius: '4px',
+              pageBreakInside: 'avoid',
+              breakInside: 'avoid'
             }}>
-              <h4 className="font-semibold text-xs mb-2 text-gray-900" style={{ fontSize: '9pt', marginBottom: '8px' }}>
+              <h4 className="font-semibold text-xs mb-1 text-gray-900" style={{ fontSize: '8pt', marginBottom: '4px' }}>
                 Bank Transfer/Deposit Details:
               </h4>
-              <div className="grid grid-cols-2 gap-2 text-xs" style={{ 
+              <div className="grid grid-cols-2 gap-1.5 text-xs" style={{ 
                 display: 'grid', 
                 gridTemplateColumns: '1fr 1fr', 
-                gap: '8px',
-                fontSize: '9pt'
+                gap: '6px',
+                fontSize: '8pt',
+                pageBreakInside: 'avoid',
+                breakInside: 'avoid'
               }}>
                 <div>
-                  <span className="font-medium text-gray-700">Account Name:</span>
-                  <p className="text-gray-900">{bankDetail.accountName}</p>
+                  <span className="font-medium text-gray-700" style={{ fontSize: '8pt' }}>Account Name:</span>
+                  <p className="text-gray-900" style={{ margin: '2px 0', fontSize: '8pt' }}>{bankDetail.accountName}</p>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-700">Bank Name:</span>
-                  <p className="text-gray-900">{bankDetail.bankName}</p>
+                  <span className="font-medium text-gray-700" style={{ fontSize: '8pt' }}>Bank Name:</span>
+                  <p className="text-gray-900" style={{ margin: '2px 0', fontSize: '8pt' }}>{bankDetail.bankName}</p>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-700">Branch:</span>
-                  <p className="text-gray-900">{bankDetail.branch}</p>
+                  <span className="font-medium text-gray-700" style={{ fontSize: '8pt' }}>Branch:</span>
+                  <p className="text-gray-900" style={{ margin: '2px 0', fontSize: '8pt' }}>{bankDetail.branch}</p>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-700">Account Number:</span>
-                  <p className="text-gray-900">{bankDetail.accountNumber}</p>
+                  <span className="font-medium text-gray-700" style={{ fontSize: '8pt' }}>Account Number:</span>
+                  <p className="text-gray-900" style={{ margin: '2px 0', fontSize: '8pt' }}>{bankDetail.accountNumber}</p>
                 </div>
                 <div className="col-span-2">
-                  <span className="font-medium text-gray-700">Bank Address:</span>
-                  <p className="text-gray-900">{bankDetail.bankAddress}</p>
+                  <span className="font-medium text-gray-700" style={{ fontSize: '8pt' }}>Bank Address:</span>
+                  <p className="text-gray-900" style={{ margin: '2px 0', fontSize: '8pt' }}>{bankDetail.bankAddress}</p>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-700">SWIFT Code:</span>
-                  <p className="text-gray-900">{bankDetail.swiftCode}</p>
+                  <span className="font-medium text-gray-700" style={{ fontSize: '8pt' }}>SWIFT Code:</span>
+                  <p className="text-gray-900" style={{ margin: '2px 0', fontSize: '8pt' }}>{bankDetail.swiftCode}</p>
                 </div>
               </div>
             </div>
@@ -630,22 +679,26 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
             <p className="text-xs font-medium text-gray-900" style={{ fontSize: '9pt', fontWeight: '600' }}>
               Authorized Signature
             </p>
-            <p className="text-xs text-gray-600 mt-1" style={{ fontSize: '9pt', marginTop: '4px' }}>
-              {hotelInfo.name}
-            </p>
+            {hotelInfo && (
+              <p className="text-xs text-gray-600 mt-1" style={{ fontSize: '9pt', marginTop: '4px' }}>
+                {hotelInfo.name}
+              </p>
+            )}
           </div>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="mt-6 pt-4" style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #e5e7eb' }}>
-        <div className="text-center text-xs text-gray-500" style={{ fontSize: '8pt' }}>
-          <p>Thank you for choosing {hotelInfo.name}! We hope to see you again soon.</p>
-          <p className="mt-2 text-gray-400" style={{ marginTop: '8px' }}>
-            {hotelInfo.name} Powered by <span className="font-semibold text-gray-600">Phoenix Global Solutions</span>
-          </p>
+      {hotelInfo && (
+        <div className="mt-6 pt-4" style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #e5e7eb' }}>
+          <div className="text-center text-xs text-gray-500" style={{ fontSize: '8pt' }}>
+            <p>Thank you for choosing {hotelInfo.name}! We hope to see you again soon.</p>
+            <p className="mt-2 text-gray-400" style={{ marginTop: '8px' }}>
+              {hotelInfo.name} Powered by <span className="font-semibold text-gray-600">Phoenix Global Solutions</span>
+            </p>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

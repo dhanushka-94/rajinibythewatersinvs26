@@ -42,7 +42,8 @@ export type BillingType = "guest" | "company";
 export interface Invoice {
   id: string;
   invoiceNumber: string;
-  guest: Guest; // Guest info is always present (for display)
+  guest: Guest; // Primary guest (for backward compatibility and billing)
+  guests?: Guest[]; // Multiple guests (optional - for display only, shows names to save space)
   billingType?: BillingType; // "guest" or "company" - defaults to "guest" for backward compatibility
   travelCompanyId?: string; // ID of travel company when billingType is "company"
   currency: Currency;

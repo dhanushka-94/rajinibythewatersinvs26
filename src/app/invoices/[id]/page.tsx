@@ -174,8 +174,9 @@ export default function InvoiceDetailPage({
       const root = createRoot(printContainer);
       root.render(React.createElement(InvoicePrintLayout, { invoice }));
       
-      // Wait for rendering
-      await new Promise(resolve => setTimeout(resolve, 300));
+      // Wait for rendering and async data loading (bank details, travel company, hotel info)
+      // Increased timeout to ensure all async data is loaded before PDF generation
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Generate PDF from the print template
       await generatePDF('invoice-print-container', `${invoice.invoiceNumber}.pdf`);
