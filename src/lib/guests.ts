@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { Guest } from '@/types/invoice';
+import { createActivityLog } from './activity-logs';
 
 // Re-export Guest type for convenience
 export type { Guest };
@@ -125,6 +126,11 @@ export async function getGuestById(id: string): Promise<Guest | undefined> {
     if (!supabase) {
       return fallbackGuests.find((guest) => guest.id === id);
     }
+    
+    if (!id || id.trim() === '') {
+      return undefined;
+    }
+
     const { data, error } = await supabase
       .from('guests')
       .select('*')
@@ -132,14 +138,31 @@ export async function getGuestById(id: string): Promise<Guest | undefined> {
       .single();
 
     if (error) {
-      console.error('Error fetching guest:', error);
+      // PGRST116 means no rows returned (guest not found) - this is expected
+      if (error.code === 'PGRST116') {
+        return undefined;
+      }
+      // Log other errors with more details
+      console.error('Error fetching guest:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+        id: id
+      });
       return fallbackGuests.find((guest) => guest.id === id);
     }
 
     if (!data) return undefined;
     return mapDbToGuest(data);
   } catch (error) {
-    console.error('Error fetching guest:', error);
+    // Handle unexpected errors
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('Unexpected error fetching guest:', {
+      message: errorMessage,
+      id: id,
+      error: error
+    });
     return fallbackGuests.find((guest) => guest.id === id);
   }
 }
@@ -181,7 +204,24 @@ export async function addGuest(guest: Omit<Guest, "id">): Promise<Guest> {
       return newGuest;
     }
 
-    return mapDbToGuest(data);
+    const createdGuest = mapDbToGuest(data);
+    
+    // Log activity
+    await createActivityLog(
+      "guest_created",
+      "guest",
+      `Created guest: ${createdGuest.name}`,
+      {
+        entityId: createdGuest.id,
+        entityName: createdGuest.name,
+        metadata: {
+          email: createdGuest.email,
+          phone: createdGuest.phone,
+        },
+      }
+    );
+    
+    return createdGuest;
   } catch (error) {
     console.error('Error adding guest:', error);
     const newGuest: Guest = {
@@ -228,6 +268,24 @@ export async function updateGuest(id: string, guest: Partial<Guest>): Promise<vo
 
     if (error) {
       console.error('Error updating guest:', error);
+    } else {
+      // Get guest details for logging
+      const updatedGuest = await getGuestById(id);
+      if (updatedGuest) {
+        // Log activity
+        await createActivityLog(
+          "guest_updated",
+          "guest",
+          `Updated guest: ${updatedGuest.name}`,
+          {
+            entityId: id,
+            entityName: updatedGuest.name,
+            metadata: {
+              changes: Object.keys(guest),
+            },
+          }
+        );
+      }
     }
   } catch (error) {
     console.error('Error updating guest:', error);
@@ -252,6 +310,9 @@ export async function deleteGuest(id: string): Promise<void> {
       return;
     }
 
+    // Get guest details before deletion for logging
+    const guestToDelete = await getGuestById(id);
+    
     const { error } = await supabase
       .from('guests')
       .delete()
@@ -259,6 +320,21 @@ export async function deleteGuest(id: string): Promise<void> {
 
     if (error) {
       console.error('Error deleting guest:', error);
+    } else if (guestToDelete) {
+      // Log activity
+      await createActivityLog(
+        "guest_deleted",
+        "guest",
+        `Deleted guest: ${guestToDelete.name}`,
+        {
+          entityId: id,
+          entityName: guestToDelete.name,
+          metadata: {
+            email: guestToDelete.email,
+            phone: guestToDelete.phone,
+          },
+        }
+      );
     }
   } catch (error) {
     console.error('Error deleting guest:', error);

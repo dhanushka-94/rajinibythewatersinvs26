@@ -13,6 +13,8 @@ import {
   Users,
   BarChart3,
   CreditCard,
+  Briefcase,
+  History,
 } from "lucide-react";
 import { hotelInfo } from "@/lib/hotel-info";
 
@@ -23,6 +25,8 @@ const navigation = [
   { name: "Payments", href: "/payments", icon: CreditCard },
   { name: "Reports", href: "/reports", icon: BarChart3 },
   { name: "Guests", href: "/settings/guests", icon: Users },
+  { name: "Travel Companies", href: "/settings/travel-companies", icon: Briefcase },
+  { name: "Activity Logs", href: "/settings/activity-logs", icon: History },
   { name: "Settings", href: "/settings", icon: Settings },
   { name: "Bank Accounts", href: "/settings/bank-accounts", icon: Building2 },
   { name: "Users", href: "/settings/users", icon: Users },

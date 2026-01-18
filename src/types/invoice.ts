@@ -37,10 +37,14 @@ export interface Payment {
   createdAt: string;
 }
 
+export type BillingType = "guest" | "company";
+
 export interface Invoice {
   id: string;
   invoiceNumber: string;
-  guest: Guest;
+  guest: Guest; // Guest info is always present (for display)
+  billingType?: BillingType; // "guest" or "company" - defaults to "guest" for backward compatibility
+  travelCompanyId?: string; // ID of travel company when billingType is "company"
   currency: Currency;
   checkIn: string;
   checkOut: string;

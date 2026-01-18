@@ -43,7 +43,9 @@ import { BookOpen, CreditCard, Building2, FileText, Wallet, Globe, Banknote } fr
 import { CountrySelector } from "@/components/country-selector";
 import { Checkbox } from "@/components/ui/checkbox";
 import { getBankDetails, getBankDetailById, addBankDetail, deleteBankDetail, type BankDetail } from "@/lib/bank-details";
-import { PaymentMethod } from "@/types/invoice";
+import { PaymentMethod, BillingType } from "@/types/invoice";
+import { getTravelCompanies } from "@/lib/travel-companies";
+import { type TravelCompany } from "@/types/travel-company";
 
 export default function NewInvoicePage() {
   const router = useRouter();
@@ -66,6 +68,12 @@ export default function NewInvoicePage() {
       setAvailableGuests(guests);
     };
     
+    // Load travel companies
+    const loadTravelCompanies = async () => {
+      const companies = await getTravelCompanies();
+      setAvailableTravelCompanies(companies);
+    };
+    
     // Load saved invoice items
     const loadSavedItems = async () => {
       const items = await getSavedItems();
@@ -74,12 +82,16 @@ export default function NewInvoicePage() {
     
     loadBankDetails();
     loadGuests();
+    loadTravelCompanies();
     loadSavedItems();
   }, []);
   const [currency, setCurrency] = useState<Currency>("USD");
   const [selectedGuestId, setSelectedGuestId] = useState<string>("");
   const [isAddGuestDialogOpen, setIsAddGuestDialogOpen] = useState(false);
   const [availableGuests, setAvailableGuests] = useState<Guest[]>([]);
+  const [billingType, setBillingType] = useState<BillingType>("guest");
+  const [selectedTravelCompanyId, setSelectedTravelCompanyId] = useState<string>("");
+  const [availableTravelCompanies, setAvailableTravelCompanies] = useState<TravelCompany[]>([]);
   const [guest, setGuest] = useState<Guest>({
     title: undefined,
     name: "",
@@ -152,10 +164,24 @@ export default function NewInvoicePage() {
       setIsAddGuestDialogOpen(true);
       return;
     }
-    const selectedGuest = await getGuestById(guestId);
-    if (selectedGuest) {
-      setGuest(selectedGuest);
-      setSelectedGuestId(guestId);
+    
+    if (!guestId || guestId.trim() === '') {
+      return;
+    }
+    
+    try {
+      const selectedGuest = await getGuestById(guestId);
+      if (selectedGuest) {
+        setGuest(selectedGuest);
+        setSelectedGuestId(guestId);
+      } else {
+        console.warn(`Guest with ID "${guestId}" not found`);
+        // Optionally show a user-friendly message
+        // You could set an error state here if needed
+      }
+    } catch (error) {
+      console.error('Error selecting guest:', error);
+      // Optionally show a user-friendly error message
     }
   };
 
@@ -273,7 +299,12 @@ export default function NewInvoicePage() {
     
     // Validate required fields
     if (!guest.name || !guest.name.trim()) {
-      alert("Full Name is required in Guest Information");
+      alert("Guest Name is required in Guest Information");
+      return;
+    }
+
+    if (billingType === "company" && !selectedTravelCompanyId) {
+      alert("Please select a Travel Company when billing to company");
       return;
     }
     
@@ -281,28 +312,30 @@ export default function NewInvoicePage() {
        const invoiceData = {
          invoiceNumber,
          guest,
+         billingType: billingType,
+         travelCompanyId: billingType === "company" && selectedTravelCompanyId ? selectedTravelCompanyId : undefined,
          currency,
          checkIn,
          checkOut,
          roomType: "",
-        items,
-        subtotal: calculations.subtotal,
-        serviceCharge: calculations.serviceCharge,
-        serviceChargeRate,
-        damageCharge,
-        taxRate,
-        taxAmount: calculations.taxAmount,
-        discount,
-        discountType,
-        priceAdjustment,
-        priceAdjustmentReason: priceAdjustmentReason || undefined,
-        total: calculations.total,
-        paymentMethods,
-        selectedBankDetailId: selectedBankDetailId || undefined,
-        checksPayableTo: paymentMethods.includes("cheque") ? checksPayableTo : undefined,
-        status: "draft" as const,
-        notes: notes || undefined,
-      };
+         items,
+         subtotal: calculations.subtotal,
+         serviceCharge: calculations.serviceCharge,
+         serviceChargeRate,
+         damageCharge,
+         taxRate,
+         taxAmount: calculations.taxAmount,
+         discount,
+         discountType,
+         priceAdjustment,
+         priceAdjustmentReason: priceAdjustmentReason || undefined,
+         total: calculations.total,
+         paymentMethods,
+         selectedBankDetailId: selectedBankDetailId || undefined,
+         checksPayableTo: paymentMethods.includes("cheque") ? checksPayableTo : undefined,
+         status: "draft" as const,
+         notes: notes || undefined,
+       };
 
       // Import and use the createInvoice function
       const { createInvoice } = await import("@/lib/invoices");
@@ -338,7 +371,54 @@ export default function NewInvoicePage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="selectGuest">Select Customer/Guest</Label>
+                <Label htmlFor="billingType">Bill To *</Label>
+                <Select
+                  value={billingType}
+                  onValueChange={(value: BillingType) => {
+                    setBillingType(value);
+                    if (value === "guest") {
+                      setSelectedTravelCompanyId("");
+                    }
+                  }}
+                >
+                  <SelectTrigger id="billingType">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="guest">Guest</SelectItem>
+                    <SelectItem value="company">Travel Company</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {billingType === "company" && (
+                <div className="space-y-2">
+                  <Label htmlFor="selectTravelCompany">Select Travel Company *</Label>
+                  <Select
+                    value={selectedTravelCompanyId}
+                    onValueChange={setSelectedTravelCompanyId}
+                  >
+                    <SelectTrigger id="selectTravelCompany">
+                      <SelectValue placeholder="Select travel company" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableTravelCompanies.map((company) => (
+                        <SelectItem key={company.id} value={company.id}>
+                          {company.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {availableTravelCompanies.length === 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      No travel companies found. <Link href="/settings/travel-companies" className="text-primary underline">Add one here</Link>.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="selectGuest">Guest Information {billingType === "company" && "(for display)"}</Label>
                 <div className="flex gap-2">
                   <Select value={selectedGuestId} onValueChange={handleGuestSelect}>
                     <SelectTrigger id="selectGuest" className="flex-1">

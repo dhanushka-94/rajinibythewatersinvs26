@@ -17,7 +17,9 @@ import Image from "next/image";
 import { hotelInfo } from "@/lib/hotel-info";
 import { formatCurrency } from "@/lib/currency";
 import { getBankDetailById } from "@/lib/bank-details";
-import { Building2, FileText, Wallet, Globe, Banknote, CreditCard } from "lucide-react";
+import { getTravelCompanyById } from "@/lib/travel-companies";
+import { type TravelCompany } from "@/types/travel-company";
+import { Building2, FileText, Wallet, Globe, Banknote, CreditCard, Calendar, User, Mail, Phone, MapPin, Building, IdCard, UserCircle } from "lucide-react";
 
 interface InvoiceLayoutProps {
   invoice: Invoice;
@@ -26,6 +28,7 @@ interface InvoiceLayoutProps {
 
 export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps) {
   const [bankDetail, setBankDetail] = useState<BankDetail | null>(null);
+  const [travelCompany, setTravelCompany] = useState<TravelCompany | null>(null);
 
   useEffect(() => {
     const loadBankDetail = async () => {
@@ -34,8 +37,15 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
         setBankDetail(bank || null);
       }
     };
+    const loadTravelCompany = async () => {
+      if (invoice.billingType === "company" && invoice.travelCompanyId) {
+        const company = await getTravelCompanyById(invoice.travelCompanyId);
+        setTravelCompany(company || null);
+      }
+    };
     loadBankDetail();
-  }, [invoice.selectedBankDetailId]);
+    loadTravelCompany();
+  }, [invoice.selectedBankDetailId, invoice.billingType, invoice.travelCompanyId]);
 
   const getStatusBadge = (status: string) => {
     const statusStyles: Record<string, string> = {
@@ -104,53 +114,156 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-8 mb-8 print:gap-4 print:mb-4">
-        <div className="break-inside-avoid">
-          <h2 className="font-semibold text-lg mb-4 text-gray-900 print:text-base print:mb-2">Bill To:</h2>
-          <div className="space-y-1 text-sm print:text-xs">
-            <p className="font-medium text-gray-900">{invoice.guest.name}</p>
-            <p className="text-gray-600">{invoice.guest.email}</p>
-            <p className="text-gray-600">{invoice.guest.phone}</p>
-            <p className="text-gray-600">
-              {invoice.guest.address}
-              {invoice.guest.city && `, ${invoice.guest.city}`}
-              {invoice.guest.country && `, ${invoice.guest.country}`}
-            </p>
+      {/* Booking Details - One line, no title */}
+      <div className="mb-6 print:mb-4">
+        <div className="flex items-center gap-6 text-sm print:text-xs print:gap-4">
+          <div className="flex items-center gap-2 text-gray-700">
+            <Calendar className="h-4 w-4 text-gray-500 print:h-3 print:w-3" />
+            <span className="font-medium text-gray-600">Check-in:</span>
+            <span className="font-semibold text-gray-900">
+              {new Date(invoice.checkIn).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </span>
           </div>
-        </div>
-
-        <div className="break-inside-avoid">
-          <h2 className="font-semibold text-lg mb-4 text-gray-900 print:text-base print:mb-2">Booking Details:</h2>
-          <div className="space-y-2 text-sm print:text-xs print:space-y-1">
-            {invoice.roomType && (
-              <div className="flex justify-between">
-                <span className="text-gray-600">Room Type:</span>
-                <span className="font-medium text-gray-900">{invoice.roomType}</span>
-              </div>
-            )}
-            <div className="flex justify-between">
-              <span className="text-gray-600">Check-in:</span>
-              <span className="font-medium text-gray-900">
-                {new Date(invoice.checkIn).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Check-out:</span>
-              <span className="font-medium text-gray-900">
-                {new Date(invoice.checkOut).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </span>
-            </div>
+          <div className="flex items-center gap-2 text-gray-700">
+            <Calendar className="h-4 w-4 text-gray-500 print:h-3 print:w-3" />
+            <span className="font-medium text-gray-600">Check-out:</span>
+            <span className="font-semibold text-gray-900">
+              {new Date(invoice.checkOut).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </span>
           </div>
+          {invoice.roomType && (
+            <div className="flex items-center gap-2 text-gray-700">
+              <Building className="h-4 w-4 text-gray-500 print:h-3 print:w-3" />
+              <span className="font-medium text-gray-600">Room:</span>
+              <span className="font-semibold text-gray-900">{invoice.roomType}</span>
+            </div>
+          )}
         </div>
       </div>
+      <Separator className="mb-6 print:mb-4" />
+
+      {/* Bill To and Guest Information - Side by side */}
+      <div className="grid grid-cols-2 gap-8 mb-8 print:gap-4 print:mb-4">
+        <div className="break-inside-avoid">
+          <h2 className="font-semibold text-lg mb-4 text-gray-900 print:text-base print:mb-2 flex items-center gap-2">
+            <Building2 className="h-5 w-5 text-gray-600 print:h-4 print:w-4" />
+            Bill To:
+          </h2>
+          {invoice.billingType === "company" && travelCompany ? (
+            <div className="space-y-2 text-sm print:text-xs">
+              <div className="flex items-start gap-2">
+                <Building2 className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
+                <p className="font-medium text-gray-900">{travelCompany.name}</p>
+              </div>
+              {travelCompany.contactPerson && (
+                <div className="flex items-start gap-2">
+                  <UserCircle className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
+                  <p className="text-gray-600">Contact: {travelCompany.contactPerson}</p>
+                </div>
+              )}
+              {travelCompany.email && (
+                <div className="flex items-start gap-2">
+                  <Mail className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
+                  <p className="text-gray-600">{travelCompany.email}</p>
+                </div>
+              )}
+              {travelCompany.phone && (
+                <div className="flex items-start gap-2">
+                  <Phone className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
+                  <p className="text-gray-600">{travelCompany.phone}</p>
+                </div>
+              )}
+              {(travelCompany.address || travelCompany.city || travelCompany.country) && (
+                <div className="flex items-start gap-2">
+                  <MapPin className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
+                  <p className="text-gray-600">
+                    {travelCompany.address}
+                    {travelCompany.city && `, ${travelCompany.city}`}
+                    {travelCompany.country && `, ${travelCompany.country}`}
+                  </p>
+                </div>
+              )}
+              {travelCompany.taxId && (
+                <div className="flex items-start gap-2">
+                  <IdCard className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
+                  <p className="text-gray-600">Tax ID: {travelCompany.taxId}</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-2 text-sm print:text-xs">
+              <div className="flex items-start gap-2">
+                <User className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
+                <p className="font-medium text-gray-900">{invoice.guest.name}</p>
+              </div>
+              {invoice.guest.email && (
+                <div className="flex items-start gap-2">
+                  <Mail className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
+                  <p className="text-gray-600">{invoice.guest.email}</p>
+                </div>
+              )}
+              {invoice.guest.phone && (
+                <div className="flex items-start gap-2">
+                  <Phone className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
+                  <p className="text-gray-600">{invoice.guest.phone}</p>
+                </div>
+              )}
+              {(invoice.guest.address || invoice.guest.city || invoice.guest.country) && (
+                <div className="flex items-start gap-2">
+                  <MapPin className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
+                  <p className="text-gray-600">
+                    {invoice.guest.address}
+                    {invoice.guest.city && `, ${invoice.guest.city}`}
+                    {invoice.guest.country && `, ${invoice.guest.country}`}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {invoice.billingType === "company" && (
+          <div className="break-inside-avoid">
+            <h3 className="font-semibold text-lg mb-4 text-gray-900 print:text-base print:mb-2 flex items-center gap-2">
+              <UserCircle className="h-5 w-5 text-gray-600 print:h-4 print:w-4" />
+              Guest Information:
+            </h3>
+            <div className="space-y-2 text-sm print:text-xs">
+              <div className="flex items-start gap-2">
+                <User className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
+                <p className="text-gray-600">{invoice.guest.name}</p>
+              </div>
+              {invoice.guest.email && (
+                <div className="flex items-start gap-2">
+                  <Mail className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
+                  <p className="text-gray-600">{invoice.guest.email}</p>
+                </div>
+              )}
+              {invoice.guest.phone && (
+                <div className="flex items-start gap-2">
+                  <Phone className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
+                  <p className="text-gray-600">{invoice.guest.phone}</p>
+                </div>
+              )}
+              {invoice.guest.idNumber && (
+                <div className="flex items-start gap-2">
+                  <IdCard className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
+                  <p className="text-gray-600">ID: {invoice.guest.idNumber}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+      <Separator className="mb-8 print:mb-4" />
 
       <div className="mb-8 print:mb-4 invoice-items">
         <Table className="print:text-xs">

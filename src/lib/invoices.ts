@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { Invoice } from '@/types/invoice';
+import { createActivityLog } from './activity-logs';
 
 // In-memory fallback if Supabase is not configured
 let fallbackInvoices: Invoice[] = [];
@@ -14,6 +15,8 @@ const mapDbToInvoice = (data: any): Invoice => {
     id: data.id,
     invoiceNumber: data.invoice_number,
     guest: data.guest,
+    billingType: data.billing_type || "guest", // Default to "guest" for backward compatibility
+    travelCompanyId: data.travel_company_id,
     currency: data.currency,
     checkIn: data.check_in,
     checkOut: data.check_out,
@@ -48,6 +51,8 @@ const mapInvoiceToDb = (invoice: Invoice): any => {
   const dbData: any = {
     invoice_number: invoice.invoiceNumber,
     guest: invoice.guest,
+    billing_type: invoice.billingType || "guest",
+    travel_company_id: invoice.travelCompanyId || null,
     currency: invoice.currency,
     check_in: invoice.checkIn,
     check_out: invoice.checkOut,
@@ -106,7 +111,7 @@ export async function getInvoices(): Promise<Invoice[]> {
   }
 }
 
-export async function getInvoiceById(id: string): Promise<Invoice | undefined> {
+export async function getInvoiceById(id: string, logView: boolean = false): Promise<Invoice | undefined> {
   if (!isSupabaseConfigured()) {
     return fallbackInvoices.find((inv) => inv.id === id);
   }
@@ -143,7 +148,22 @@ export async function getInvoiceById(id: string): Promise<Invoice | undefined> {
       return undefined;
     }
     
-    return mapDbToInvoice(data);
+    const invoice = mapDbToInvoice(data);
+    
+    // Log view activity (only if explicitly requested to avoid logging every fetch)
+    if (logView) {
+      await createActivityLog(
+        "invoice_viewed",
+        "invoice",
+        `Viewed invoice ${invoice.invoiceNumber}`,
+        {
+          entityId: id,
+          entityName: invoice.invoiceNumber,
+        }
+      );
+    }
+    
+    return invoice;
   } catch (error) {
     console.error('Unexpected error fetching invoice:', {
       error: error instanceof Error ? error.message : String(error),
@@ -208,7 +228,26 @@ export async function createInvoice(invoice: Omit<Invoice, "id" | "createdAt" | 
       return newInvoice;
     }
 
-    return mapDbToInvoice(data);
+    const createdInvoice = mapDbToInvoice(data);
+    
+    // Log activity
+    await createActivityLog(
+      "invoice_created",
+      "invoice",
+      `Created invoice ${createdInvoice.invoiceNumber} for ${invoice.guest.name}`,
+      {
+        entityId: createdInvoice.id,
+        entityName: createdInvoice.invoiceNumber,
+        metadata: {
+          guestName: invoice.guest.name,
+          total: invoice.total,
+          currency: invoice.currency,
+          status: invoice.status,
+        },
+      }
+    );
+    
+    return createdInvoice;
   } catch (error) {
     console.error('Error creating invoice:', error);
     const newInvoice: Invoice = {
@@ -243,6 +282,8 @@ export async function updateInvoice(id: string, invoice: Partial<Invoice>): Prom
     const dbData: any = {};
     if (invoice.invoiceNumber !== undefined) dbData.invoice_number = invoice.invoiceNumber;
     if (invoice.guest !== undefined) dbData.guest = invoice.guest;
+    if (invoice.billingType !== undefined) dbData.billing_type = invoice.billingType;
+    if (invoice.travelCompanyId !== undefined) dbData.travel_company_id = invoice.travelCompanyId || null;
     if (invoice.currency !== undefined) dbData.currency = invoice.currency;
     if (invoice.checkIn !== undefined) dbData.check_in = invoice.checkIn;
     if (invoice.checkOut !== undefined) dbData.check_out = invoice.checkOut;
@@ -277,6 +318,25 @@ export async function updateInvoice(id: string, invoice: Partial<Invoice>): Prom
 
     if (error) {
       console.error('Error updating invoice:', error);
+    } else {
+      // Get invoice details for logging
+      const updatedInvoice = await getInvoiceById(id);
+      if (updatedInvoice) {
+        // Log activity
+        await createActivityLog(
+          "invoice_updated",
+          "invoice",
+          `Updated invoice ${updatedInvoice.invoiceNumber}`,
+          {
+            entityId: id,
+            entityName: updatedInvoice.invoiceNumber,
+            metadata: {
+              changes: Object.keys(dbData),
+              status: updatedInvoice.status,
+            },
+          }
+        );
+      }
     }
   } catch (error) {
     console.error('Error updating invoice:', error);
@@ -301,6 +361,9 @@ export async function deleteInvoice(id: string): Promise<void> {
       return;
     }
 
+    // Get invoice details before deletion for logging
+    const invoiceToDelete = await getInvoiceById(id);
+    
     const { error } = await supabase
       .from('invoices')
       .delete()
@@ -308,6 +371,22 @@ export async function deleteInvoice(id: string): Promise<void> {
 
     if (error) {
       console.error('Error deleting invoice:', error);
+    } else if (invoiceToDelete) {
+      // Log activity
+      await createActivityLog(
+        "invoice_deleted",
+        "invoice",
+        `Deleted invoice ${invoiceToDelete.invoiceNumber}`,
+        {
+          entityId: id,
+          entityName: invoiceToDelete.invoiceNumber,
+          metadata: {
+            guestName: invoiceToDelete.guest.name,
+            total: invoiceToDelete.total,
+            currency: invoiceToDelete.currency,
+          },
+        }
+      );
     }
   } catch (error) {
     console.error('Error deleting invoice:', error);

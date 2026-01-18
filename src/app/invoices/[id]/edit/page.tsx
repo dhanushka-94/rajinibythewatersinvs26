@@ -43,9 +43,11 @@ import { BookOpen, CreditCard, Building2, FileText, Wallet, Globe, Banknote } fr
 import { CountrySelector } from "@/components/country-selector";
 import { Checkbox } from "@/components/ui/checkbox";
 import { getBankDetails, getBankDetailById, addBankDetail, deleteBankDetail, type BankDetail } from "@/lib/bank-details";
-import { PaymentMethod } from "@/types/invoice";
+import { PaymentMethod, BillingType } from "@/types/invoice";
 import { getInvoiceById, updateInvoice } from "@/lib/invoices";
 import { Invoice } from "@/types/invoice";
+import { getTravelCompanies } from "@/lib/travel-companies";
+import { type TravelCompany } from "@/types/travel-company";
 
 export default function EditInvoicePage({
   params,
@@ -107,6 +109,9 @@ export default function EditInvoicePage({
   const [selectedBankDetailId, setSelectedBankDetailId] = useState<string>("");
   const [checksPayableTo, setChecksPayableTo] = useState<string>("PHOENIX GLOBAL SOLUTIONS");
   const [bankDetails, setBankDetails] = useState<BankDetail[]>([]);
+  const [billingType, setBillingType] = useState<BillingType>("guest");
+  const [selectedTravelCompanyId, setSelectedTravelCompanyId] = useState<string>("");
+  const [availableTravelCompanies, setAvailableTravelCompanies] = useState<TravelCompany[]>([]);
   const [isAddBankDialogOpen, setIsAddBankDialogOpen] = useState(false);
   const [newBankDetail, setNewBankDetail] = useState<Omit<BankDetail, "id" | "createdAt" | "updatedAt">>({
     accountName: "",
@@ -144,6 +149,8 @@ export default function EditInvoicePage({
           setPaymentMethods(data.paymentMethods);
           setSelectedBankDetailId(data.selectedBankDetailId || "");
           setChecksPayableTo(data.checksPayableTo || "PHOENIX GLOBAL SOLUTIONS");
+          setBillingType(data.billingType || "guest");
+          setSelectedTravelCompanyId(data.travelCompanyId || "");
         }
       } catch (error) {
         console.error("Error loading invoice:", error);
@@ -154,13 +161,15 @@ export default function EditInvoicePage({
 
     // Load supporting data
     const loadSupportingData = async () => {
-      const [banks, guests, savedItemsData] = await Promise.all([
+      const [banks, guests, companies, savedItemsData] = await Promise.all([
         getBankDetails(),
         getGuests(),
+        getTravelCompanies(),
         getSavedItems(),
       ]);
       setBankDetails(banks);
       setAvailableGuests(guests);
+      setAvailableTravelCompanies(companies);
       setSavedItems(savedItemsData);
     };
 
@@ -184,10 +193,24 @@ export default function EditInvoicePage({
       setIsAddGuestDialogOpen(true);
       return;
     }
-    const selectedGuest = await getGuestById(guestId);
-    if (selectedGuest) {
-      setGuest(selectedGuest);
-      setSelectedGuestId(guestId);
+    
+    if (!guestId || guestId.trim() === '') {
+      return;
+    }
+    
+    try {
+      const selectedGuest = await getGuestById(guestId);
+      if (selectedGuest) {
+        setGuest(selectedGuest);
+        setSelectedGuestId(guestId);
+      } else {
+        console.warn(`Guest with ID "${guestId}" not found`);
+        // Optionally show a user-friendly message
+        // You could set an error state here if needed
+      }
+    } catch (error) {
+      console.error('Error selecting guest:', error);
+      // Optionally show a user-friendly error message
     }
   };
 
@@ -298,7 +321,12 @@ export default function EditInvoicePage({
     e.preventDefault();
     
     if (!guest.name || !guest.name.trim()) {
-      alert("Full Name is required in Guest Information");
+      alert("Guest Name is required in Guest Information");
+      return;
+    }
+
+    if (billingType === "company" && !selectedTravelCompanyId) {
+      alert("Please select a Travel Company when billing to company");
       return;
     }
     
@@ -307,6 +335,8 @@ export default function EditInvoicePage({
     try {
       await updateInvoice(id, {
         guest,
+        billingType: billingType,
+        travelCompanyId: billingType === "company" && selectedTravelCompanyId ? selectedTravelCompanyId : undefined,
         currency,
         checkIn,
         checkOut,
@@ -383,7 +413,54 @@ export default function EditInvoicePage({
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="selectGuest">Select Customer/Guest</Label>
+                <Label htmlFor="billingType">Bill To *</Label>
+                <Select
+                  value={billingType}
+                  onValueChange={(value: BillingType) => {
+                    setBillingType(value);
+                    if (value === "guest") {
+                      setSelectedTravelCompanyId("");
+                    }
+                  }}
+                >
+                  <SelectTrigger id="billingType">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="guest">Guest</SelectItem>
+                    <SelectItem value="company">Travel Company</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {billingType === "company" && (
+                <div className="space-y-2">
+                  <Label htmlFor="selectTravelCompany">Select Travel Company *</Label>
+                  <Select
+                    value={selectedTravelCompanyId}
+                    onValueChange={setSelectedTravelCompanyId}
+                  >
+                    <SelectTrigger id="selectTravelCompany">
+                      <SelectValue placeholder="Select travel company" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableTravelCompanies.map((company) => (
+                        <SelectItem key={company.id} value={company.id}>
+                          {company.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {availableTravelCompanies.length === 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      No travel companies found. <Link href="/settings/travel-companies" className="text-primary underline">Add one here</Link>.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label htmlFor="selectGuest">Guest Information {billingType === "company" && "(for display)"}</Label>
                 <div className="flex gap-2">
                   <Select value={selectedGuestId} onValueChange={handleGuestSelect}>
                     <SelectTrigger id="selectGuest" className="flex-1">

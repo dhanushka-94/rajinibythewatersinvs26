@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { supabase } from "./supabase";
 import { User, UserCreate, UserUpdate, LoginCredentials, UserRole } from "@/types/user";
 import { cookies } from "next/headers";
+import { createActivityLog } from "./activity-logs";
 
 const SESSION_COOKIE_NAME = "invoice-session";
 const SESSION_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -119,6 +120,18 @@ export async function login(credentials: LoginCredentials): Promise<{ success: b
       updatedAt: userData.updated_at,
     };
 
+    // Log login activity
+    await createActivityLog(
+      "user_logged_in",
+      "user",
+      `User ${userData.username} logged in`,
+      {
+        entityId: userData.id,
+        entityName: userData.username,
+        userId: userData.id, // Explicitly set userId for login
+      }
+    );
+
     return { success: true, user };
   } catch (error) {
     console.error("Login error:", error);
@@ -128,6 +141,23 @@ export async function login(credentials: LoginCredentials): Promise<{ success: b
 
 // Logout
 export async function logout(): Promise<void> {
+  // Get session before clearing to log logout
+  const session = await getSession();
+  
+  if (session) {
+    // Log logout activity
+    await createActivityLog(
+      "user_logged_out",
+      "user",
+      `User ${session.username} logged out`,
+      {
+        entityId: session.userId,
+        entityName: session.username,
+        userId: session.userId, // Explicitly set userId for logout
+      }
+    );
+  }
+  
   await clearSession();
 }
 

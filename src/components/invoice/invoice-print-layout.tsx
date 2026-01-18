@@ -16,7 +16,9 @@ import Image from "next/image";
 import { hotelInfo } from "@/lib/hotel-info";
 import { formatCurrency } from "@/lib/currency";
 import { getBankDetailById } from "@/lib/bank-details";
-import { Building2, FileText, Wallet, Globe, Banknote, CreditCard } from "lucide-react";
+import { getTravelCompanyById } from "@/lib/travel-companies";
+import { type TravelCompany } from "@/types/travel-company";
+import { Building2, FileText, Wallet, Globe, Banknote, CreditCard, Calendar, User, Mail, Phone, MapPin, Building, IdCard, UserCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 
 interface InvoicePrintLayoutProps {
@@ -25,6 +27,7 @@ interface InvoicePrintLayoutProps {
 
 export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
   const [bankDetail, setBankDetail] = useState<BankDetail | null>(null);
+  const [travelCompany, setTravelCompany] = useState<TravelCompany | null>(null);
 
   useEffect(() => {
     const loadBankDetail = async () => {
@@ -33,8 +36,15 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
         setBankDetail(bank || null);
       }
     };
+    const loadTravelCompany = async () => {
+      if (invoice.billingType === "company" && invoice.travelCompanyId) {
+        const company = await getTravelCompanyById(invoice.travelCompanyId);
+        setTravelCompany(company || null);
+      }
+    };
     loadBankDetail();
-  }, [invoice.selectedBankDetailId]);
+    loadTravelCompany();
+  }, [invoice.selectedBankDetailId, invoice.billingType, invoice.travelCompanyId]);
 
   const getStatusBadge = (status: string) => {
     const statusStyles: Record<string, string> = {
@@ -115,7 +125,43 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
         <Separator style={{ border: 'none', borderTop: '1px solid #e5e7eb', marginTop: '8px' }} />
       </div>
 
-      {/* Bill To and Booking Details */}
+      {/* Booking Details - One line, no title */}
+      <div style={{ marginBottom: '16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '24px', fontSize: '9pt' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#374151' }}>
+            <Calendar style={{ width: '12px', height: '12px', color: '#6b7280' }} />
+            <span style={{ fontWeight: '500', color: '#4b5563' }}>Check-in:</span>
+            <span style={{ fontWeight: '600', color: '#111827' }}>
+              {new Date(invoice.checkIn).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#374151' }}>
+            <Calendar style={{ width: '12px', height: '12px', color: '#6b7280' }} />
+            <span style={{ fontWeight: '500', color: '#4b5563' }}>Check-out:</span>
+            <span style={{ fontWeight: '600', color: '#111827' }}>
+              {new Date(invoice.checkOut).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </span>
+          </div>
+          {invoice.roomType && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#374151' }}>
+              <Building style={{ width: '12px', height: '12px', color: '#6b7280' }} />
+              <span style={{ fontWeight: '500', color: '#4b5563' }}>Room:</span>
+              <span style={{ fontWeight: '600', color: '#111827' }}>{invoice.roomType}</span>
+            </div>
+          )}
+        </div>
+      </div>
+      <Separator style={{ border: 'none', borderTop: '1px solid #e5e7eb', marginBottom: '16px' }} />
+
+      {/* Bill To and Guest Information - Side by side */}
       <div className="grid grid-cols-2 gap-6 mb-6" style={{ 
         display: 'grid', 
         gridTemplateColumns: '1fr 1fr', 
@@ -123,55 +169,117 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
         marginBottom: '24px' 
       }}>
         <div>
-          <h2 className="font-semibold text-base mb-3 text-gray-900" style={{ fontSize: '12pt', marginBottom: '12px' }}>
+          <h2 className="font-semibold text-base mb-3 text-gray-900" style={{ fontSize: '12pt', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Building2 style={{ width: '16px', height: '16px', color: '#4b5563' }} />
             Bill To:
           </h2>
-          <div className="space-y-1 text-xs" style={{ fontSize: '9pt', lineHeight: '1.5' }}>
-            <p className="font-medium text-gray-900">{invoice.guest.name}</p>
-            <p className="text-gray-600">{invoice.guest.email}</p>
-            <p className="text-gray-600">{invoice.guest.phone}</p>
-            <p className="text-gray-600">
-              {invoice.guest.address}
-              {invoice.guest.city && `, ${invoice.guest.city}`}
-              {invoice.guest.country && `, ${invoice.guest.country}`}
-            </p>
-          </div>
+          {invoice.billingType === "company" && travelCompany ? (
+            <div className="space-y-2 text-xs" style={{ fontSize: '9pt', lineHeight: '1.5' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                <Building2 style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
+                <p className="font-medium text-gray-900">{travelCompany.name}</p>
+              </div>
+              {travelCompany.contactPerson && (
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                  <UserCircle style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
+                  <p className="text-gray-600">Contact: {travelCompany.contactPerson}</p>
+                </div>
+              )}
+              {travelCompany.email && (
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                  <Mail style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
+                  <p className="text-gray-600">{travelCompany.email}</p>
+                </div>
+              )}
+              {travelCompany.phone && (
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                  <Phone style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
+                  <p className="text-gray-600">{travelCompany.phone}</p>
+                </div>
+              )}
+              {(travelCompany.address || travelCompany.city || travelCompany.country) && (
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                  <MapPin style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
+                  <p className="text-gray-600">
+                    {travelCompany.address}
+                    {travelCompany.city && `, ${travelCompany.city}`}
+                    {travelCompany.country && `, ${travelCompany.country}`}
+                  </p>
+                </div>
+              )}
+              {travelCompany.taxId && (
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                  <IdCard style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
+                  <p className="text-gray-600">Tax ID: {travelCompany.taxId}</p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-2 text-xs" style={{ fontSize: '9pt', lineHeight: '1.5' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                <User style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
+                <p className="font-medium text-gray-900">{invoice.guest.name}</p>
+              </div>
+              {invoice.guest.email && (
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                  <Mail style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
+                  <p className="text-gray-600">{invoice.guest.email}</p>
+                </div>
+              )}
+              {invoice.guest.phone && (
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                  <Phone style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
+                  <p className="text-gray-600">{invoice.guest.phone}</p>
+                </div>
+              )}
+              {(invoice.guest.address || invoice.guest.city || invoice.guest.country) && (
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                  <MapPin style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
+                  <p className="text-gray-600">
+                    {invoice.guest.address}
+                    {invoice.guest.city && `, ${invoice.guest.city}`}
+                    {invoice.guest.country && `, ${invoice.guest.country}`}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
-        <div>
-          <h2 className="font-semibold text-base mb-3 text-gray-900" style={{ fontSize: '12pt', marginBottom: '12px' }}>
-            Booking Details:
-          </h2>
-          <div className="space-y-1.5 text-xs" style={{ fontSize: '9pt', lineHeight: '1.5' }}>
-            {invoice.roomType && (
-              <div className="flex justify-between">
-                <span className="text-gray-600">Room Type:</span>
-                <span className="font-medium text-gray-900">{invoice.roomType}</span>
+        {invoice.billingType === "company" && (
+          <div>
+            <h3 className="font-semibold text-base mb-3 text-gray-900" style={{ fontSize: '12pt', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <UserCircle style={{ width: '16px', height: '16px', color: '#4b5563' }} />
+              Guest Information:
+            </h3>
+            <div className="space-y-2 text-xs" style={{ fontSize: '9pt', lineHeight: '1.5' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                <User style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
+                <p className="text-gray-600">{invoice.guest.name}</p>
               </div>
-            )}
-            <div className="flex justify-between">
-              <span className="text-gray-600">Check-in:</span>
-              <span className="font-medium text-gray-900">
-                {new Date(invoice.checkIn).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Check-out:</span>
-              <span className="font-medium text-gray-900">
-                {new Date(invoice.checkOut).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </span>
+              {invoice.guest.email && (
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                  <Mail style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
+                  <p className="text-gray-600">{invoice.guest.email}</p>
+                </div>
+              )}
+              {invoice.guest.phone && (
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                  <Phone style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
+                  <p className="text-gray-600">{invoice.guest.phone}</p>
+                </div>
+              )}
+              {invoice.guest.idNumber && (
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                  <IdCard style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
+                  <p className="text-gray-600">ID: {invoice.guest.idNumber}</p>
+                </div>
+              )}
             </div>
           </div>
-        </div>
+        )}
       </div>
+      <Separator style={{ border: 'none', borderTop: '1px solid #e5e7eb', marginBottom: '24px' }} />
 
       {/* Invoice Items Table */}
       <div className="mb-6" style={{ marginBottom: '24px', pageBreakInside: 'avoid' }}>
