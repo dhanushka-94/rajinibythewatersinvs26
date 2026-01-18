@@ -27,7 +27,7 @@ interface InvoicePrintLayoutProps {
 
 export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
   const [hotelInfo, setHotelInfo] = useState<HotelInfo | null>(null);
-  const [bankDetail, setBankDetail] = useState<BankDetail | null>(null);
+  const [bankDetails, setBankDetails] = useState<BankDetail[]>([]);
   const [travelCompany, setTravelCompany] = useState<TravelCompany | null>(null);
 
   useEffect(() => {
@@ -35,10 +35,18 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
       const info = await getHotelInfo();
       setHotelInfo(info);
     };
-    const loadBankDetail = async () => {
-      if (invoice.selectedBankDetailId) {
-        const bank = await getBankDetailById(invoice.selectedBankDetailId);
-        setBankDetail(bank || null);
+    const loadBankDetails = async () => {
+      const bankIds = invoice.selectedBankDetailIds || (invoice.selectedBankDetailId ? [invoice.selectedBankDetailId] : []);
+      if (bankIds.length > 0) {
+        const banks = await Promise.all(
+          bankIds.map(async (id) => {
+            const bank = await getBankDetailById(id);
+            return bank;
+          })
+        );
+        setBankDetails(banks.filter((b): b is BankDetail => b !== null));
+      } else {
+        setBankDetails([]);
       }
     };
     const loadTravelCompany = async () => {
@@ -48,9 +56,9 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
       }
     };
     loadHotelInfo();
-    loadBankDetail();
+    loadBankDetails();
     loadTravelCompany();
-  }, [invoice.selectedBankDetailId, invoice.billingType, invoice.travelCompanyId]);
+  }, [invoice.selectedBankDetailIds, invoice.selectedBankDetailId, invoice.billingType, invoice.travelCompanyId]);
 
   const getStatusBadge = (status: string) => {
     const statusStyles: Record<string, string> = {
@@ -409,26 +417,26 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
       </div>
 
       {/* Summary Section */}
-      <div className="flex justify-end mb-6" style={{ marginBottom: '24px', justifyContent: 'flex-end', pageBreakInside: 'avoid', pageBreakBefore: 'avoid' }}>
-        <div className="w-64 space-y-2" style={{ width: '256px' }}>
-          <div className="flex justify-between text-sm" style={{ fontSize: '9pt' }}>
+      <div className="flex justify-end mb-4" style={{ marginBottom: '12px', justifyContent: 'flex-end', pageBreakInside: 'avoid', pageBreakBefore: 'avoid' }}>
+        <div className="w-64" style={{ width: '256px' }}>
+          <div className="flex justify-between text-sm" style={{ fontSize: '8pt', marginBottom: '2px', lineHeight: '1.2' }}>
             <span className="text-gray-600">Subtotal:</span>
             <span className="font-medium text-gray-900">{formatCurrency(invoice.subtotal, invoice.currency)}</span>
           </div>
           {invoice.serviceCharge > 0 && (
-            <div className="flex justify-between text-sm" style={{ fontSize: '9pt' }}>
+            <div className="flex justify-between text-sm" style={{ fontSize: '8pt', marginBottom: '2px', lineHeight: '1.2' }}>
               <span className="text-gray-600">Service Charge ({invoice.serviceChargeRate}%):</span>
               <span className="font-medium text-gray-900">{formatCurrency(invoice.serviceCharge, invoice.currency)}</span>
             </div>
           )}
           {invoice.damageCharge > 0 && (
-            <div className="flex justify-between text-sm" style={{ fontSize: '9pt' }}>
+            <div className="flex justify-between text-sm" style={{ fontSize: '8pt', marginBottom: '2px', lineHeight: '1.2' }}>
               <span className="text-gray-600">Damage Charge:</span>
               <span className="font-medium text-gray-900 text-red-600">{formatCurrency(invoice.damageCharge, invoice.currency)}</span>
             </div>
           )}
           {invoice.discount > 0 && (
-            <div className="flex justify-between text-sm" style={{ fontSize: '9pt' }}>
+            <div className="flex justify-between text-sm" style={{ fontSize: '8pt', marginBottom: '2px', lineHeight: '1.2' }}>
               <span className="text-gray-600">
                 Discount {invoice.discountType === "percentage" ? `(${invoice.discount}%)` : "(Fixed)"}:
               </span>
@@ -437,12 +445,12 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
               </span>
             </div>
           )}
-          <div className="flex justify-between text-sm" style={{ fontSize: '9pt' }}>
+          <div className="flex justify-between text-sm" style={{ fontSize: '8pt', marginBottom: '2px', lineHeight: '1.2' }}>
             <span className="text-gray-600">Tax ({invoice.taxRate}%):</span>
             <span className="font-medium text-gray-900">{formatCurrency(invoice.taxAmount, invoice.currency)}</span>
           </div>
           {invoice.priceAdjustment !== 0 && (
-            <div className="flex justify-between text-sm" style={{ fontSize: '9pt' }}>
+            <div className="flex justify-between text-sm" style={{ fontSize: '8pt', marginBottom: '2px', lineHeight: '1.2' }}>
               <span className="text-gray-600">
                 Price Adjustment {invoice.priceAdjustmentReason && `(${invoice.priceAdjustmentReason})`}:
               </span>
@@ -451,8 +459,8 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
               </span>
             </div>
           )}
-          <Separator style={{ border: 'none', borderTop: '1px solid #e5e7eb', margin: '8px 0' }} />
-          <div className="flex justify-between text-lg font-bold pt-1" style={{ fontSize: '12pt', fontWeight: '700', paddingTop: '4px' }}>
+          <Separator style={{ border: 'none', borderTop: '1px solid #e5e7eb', margin: '3px 0' }} />
+          <div className="flex justify-between text-lg font-bold" style={{ fontSize: '11pt', fontWeight: '700', marginTop: '2px', lineHeight: '1.2' }}>
             <span className="text-gray-900">Total Amount:</span>
             <span className="text-gray-900">{formatCurrency(invoice.total, invoice.currency)}</span>
           </div>
@@ -470,7 +478,7 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
       )}
 
       {/* Payment Information */}
-      {(invoice.paymentMethods.length > 0 || invoice.selectedBankDetailId) && (
+      {(invoice.paymentMethods.length > 0 || bankDetails.length > 0) && (
         <div className="mt-4 pt-3" style={{ 
           marginTop: '16px', 
           paddingTop: '12px', 
@@ -587,7 +595,7 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
             </div>
           )}
 
-          {bankDetail && (
+          {bankDetails.length > 0 && (
             <div className="p-2 bg-gray-50 rounded" style={{ 
               padding: '8px', 
               backgroundColor: '#f9fafb',
@@ -595,42 +603,62 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
               pageBreakInside: 'avoid',
               breakInside: 'avoid'
             }}>
-              <h4 className="font-semibold text-xs mb-1 text-gray-900" style={{ fontSize: '8pt', marginBottom: '4px' }}>
-                Bank Transfer/Deposit Details:
-              </h4>
-              <div className="grid grid-cols-2 gap-1.5 text-xs" style={{ 
-                display: 'grid', 
-                gridTemplateColumns: '1fr 1fr', 
-                gap: '6px',
-                fontSize: '8pt',
-                pageBreakInside: 'avoid',
-                breakInside: 'avoid'
-              }}>
-                <div>
-                  <span className="font-medium text-gray-700" style={{ fontSize: '8pt' }}>Account Name:</span>
-                  <p className="text-gray-900" style={{ margin: '2px 0', fontSize: '8pt' }}>{bankDetail.accountName}</p>
+              {bankDetails.map((bankDetail, index) => (
+                <div key={bankDetail.id || index}>
+                  {bankDetails.length > 1 && (
+                    <h4 className="font-semibold text-xs mb-1 text-gray-900" style={{ fontSize: '8pt', marginBottom: '4px' }}>
+                      Bank Transfer/Deposit Details #{index + 1}:
+                    </h4>
+                  )}
+                  {bankDetails.length === 1 && (
+                    <h4 className="font-semibold text-xs mb-1 text-gray-900" style={{ fontSize: '8pt', marginBottom: '4px' }}>
+                      Bank Transfer/Deposit Details:
+                    </h4>
+                  )}
+                  <div style={{ 
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '3px',
+                    fontSize: '8pt',
+                    marginBottom: '6px',
+                    pageBreakInside: 'avoid',
+                    breakInside: 'avoid'
+                  }}>
+                    <div style={{ 
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: '12px 12px',
+                      lineHeight: '1.3'
+                    }}>
+                      <span style={{ color: '#111827' }}>
+                        <span style={{ fontWeight: '500', color: '#374151' }}>Account Name:</span> {bankDetail.accountName}
+                      </span>
+                      <span style={{ color: '#111827' }}>
+                        <span style={{ fontWeight: '500', color: '#374151' }}>Bank Name:</span> {bankDetail.bankName}
+                      </span>
+                      <span style={{ color: '#111827' }}>
+                        <span style={{ fontWeight: '500', color: '#374151' }}>Branch:</span> {bankDetail.branch}
+                      </span>
+                    </div>
+                    <div style={{ 
+                      display: 'flex',
+                      flexWrap: 'wrap',
+                      gap: '12px 12px',
+                      lineHeight: '1.3'
+                    }}>
+                      <span style={{ color: '#111827' }}>
+                        <span style={{ fontWeight: '500', color: '#374151' }}>Account Number:</span> {bankDetail.accountNumber}
+                      </span>
+                      <span style={{ color: '#111827' }}>
+                        <span style={{ fontWeight: '500', color: '#374151' }}>SWIFT Code:</span> {bankDetail.swiftCode}
+                      </span>
+                    </div>
+                  </div>
+                  {index < bankDetails.length - 1 && (
+                    <Separator style={{ border: 'none', borderTop: '1px solid #e5e7eb', marginTop: '6px', marginBottom: '6px' }} />
+                  )}
                 </div>
-                <div>
-                  <span className="font-medium text-gray-700" style={{ fontSize: '8pt' }}>Bank Name:</span>
-                  <p className="text-gray-900" style={{ margin: '2px 0', fontSize: '8pt' }}>{bankDetail.bankName}</p>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-700" style={{ fontSize: '8pt' }}>Branch:</span>
-                  <p className="text-gray-900" style={{ margin: '2px 0', fontSize: '8pt' }}>{bankDetail.branch}</p>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-700" style={{ fontSize: '8pt' }}>Account Number:</span>
-                  <p className="text-gray-900" style={{ margin: '2px 0', fontSize: '8pt' }}>{bankDetail.accountNumber}</p>
-                </div>
-                <div className="col-span-2">
-                  <span className="font-medium text-gray-700" style={{ fontSize: '8pt' }}>Bank Address:</span>
-                  <p className="text-gray-900" style={{ margin: '2px 0', fontSize: '8pt' }}>{bankDetail.bankAddress}</p>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-700" style={{ fontSize: '8pt' }}>SWIFT Code:</span>
-                  <p className="text-gray-900" style={{ margin: '2px 0', fontSize: '8pt' }}>{bankDetail.swiftCode}</p>
-                </div>
-              </div>
+              ))}
             </div>
           )}
         </div>

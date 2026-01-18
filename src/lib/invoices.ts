@@ -39,7 +39,8 @@ const mapDbToInvoice = (data: any): Invoice => {
     priceAdjustmentReason: data.price_adjustment_reason,
     total: data.total,
     paymentMethods: data.payment_methods || [],
-    selectedBankDetailId: data.selected_bank_detail_id,
+    selectedBankDetailId: data.selected_bank_detail_id, // For backward compatibility
+    selectedBankDetailIds: data.selected_bank_detail_ids || (data.selected_bank_detail_id ? [data.selected_bank_detail_id] : undefined),
     checksPayableTo: data.checks_payable_to,
     cardLast4Digits: data.card_last_4_digits,
     status: data.status,
@@ -78,7 +79,8 @@ const mapInvoiceToDb = (invoice: Invoice): any => {
     price_adjustment_reason: invoice.priceAdjustmentReason,
     total: invoice.total,
     payment_methods: invoice.paymentMethods,
-    selected_bank_detail_id: invoice.selectedBankDetailId,
+    selected_bank_detail_id: invoice.selectedBankDetailId, // For backward compatibility
+    selected_bank_detail_ids: invoice.selectedBankDetailIds || (invoice.selectedBankDetailId ? [invoice.selectedBankDetailId] : null),
     checks_payable_to: invoice.checksPayableTo,
     status: invoice.status,
     notes: invoice.notes,
@@ -343,21 +345,68 @@ export async function updateInvoice(id: string, invoice: Partial<Invoice>): Prom
     if (invoice.priceAdjustmentReason !== undefined) dbData.price_adjustment_reason = invoice.priceAdjustmentReason;
     if (invoice.total !== undefined) dbData.total = invoice.total;
     if (invoice.paymentMethods !== undefined) dbData.payment_methods = invoice.paymentMethods;
-    if (invoice.selectedBankDetailId !== undefined) dbData.selected_bank_detail_id = invoice.selectedBankDetailId;
+    // Handle bank detail IDs - prefer array, fallback to single ID for backward compatibility
+    // Note: selected_bank_detail_ids column may not exist yet, so we'll handle errors gracefully
+    if (invoice.selectedBankDetailIds !== undefined) {
+      if (invoice.selectedBankDetailIds.length > 0) {
+        // Try to use the new array column, but fallback to single ID if column doesn't exist
+        dbData.selected_bank_detail_ids = invoice.selectedBankDetailIds;
+        // Also set the first one as selected_bank_detail_id for backward compatibility
+        dbData.selected_bank_detail_id = invoice.selectedBankDetailIds[0];
+      } else {
+        // Clear both if empty array
+        dbData.selected_bank_detail_id = null;
+        // Only try to set selected_bank_detail_ids to null if column exists (will be handled in error catch)
+        dbData.selected_bank_detail_ids = null;
+      }
+    } else if (invoice.selectedBankDetailId !== undefined) {
+      dbData.selected_bank_detail_id = invoice.selectedBankDetailId;
+    }
     if (invoice.checksPayableTo !== undefined) dbData.checks_payable_to = invoice.checksPayableTo;
     if (invoice.cardLast4Digits !== undefined) dbData.card_last_4_digits = invoice.cardLast4Digits;
     if (invoice.status !== undefined) dbData.status = invoice.status;
     if (invoice.payments !== undefined) dbData.payments = invoice.payments;
     if (invoice.notes !== undefined) dbData.notes = invoice.notes;
+    // Handle guests field
+    if (invoice.guests !== undefined) {
+      if (invoice.guests && invoice.guests.length > 0) {
+        dbData.guests = invoice.guests;
+      } else {
+        dbData.guests = null;
+      }
+    }
     dbData.updated_at = new Date().toISOString();
 
-    const { error } = await supabase
+    // Try to update, but handle case where selected_bank_detail_ids column might not exist
+    let { error } = await supabase
       .from('invoices')
       .update(dbData)
       .eq('id', id);
 
+    // If error is about missing column (selected_bank_detail_ids), retry without it
+    if (error && (error.code === '42703' || error.message?.includes('selected_bank_detail_ids') || error.message?.includes('column') && error.message?.includes('does not exist'))) {
+      // Column doesn't exist yet, remove it and retry
+      const { selected_bank_detail_ids, ...dbDataWithoutArray } = dbData;
+      // If we had an array, use the first ID as fallback
+      if (invoice.selectedBankDetailIds && invoice.selectedBankDetailIds.length > 0) {
+        dbDataWithoutArray.selected_bank_detail_id = invoice.selectedBankDetailIds[0];
+      }
+      const retryResult = await supabase
+        .from('invoices')
+        .update(dbDataWithoutArray)
+        .eq('id', id);
+      error = retryResult.error;
+    }
+
     if (error) {
-      console.error('Error updating invoice:', error);
+      console.error('Error updating invoice:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code,
+        fullError: error
+      });
+      throw new Error(`Failed to update invoice: ${error.message || 'Unknown error'}`);
     } else {
       // Get invoice details for logging
       const updatedInvoice = await getInvoiceById(id);

@@ -66,7 +66,8 @@ export interface Invoice {
   priceAdjustmentReason?: string;
   total: number;
   paymentMethods: PaymentMethod[];
-  selectedBankDetailId?: string;
+  selectedBankDetailId?: string; // Deprecated: use selectedBankDetailIds instead
+  selectedBankDetailIds?: string[]; // Array of bank detail IDs for multiple bank accounts
   checksPayableTo?: string;
   cardLast4Digits?: string; // Last 4 digits of card for card payment
   status: "draft" | "sent" | "pending" | "partially_paid" | "paid" | "cancelled";

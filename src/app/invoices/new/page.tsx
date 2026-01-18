@@ -139,7 +139,8 @@ export default function NewInvoicePage() {
   const [isSaveItemDialogOpen, setIsSaveItemDialogOpen] = useState(false);
   const [itemToSave, setItemToSave] = useState<InvoiceItem | null>(null);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
-  const [selectedBankDetailId, setSelectedBankDetailId] = useState<string>("");
+  const [selectedBankDetailId, setSelectedBankDetailId] = useState<string>(""); // Deprecated: for backward compatibility
+  const [selectedBankDetailIds, setSelectedBankDetailIds] = useState<string[]>([]);
   const [checksPayableTo, setChecksPayableTo] = useState<string>("PHOENIX GLOBAL SOLUTIONS");
   const [bankDetails, setBankDetails] = useState<BankDetail[]>([]);
   const [isAddBankDialogOpen, setIsAddBankDialogOpen] = useState(false);
@@ -394,7 +395,8 @@ export default function NewInvoicePage() {
          priceAdjustmentReason: priceAdjustmentReason || undefined,
          total: calculations.total,
          paymentMethods,
-         selectedBankDetailId: selectedBankDetailId || undefined,
+         selectedBankDetailId: selectedBankDetailId || undefined, // For backward compatibility
+         selectedBankDetailIds: selectedBankDetailIds.length > 0 ? selectedBankDetailIds : undefined,
          checksPayableTo: paymentMethods.includes("cheque") ? checksPayableTo : undefined,
          status: "draft" as const,
          notes: notes || undefined,
@@ -1289,6 +1291,7 @@ export default function NewInvoicePage() {
                       } else {
                         setPaymentMethods(paymentMethods.filter((m) => m !== "bank_account"));
                         if (selectedBankDetailId) setSelectedBankDetailId("");
+                        setSelectedBankDetailIds([]);
                       }
                     }}
                   />
@@ -1387,7 +1390,7 @@ export default function NewInvoicePage() {
             {paymentMethods.includes("bank_account") && (
               <div className="space-y-4 pt-4 border-t">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="bankDetail">Select Bank Transfer/Deposit</Label>
+                  <Label>Select Bank Transfer/Deposit Accounts</Label>
                   <Button
                     type="button"
                     variant="outline"
@@ -1398,79 +1401,75 @@ export default function NewInvoicePage() {
                     Add Bank Transfer/Deposit
                   </Button>
                 </div>
-                <div className="flex gap-2">
-                  <Select
-                    value={selectedBankDetailId}
-                    onValueChange={setSelectedBankDetailId}
-                  >
-                    <SelectTrigger id="bankDetail" className="flex-1">
-                      <SelectValue placeholder="Select bank transfer/deposit from saved list" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {bankDetails.map((bank) => (
-                        <SelectItem key={bank.id} value={bank.id}>
+                <div className="space-y-2">
+                  {bankDetails.map((bank) => (
+                    <div key={bank.id} className="flex items-start space-x-2 p-3 border rounded-lg">
+                      <Checkbox
+                        id={`bank-${bank.id}`}
+                        checked={selectedBankDetailIds.includes(bank.id)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedBankDetailIds([...selectedBankDetailIds, bank.id]);
+                          } else {
+                            setSelectedBankDetailIds(selectedBankDetailIds.filter((id) => id !== bank.id));
+                          }
+                        }}
+                      />
+                      <div className="flex-1">
+                        <Label
+                          htmlFor={`bank-${bank.id}`}
+                          className="font-medium cursor-pointer"
+                        >
                           {bank.bankName} - {bank.accountNumber}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {selectedBankDetailId && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={async () => {
-                        if (confirm("Are you sure you want to delete this bank transfer/deposit account?")) {
-                          await deleteBankDetail(selectedBankDetailId);
-                          const banks = await getBankDetails();
-                          setBankDetails(banks);
-                          setSelectedBankDetailId(""); // Clear selection after deletion
-                        }
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-
-                {selectedBankDetailId && (
-                  <div className="p-4 bg-muted rounded-lg space-y-2">
-                    {(() => {
-                      const bank = bankDetails.find((b) => b.id === selectedBankDetailId);
-                      if (!bank) return null;
-                      return (
-                        <>
-                          <div className="grid grid-cols-2 gap-4 text-sm">
+                        </Label>
+                        {selectedBankDetailIds.includes(bank.id) && (
+                          <div className="mt-2 grid grid-cols-2 gap-3 text-sm">
                             <div>
-                              <span className="font-medium">Account Name:</span>
-                              <p className="text-muted-foreground">{bank.accountName}</p>
+                              <span className="font-medium text-muted-foreground">Account Name:</span>
+                              <p className="text-foreground">{bank.accountName}</p>
                             </div>
                             <div>
-                              <span className="font-medium">Bank Name:</span>
-                              <p className="text-muted-foreground">{bank.bankName}</p>
+                              <span className="font-medium text-muted-foreground">Bank Name:</span>
+                              <p className="text-foreground">{bank.bankName}</p>
                             </div>
                             <div>
-                              <span className="font-medium">Branch:</span>
-                              <p className="text-muted-foreground">{bank.branch}</p>
+                              <span className="font-medium text-muted-foreground">Branch:</span>
+                              <p className="text-foreground">{bank.branch}</p>
                             </div>
                             <div>
-                              <span className="font-medium">Account Number:</span>
-                              <p className="text-muted-foreground">{bank.accountNumber}</p>
-                            </div>
-                            <div className="col-span-2">
-                              <span className="font-medium">Bank Address:</span>
-                              <p className="text-muted-foreground">{bank.bankAddress}</p>
+                              <span className="font-medium text-muted-foreground">Account Number:</span>
+                              <p className="text-foreground">{bank.accountNumber}</p>
                             </div>
                             <div>
-                              <span className="font-medium">SWIFT Code:</span>
-                              <p className="text-muted-foreground">{bank.swiftCode}</p>
+                              <span className="font-medium text-muted-foreground">SWIFT Code:</span>
+                              <p className="text-foreground">{bank.swiftCode}</p>
                             </div>
                           </div>
-                        </>
-                      );
-                    })()}
-                  </div>
-                )}
+                        )}
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={async () => {
+                          if (confirm("Are you sure you want to delete this bank transfer/deposit account?")) {
+                            await deleteBankDetail(bank.id);
+                            const banks = await getBankDetails();
+                            setBankDetails(banks);
+                            setSelectedBankDetailIds(selectedBankDetailIds.filter((id) => id !== bank.id));
+                          }
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                  {bankDetails.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      No bank accounts available. Click "Add Bank Transfer/Deposit" to create one.
+                    </p>
+                  )}
+                </div>
               </div>
             )}
 
