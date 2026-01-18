@@ -46,6 +46,7 @@ export interface Invoice {
   guests?: Guest[]; // Multiple guests (optional - for display only, shows names to save space)
   billingType?: BillingType; // "guest" or "company" - defaults to "guest" for backward compatibility
   travelCompanyId?: string; // ID of travel company when billingType is "company"
+  referenceNumber?: string; // Reference number when travel company is selected
   currency: Currency;
   checkIn: string;
   checkOut: string;

@@ -91,8 +91,23 @@ export default function NewInvoicePage() {
   const [availableGuests, setAvailableGuests] = useState<Guest[]>([]);
   const [additionalGuests, setAdditionalGuests] = useState<Guest[]>([]); // Multiple guests array
   const [selectedAdditionalGuestId, setSelectedAdditionalGuestId] = useState<string>(""); // For adding additional guests
+  const [isQuickAddGuestDialogOpen, setIsQuickAddGuestDialogOpen] = useState(false);
+  const [quickAddGuest, setQuickAddGuest] = useState<Omit<Guest, "id">>({
+    title: undefined,
+    name: "",
+    email: "",
+    phone: "",
+    phone2: "",
+    phone3: "",
+    address: "",
+    city: "",
+    country: "",
+    idNumber: "",
+    birthday: "",
+  });
   const [billingType, setBillingType] = useState<BillingType>("guest");
   const [selectedTravelCompanyId, setSelectedTravelCompanyId] = useState<string>("");
+  const [referenceNumber, setReferenceNumber] = useState<string>("");
   const [availableTravelCompanies, setAvailableTravelCompanies] = useState<TravelCompany[]>([]);
   const [guest, setGuest] = useState<Guest>({
     title: undefined,
@@ -263,6 +278,91 @@ export default function NewInvoicePage() {
     setAdditionalGuests(additionalGuests.filter(g => g.id !== guestId));
   };
 
+  // Handle quick add additional guest
+  const handleQuickAddAdditionalGuest = async () => {
+    if (!quickAddGuest.name || !quickAddGuest.name.trim()) {
+      alert("Full Name is required");
+      return;
+    }
+    
+    try {
+      const addedGuest = await addGuest(quickAddGuest);
+      
+      // Check if this guest is already the primary guest
+      const isPrimaryGuest = addedGuest.id === selectedGuestId;
+      
+      if (isPrimaryGuest) {
+        alert("This guest is already set as the primary guest");
+        setIsQuickAddGuestDialogOpen(false);
+        setQuickAddGuest({
+          title: undefined,
+          name: "",
+          email: "",
+          phone: "",
+          phone2: "",
+          phone3: "",
+          address: "",
+          city: "",
+          country: "",
+          idNumber: "",
+          birthday: "",
+        });
+        // Refresh guests list
+        const guests = await getGuests();
+        setAvailableGuests(guests);
+        return;
+      }
+      
+      // Check if this guest is already in additional guests
+      const isAlreadyAdded = addedGuest.id && additionalGuests.some(g => g.id && g.id === addedGuest.id);
+      
+      if (isAlreadyAdded) {
+        alert("This guest is already added as an additional guest");
+        setIsQuickAddGuestDialogOpen(false);
+        setQuickAddGuest({
+          title: undefined,
+          name: "",
+          email: "",
+          phone: "",
+          phone2: "",
+          phone3: "",
+          address: "",
+          city: "",
+          country: "",
+          idNumber: "",
+          birthday: "",
+        });
+        // Refresh guests list
+        const guests = await getGuests();
+        setAvailableGuests(guests);
+        return;
+      }
+      
+      // Add to additional guests
+      setAdditionalGuests([...additionalGuests, addedGuest]);
+      setIsQuickAddGuestDialogOpen(false);
+      setQuickAddGuest({
+        title: undefined,
+        name: "",
+        email: "",
+        phone: "",
+        phone2: "",
+        phone3: "",
+        address: "",
+        city: "",
+        country: "",
+        idNumber: "",
+        birthday: "",
+      });
+      // Refresh guests list
+      const guests = await getGuests();
+      setAvailableGuests(guests);
+    } catch (error) {
+      console.error("Error adding guest:", error);
+      alert("Error adding guest. Please try again.");
+    }
+  };
+
   const handleItemChange = (
     id: string,
     field: keyof InvoiceItem,
@@ -375,6 +475,7 @@ export default function NewInvoicePage() {
          guests: additionalGuests.length > 0 ? additionalGuests : undefined, // Multiple guests
          billingType: billingType,
          travelCompanyId: billingType === "company" && selectedTravelCompanyId ? selectedTravelCompanyId : undefined,
+         referenceNumber: billingType === "company" && referenceNumber ? referenceNumber : undefined,
          currency,
          checkIn,
          checkOut,
@@ -457,29 +558,40 @@ export default function NewInvoicePage() {
               </div>
 
               {billingType === "company" && (
-                <div className="space-y-2">
-                  <Label htmlFor="selectTravelCompany">Select Travel Company *</Label>
-                  <Select
-                    value={selectedTravelCompanyId}
-                    onValueChange={setSelectedTravelCompanyId}
-                  >
-                    <SelectTrigger id="selectTravelCompany">
-                      <SelectValue placeholder="Select travel company" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableTravelCompanies.map((company) => (
-                        <SelectItem key={company.id} value={company.id}>
-                          {company.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {availableTravelCompanies.length === 0 && (
-                    <p className="text-xs text-muted-foreground">
-                      No travel companies found. <Link href="/settings/travel-companies" className="text-primary underline">Add one here</Link>.
-                    </p>
-                  )}
-                </div>
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="selectTravelCompany">Select Travel Company *</Label>
+                    <Select
+                      value={selectedTravelCompanyId}
+                      onValueChange={setSelectedTravelCompanyId}
+                    >
+                      <SelectTrigger id="selectTravelCompany">
+                        <SelectValue placeholder="Select travel company" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableTravelCompanies.map((company) => (
+                          <SelectItem key={company.id} value={company.id}>
+                            {company.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {availableTravelCompanies.length === 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        No travel companies found. <Link href="/settings/travel-companies" className="text-primary underline">Add one here</Link>.
+                      </p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="referenceNumber">Reference Number</Label>
+                    <Input
+                      id="referenceNumber"
+                      value={referenceNumber}
+                      onChange={(e) => setReferenceNumber(e.target.value)}
+                      placeholder="Enter reference number"
+                    />
+                  </div>
+                </>
               )}
 
               <div className="space-y-2">
@@ -718,6 +830,89 @@ export default function NewInvoicePage() {
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
+                  <Dialog open={isQuickAddGuestDialogOpen} onOpenChange={setIsQuickAddGuestDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsQuickAddGuestDialogOpen(true)}
+                      >
+                        <UserPlus className="h-4 w-4" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Quick Add Guest</DialogTitle>
+                        <DialogDescription>
+                          Create a new guest and add them as an additional guest
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="quick-add-name">Full Name *</Label>
+                          <Input
+                            id="quick-add-name"
+                            value={quickAddGuest.name || ""}
+                            onChange={(e) =>
+                              setQuickAddGuest({ ...quickAddGuest, name: e.target.value })
+                            }
+                            placeholder="Enter full name"
+                            required
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="quick-add-email">Email</Label>
+                          <Input
+                            id="quick-add-email"
+                            type="email"
+                            value={quickAddGuest.email || ""}
+                            onChange={(e) =>
+                              setQuickAddGuest({ ...quickAddGuest, email: e.target.value })
+                            }
+                            placeholder="Enter email address"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="quick-add-phone">Phone</Label>
+                          <Input
+                            id="quick-add-phone"
+                            value={quickAddGuest.phone || ""}
+                            onChange={(e) =>
+                              setQuickAddGuest({ ...quickAddGuest, phone: e.target.value })
+                            }
+                            placeholder="Enter phone number"
+                          />
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            setIsQuickAddGuestDialogOpen(false);
+                            setQuickAddGuest({
+                              title: undefined,
+                              name: "",
+                              email: "",
+                              phone: "",
+                              phone2: "",
+                              phone3: "",
+                              address: "",
+                              city: "",
+                              country: "",
+                              idNumber: "",
+                              birthday: "",
+                            });
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button type="button" onClick={handleQuickAddAdditionalGuest}>
+                          Add Guest
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                 </div>
                 
                 {/* Display added additional guests */}

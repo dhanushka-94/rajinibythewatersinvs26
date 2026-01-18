@@ -18,6 +18,7 @@ const mapDbToInvoice = (data: any): Invoice => {
     guests: data.guests || undefined, // Multiple guests array
     billingType: data.billing_type || "guest", // Default to "guest" for backward compatibility
     travelCompanyId: data.travel_company_id,
+    referenceNumber: data.reference_number,
     currency: data.currency,
     checkIn: data.check_in,
     checkOut: data.check_out,
@@ -58,6 +59,7 @@ const mapInvoiceToDb = (invoice: Invoice): any => {
     guest: invoice.guest,
     billing_type: invoice.billingType || "guest",
     travel_company_id: invoice.travelCompanyId || null,
+    reference_number: invoice.referenceNumber || null,
     currency: invoice.currency,
     check_in: invoice.checkIn,
     check_out: invoice.checkOut,
@@ -323,6 +325,7 @@ export async function updateInvoice(id: string, invoice: Partial<Invoice>): Prom
     if (invoice.guest !== undefined) dbData.guest = invoice.guest;
     if (invoice.billingType !== undefined) dbData.billing_type = invoice.billingType;
     if (invoice.travelCompanyId !== undefined) dbData.travel_company_id = invoice.travelCompanyId || null;
+    if (invoice.referenceNumber !== undefined) dbData.reference_number = invoice.referenceNumber || null;
     if (invoice.currency !== undefined) dbData.currency = invoice.currency;
     if (invoice.checkIn !== undefined) dbData.check_in = invoice.checkIn;
     if (invoice.checkOut !== undefined) dbData.check_out = invoice.checkOut;

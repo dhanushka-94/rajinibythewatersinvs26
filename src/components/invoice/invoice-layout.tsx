@@ -19,7 +19,7 @@ import { formatCurrency } from "@/lib/currency";
 import { getBankDetailById } from "@/lib/bank-details";
 import { getTravelCompanyById } from "@/lib/travel-companies";
 import { type TravelCompany } from "@/types/travel-company";
-import { Building2, FileText, Wallet, Globe, Banknote, CreditCard, Calendar, User, Mail, Phone, MapPin, Building, IdCard, UserCircle } from "lucide-react";
+import { Building2, FileText, Wallet, Globe, Banknote, CreditCard, Calendar, User, Mail, Phone, MapPin, Building, IdCard, UserCircle, Hash } from "lucide-react";
 
 interface InvoiceLayoutProps {
   invoice: Invoice;
@@ -110,16 +110,16 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
                       <p className="mb-0 print:mb-0">{hotelInfo.address}, {hotelInfo.city}, {hotelInfo.country}</p>
                     </div>
                     <div className="flex items-center gap-3 print:gap-2 flex-wrap">
-                      {hotelInfo.telephone && (
-                        <div className="flex items-center gap-1 print:gap-0.5">
-                          <Phone className="h-3.5 w-3.5 text-gray-500 print:h-2.5 print:w-2.5" />
-                          <span className="print:text-[7pt]">Tel: {hotelInfo.telephone}</span>
-                        </div>
-                      )}
                       {hotelInfo.hotline && (
                         <div className="flex items-center gap-1 print:gap-0.5">
                           <Phone className="h-3.5 w-3.5 text-gray-500 print:h-2.5 print:w-2.5" />
                           <span className="print:text-[7pt]">Hotline: {hotelInfo.hotline}</span>
+                        </div>
+                      )}
+                      {hotelInfo.telephone && (
+                        <div className="flex items-center gap-1 print:gap-0.5">
+                          <Phone className="h-3.5 w-3.5 text-gray-500 print:h-2.5 print:w-2.5" />
+                          <span className="print:text-[7pt]">Tel: {hotelInfo.telephone}</span>
                         </div>
                       )}
                       {hotelInfo.usaContact && (
@@ -167,57 +167,9 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
         </div>
       )}
 
-      {/* Booking Details - One line, no title */}
-      <div className="mb-6 print:mb-4">
-        <div className="flex items-center gap-6 text-sm print:text-xs print:gap-4">
-          <div className="flex items-center gap-2 text-gray-700">
-            <Calendar className="h-4 w-4 text-gray-500 print:h-3 print:w-3" />
-            <span className="font-medium text-gray-600">Check-in:</span>
-            <span className="font-semibold text-gray-900">
-              {new Date(invoice.checkIn).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </span>
-          </div>
-          <div className="flex items-center gap-2 text-gray-700">
-            <Calendar className="h-4 w-4 text-gray-500 print:h-3 print:w-3" />
-            <span className="font-medium text-gray-600">Check-out:</span>
-            <span className="font-semibold text-gray-900">
-              {new Date(invoice.checkOut).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </span>
-          </div>
-          {invoice.roomType && (
-            <div className="flex items-center gap-2 text-gray-700">
-              <Building className="h-4 w-4 text-gray-500 print:h-3 print:w-3" />
-              <span className="font-medium text-gray-600">Room:</span>
-              <span className="font-semibold text-gray-900">{invoice.roomType}</span>
-            </div>
-          )}
-          {(invoice.adults !== undefined || invoice.children !== undefined || invoice.babies !== undefined) && (
-            <div className="flex items-center gap-2 text-gray-700">
-              <User className="h-4 w-4 text-gray-500 print:h-3 print:w-3" />
-              <span className="font-medium text-gray-600">Guests:</span>
-              <span className="font-semibold text-gray-900">
-                {[
-                  invoice.adults !== undefined && invoice.adults > 0 ? `${invoice.adults} Adult${invoice.adults !== 1 ? 's' : ''}` : null,
-                  invoice.children !== undefined && invoice.children > 0 ? `${invoice.children} Child${invoice.children !== 1 ? 'ren' : ''}` : null,
-                  invoice.babies !== undefined && invoice.babies > 0 ? `${invoice.babies} Bab${invoice.babies !== 1 ? 'ies' : 'y'}` : null,
-                ].filter(Boolean).join(', ') || 'N/A'}
-              </span>
-            </div>
-          )}
-        </div>
-      </div>
-      <Separator className="mb-6 print:mb-4" />
-
-      {/* Bill To and Guest Information - Side by side */}
-      <div className="grid grid-cols-2 gap-8 mb-8 print:gap-4 print:mb-4">
+      {/* Bill To, Guest Information, and Booking Details - Three columns */}
+      <div className="grid grid-cols-3 gap-6 mb-8 print:gap-4 print:mb-4">
+        {/* Bill To Section */}
         <div className="break-inside-avoid">
           <h2 className="font-semibold text-lg mb-4 text-gray-900 print:text-base print:mb-2 flex items-center gap-2">
             <Building2 className="h-5 w-5 text-gray-600 print:h-4 print:w-4" />
@@ -231,7 +183,7 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
               </div>
               {travelCompany.contactPerson && (
                 <div className="flex items-start gap-2">
-                  <UserCircle className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
+                  <Hash className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
                   <p className="text-gray-600">{travelCompany.contactPerson}</p>
                 </div>
               )}
@@ -239,6 +191,22 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
                 <div className="flex items-start gap-2">
                   <Phone className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
                   <p className="text-gray-600">{travelCompany.phone}</p>
+                </div>
+              )}
+              {(travelCompany.address || travelCompany.city || travelCompany.country) && (
+                <div className="flex items-start gap-2">
+                  <MapPin className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
+                  <p className="text-gray-600">
+                    {travelCompany.address}
+                    {travelCompany.city && `, ${travelCompany.city}`}
+                    {travelCompany.country && `, ${travelCompany.country}`}
+                  </p>
+                </div>
+              )}
+              {invoice.referenceNumber && (
+                <div className="flex items-start gap-2">
+                  <Hash className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
+                  <p className="text-gray-600"><span className="font-medium">Ref:</span> {invoice.referenceNumber}</p>
                 </div>
               )}
             </div>
@@ -274,36 +242,95 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
           )}
         </div>
 
-        {(invoice.billingType === "company" || (invoice.guests && invoice.guests.length > 0)) && (
-          <div className="break-inside-avoid">
-            <h3 className="font-semibold text-lg mb-4 text-gray-900 print:text-base print:mb-2 flex items-center gap-2">
-              <UserCircle className="h-5 w-5 text-gray-600 print:h-4 print:w-4" />
-              Guest Information:
-            </h3>
-            <div className="space-y-1.5 text-sm print:text-xs">
-              {/* Show primary guest if billing to company OR if there are additional guests */}
-              {(invoice.billingType === "company" || (invoice.guests && invoice.guests.length > 0)) && invoice.guest.name && (
-                <div className="flex items-start gap-2">
-                  <User className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
-                  <p className="text-gray-600">{invoice.guest.name}</p>
-                </div>
-              )}
-              {/* Show additional guests (only names) */}
-              {invoice.guests && invoice.guests.length > 0 && (
-                <>
-                  {invoice.guests.map((guest, index) => (
-                    guest.name && (
-                      <div key={index} className="flex items-start gap-2">
-                        <User className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
-                        <p className="text-gray-600">{guest.name}</p>
-                      </div>
-                    )
-                  ))}
-                </>
-              )}
-            </div>
+        {/* Guest Information Section */}
+        <div className="break-inside-avoid">
+          <h3 className="font-semibold text-lg mb-4 text-gray-900 print:text-base print:mb-2 flex items-center gap-2">
+            <UserCircle className="h-5 w-5 text-gray-600 print:h-4 print:w-4" />
+            Guest Information:
+          </h3>
+          <div className="space-y-1.5 text-sm print:text-xs">
+            {/* Show primary guest if billing to company OR if there are additional guests */}
+            {(invoice.billingType === "company" || (invoice.guests && invoice.guests.length > 0)) && invoice.guest.name && (
+              <div className="flex items-start gap-2">
+                <User className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
+                <p className="text-gray-600">{invoice.guest.name}</p>
+              </div>
+            )}
+            {/* Show additional guests (only names) */}
+            {invoice.guests && invoice.guests.length > 0 && (
+              <>
+                {invoice.guests.map((guest, index) => (
+                  guest.name && (
+                    <div key={index} className="flex items-start gap-2">
+                      <User className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
+                      <p className="text-gray-600">{guest.name}</p>
+                    </div>
+                  )
+                ))}
+              </>
+            )}
           </div>
-        )}
+        </div>
+
+        {/* Booking Details Section */}
+        <div className="break-inside-avoid">
+          <h3 className="font-semibold text-lg mb-4 text-gray-900 print:text-base print:mb-2 flex items-center gap-2">
+            <Calendar className="h-5 w-5 text-gray-600 print:h-4 print:w-4" />
+            Booking Details:
+          </h3>
+          <div className="space-y-2 text-sm print:text-xs">
+            <div className="flex items-start gap-2">
+              <Calendar className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
+              <div>
+                <span className="font-medium text-gray-600">Check-in:</span>
+                <p className="text-gray-900">
+                  {new Date(invoice.checkIn).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <Calendar className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
+              <div>
+                <span className="font-medium text-gray-600">Check-out:</span>
+                <p className="text-gray-900">
+                  {new Date(invoice.checkOut).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </p>
+              </div>
+            </div>
+            {invoice.roomType && (
+              <div className="flex items-start gap-2">
+                <Building className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
+                <div>
+                  <span className="font-medium text-gray-600">Room:</span>
+                  <p className="text-gray-900">{invoice.roomType}</p>
+                </div>
+              </div>
+            )}
+            {(invoice.adults !== undefined || invoice.children !== undefined || invoice.babies !== undefined) && (
+              <div className="flex items-start gap-2">
+                <User className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
+                <div>
+                  <span className="font-medium text-gray-600">Guests:</span>
+                  <p className="text-gray-900">
+                    {[
+                      invoice.adults !== undefined && invoice.adults > 0 ? `${invoice.adults} Adult${invoice.adults !== 1 ? 's' : ''}` : null,
+                      invoice.children !== undefined && invoice.children > 0 ? `${invoice.children} Child${invoice.children !== 1 ? 'ren' : ''}` : null,
+                      invoice.babies !== undefined && invoice.babies > 0 ? `${invoice.babies} Bab${invoice.babies !== 1 ? 'ies' : 'y'}` : null,
+                    ].filter(Boolean).join(', ') || 'N/A'}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
       <Separator className="mb-8 print:mb-4" />
 
@@ -447,9 +474,9 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
           )}
 
           {bankDetails.length > 0 && (
-            <div className="p-3 bg-gray-50 rounded-lg border print:p-2">
+            <div className={`p-3 bg-gray-50 rounded-lg border print:p-2 ${bankDetails.length > 1 ? 'grid grid-cols-2 gap-4 print:gap-3' : ''}`}>
               {bankDetails.map((bankDetail, index) => (
-                <div key={bankDetail.id || index}>
+                <div key={bankDetail.id || index} className={bankDetails.length > 1 ? 'border-r border-gray-300 pr-4 print:pr-3 last:border-r-0 last:pr-0' : ''}>
                   {bankDetails.length > 1 && (
                     <h4 className="font-semibold text-xs mb-1.5 text-gray-900 print:text-xs print:mb-1">
                       Bank Transfer/Deposit Details #{index + 1}:
@@ -460,7 +487,7 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
                       Bank Transfer/Deposit Details:
                     </h4>
                   )}
-                  <div className="space-y-1 text-xs print:text-xs print:space-y-0.5 mb-2 print:mb-1.5">
+                  <div className="space-y-1 text-xs print:text-xs print:space-y-0.5">
                     <div className="flex flex-wrap gap-x-3 gap-y-0.5">
                       <span className="text-gray-900"><span className="font-medium text-gray-700">Account Name:</span> {bankDetail.accountName}</span>
                       <span className="text-gray-900"><span className="font-medium text-gray-700">Bank Name:</span> {bankDetail.bankName}</span>
@@ -471,9 +498,6 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
                       <span className="text-gray-900"><span className="font-medium text-gray-700">SWIFT Code:</span> {bankDetail.swiftCode}</span>
                     </div>
                   </div>
-                  {index < bankDetails.length - 1 && (
-                    <Separator className="my-2 print:my-1.5" />
-                  )}
                 </div>
               ))}
             </div>
