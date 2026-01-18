@@ -22,6 +22,9 @@ const mapDbToInvoice = (data: any): Invoice => {
     checkOut: data.check_out,
     // roomNumber removed - kept for backward compatibility with DB
     roomType: data.room_type,
+    adults: data.adults || undefined,
+    children: data.children || undefined,
+    babies: data.babies || undefined,
     items: data.items,
     subtotal: data.subtotal,
     serviceCharge: data.service_charge,
@@ -58,6 +61,9 @@ const mapInvoiceToDb = (invoice: Invoice): any => {
     check_out: invoice.checkOut,
     room_number: "", // roomNumber removed from system
     room_type: invoice.roomType,
+    adults: invoice.adults || null,
+    children: invoice.children || null,
+    babies: invoice.babies || null,
     items: invoice.items,
     subtotal: invoice.subtotal,
     service_charge: invoice.serviceCharge,
@@ -262,6 +268,23 @@ export async function createInvoice(invoice: Omit<Invoice, "id" | "createdAt" | 
 }
 
 export async function updateInvoice(id: string, invoice: Partial<Invoice>): Promise<void> {
+  // Get invoice details first to check status
+  const existingInvoice = await getInvoiceById(id);
+  
+  if (!existingInvoice) {
+    throw new Error("Invoice not found");
+  }
+
+  // Prevent editing of paid invoices (except status changes to cancelled if needed)
+  if (existingInvoice.status === "paid") {
+    // Only allow status change to cancelled, nothing else
+    if (invoice.status && invoice.status === "cancelled") {
+      // Allow status change to cancelled
+    } else if (Object.keys(invoice).length > 0 && !(Object.keys(invoice).length === 1 && invoice.status === "cancelled")) {
+      throw new Error("Cannot edit a paid invoice. Paid invoices are protected from modification.");
+    }
+  }
+
   if (!isSupabaseConfigured()) {
     const index = fallbackInvoices.findIndex((inv) => inv.id === id);
     if (index !== -1) {
@@ -290,6 +313,9 @@ export async function updateInvoice(id: string, invoice: Partial<Invoice>): Prom
     // roomNumber removed - always set to empty string
     dbData.room_number = "";
     if (invoice.roomType !== undefined) dbData.room_type = invoice.roomType;
+    if (invoice.adults !== undefined) dbData.adults = invoice.adults || null;
+    if (invoice.children !== undefined) dbData.children = invoice.children || null;
+    if (invoice.babies !== undefined) dbData.babies = invoice.babies || null;
     if (invoice.items !== undefined) dbData.items = invoice.items;
     if (invoice.subtotal !== undefined) dbData.subtotal = invoice.subtotal;
     if (invoice.serviceCharge !== undefined) dbData.service_charge = invoice.serviceCharge;
@@ -344,6 +370,18 @@ export async function updateInvoice(id: string, invoice: Partial<Invoice>): Prom
 }
 
 export async function deleteInvoice(id: string): Promise<void> {
+  // Get invoice details first to check status
+  const invoiceToDelete = await getInvoiceById(id);
+  
+  if (!invoiceToDelete) {
+    throw new Error("Invoice not found");
+  }
+
+  // Prevent deletion of paid invoices
+  if (invoiceToDelete.status === "paid") {
+    throw new Error("Cannot delete a paid invoice. Paid invoices are protected from deletion.");
+  }
+
   if (!isSupabaseConfigured()) {
     const index = fallbackInvoices.findIndex((inv) => inv.id === id);
     if (index !== -1) {
@@ -361,9 +399,6 @@ export async function deleteInvoice(id: string): Promise<void> {
       return;
     }
 
-    // Get invoice details before deletion for logging
-    const invoiceToDelete = await getInvoiceById(id);
-    
     const { error } = await supabase
       .from('invoices')
       .delete()
@@ -371,6 +406,7 @@ export async function deleteInvoice(id: string): Promise<void> {
 
     if (error) {
       console.error('Error deleting invoice:', error);
+      throw new Error("Failed to delete invoice");
     } else if (invoiceToDelete) {
       // Log activity
       await createActivityLog(
@@ -390,5 +426,6 @@ export async function deleteInvoice(id: string): Promise<void> {
     }
   } catch (error) {
     console.error('Error deleting invoice:', error);
+    throw error;
   }
 }

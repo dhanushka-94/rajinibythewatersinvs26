@@ -31,7 +31,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Plus, Trash2, UserPlus } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, UserPlus, AlertCircle, Copy } from "lucide-react";
 import Link from "next/link";
 import { calculateInvoiceTotal } from "@/lib/data";
 import { addGuest, getGuestById, getGuests } from "@/lib/guests";
@@ -92,6 +92,9 @@ export default function EditInvoicePage({
   });
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
+  const [adults, setAdults] = useState<number | undefined>(undefined);
+  const [children, setChildren] = useState<number | undefined>(undefined);
+  const [babies, setBabies] = useState<number | undefined>(undefined);
   const [items, setItems] = useState<InvoiceItem[]>([
     { id: "1", description: "", quantity: 1, unitPrice: 0, total: 0 },
   ]);
@@ -123,6 +126,7 @@ export default function EditInvoicePage({
   });
   const [savedItems, setSavedItems] = useState<InvoiceItem[]>([]);
   const [savedItemsSearchTerm, setSavedItemsSearchTerm] = useState("");
+  const [selectedSavedItemId, setSelectedSavedItemId] = useState<string>("");
 
   // Load invoice data
   useEffect(() => {
@@ -137,6 +141,9 @@ export default function EditInvoicePage({
           setSelectedGuestId(data.guest.id || "");
           setCheckIn(data.checkIn);
           setCheckOut(data.checkOut);
+          setAdults(data.adults);
+          setChildren(data.children);
+          setBabies(data.babies);
           setItems(data.items);
           setTaxRate(data.taxRate);
           setServiceChargeRate(data.serviceChargeRate);
@@ -292,6 +299,16 @@ export default function EditInvoicePage({
     ]);
   };
 
+  const duplicateItem = (item: InvoiceItem) => {
+    setItems((prev) => [
+      ...prev,
+      {
+        ...item,
+        id: Date.now().toString(),
+      },
+    ]);
+  };
+
   const handleSaveItem = (item: InvoiceItem) => {
     setItemToSave(item);
     setIsSaveItemDialogOpen(true);
@@ -320,6 +337,12 @@ export default function EditInvoicePage({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Check if invoice is paid
+    if (invoice?.status === "paid") {
+      alert("Cannot edit a paid invoice. Paid invoices are protected from modification.");
+      return;
+    }
+    
     if (!guest.name || !guest.name.trim()) {
       alert("Guest Name is required in Guest Information");
       return;
@@ -340,6 +363,9 @@ export default function EditInvoicePage({
         currency,
         checkIn,
         checkOut,
+        adults: adults || undefined,
+        children: children || undefined,
+        babies: babies || undefined,
         items,
         subtotal: calculations.subtotal,
         serviceCharge: calculations.serviceCharge,
@@ -362,7 +388,8 @@ export default function EditInvoicePage({
       router.push(`/invoices/${id}`);
     } catch (error) {
       console.error("Error updating invoice:", error);
-      alert("Error updating invoice. Please try again.");
+      const errorMessage = error instanceof Error ? error.message : "Error updating invoice. Please try again.";
+      alert(errorMessage);
     }
   };
 
@@ -387,6 +414,9 @@ export default function EditInvoicePage({
     );
   }
 
+  // Check if invoice is paid
+  const isPaid = invoice.status === "paid";
+
   // The rest of the component JSX is identical to NewInvoicePage
   // For brevity, I'll include a note that the JSX should be copied from NewInvoicePage
   // but with "Create New Invoice" changed to "Edit Invoice" and "Create Invoice" button changed to "Update Invoice"
@@ -405,7 +435,24 @@ export default function EditInvoicePage({
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      {isPaid && (
+        <Card className="border-amber-200 bg-amber-50">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5" />
+              <div>
+                <h3 className="font-semibold text-amber-900 mb-1">Invoice is Paid</h3>
+                <p className="text-sm text-amber-800">
+                  This invoice has been marked as paid and cannot be edited or deleted. 
+                  Paid invoices are protected to maintain financial records integrity.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <form onSubmit={handleSubmit} className={`space-y-6 relative ${isPaid ? 'pointer-events-none opacity-60' : ''}`}>
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
@@ -800,6 +847,42 @@ export default function EditInvoicePage({
                    required
                  />
                </div>
+               <Separator />
+               <div className="grid grid-cols-3 gap-4">
+                 <div className="space-y-2">
+                   <Label htmlFor="adults">Adults (Optional)</Label>
+                   <Input
+                     id="adults"
+                     type="number"
+                     min="0"
+                     value={adults || ""}
+                     onChange={(e) => setAdults(e.target.value ? Number(e.target.value) : undefined)}
+                     placeholder="0"
+                   />
+                 </div>
+                 <div className="space-y-2">
+                   <Label htmlFor="children">Children (Optional)</Label>
+                   <Input
+                     id="children"
+                     type="number"
+                     min="0"
+                     value={children || ""}
+                     onChange={(e) => setChildren(e.target.value ? Number(e.target.value) : undefined)}
+                     placeholder="0"
+                   />
+                 </div>
+                 <div className="space-y-2">
+                   <Label htmlFor="babies">Babies (Optional)</Label>
+                   <Input
+                     id="babies"
+                     type="number"
+                     min="0"
+                     value={babies || ""}
+                     onChange={(e) => setBabies(e.target.value ? Number(e.target.value) : undefined)}
+                     placeholder="0"
+                   />
+                 </div>
+               </div>
             </CardContent>
           </Card>
         </div>
@@ -810,11 +893,13 @@ export default function EditInvoicePage({
               <CardTitle>Invoice Items</CardTitle>
                <div className="flex gap-2">
                  <Select 
+                   value={selectedSavedItemId}
                    onValueChange={(value) => {
                      const selectedItem = savedItems.find(i => i.id === value);
                      if (selectedItem) {
                        addItemFromSaved(selectedItem);
-                       setSavedItemsSearchTerm("");
+                       setSavedItemsSearchTerm(""); // Reset search after selection
+                       setSelectedSavedItemId(""); // Reset select to allow adding same item again
                      }
                    }}
                  >
@@ -878,7 +963,7 @@ export default function EditInvoicePage({
               <TableHeader>
                 <TableRow>
                   <TableHead>Description</TableHead>
-                  <TableHead className="w-32">Quantity/Days</TableHead>
+                  <TableHead className="w-48">Quantity/Days</TableHead>
                   <TableHead className="w-32">Unit Price</TableHead>
                   <TableHead className="w-32">Total</TableHead>
                   <TableHead className="w-12"></TableHead>
@@ -904,7 +989,7 @@ export default function EditInvoicePage({
                             handleItemChange(item.id, "quantityType", value)
                           }
                         >
-                          <SelectTrigger className="w-24">
+                          <SelectTrigger className="w-20">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -919,7 +1004,7 @@ export default function EditInvoicePage({
                           onChange={(e) =>
                             handleItemChange(item.id, "quantity", Number(e.target.value))
                           }
-                          className="flex-1"
+                          className="w-24"
                         />
                       </div>
                     </TableCell>
@@ -937,6 +1022,15 @@ export default function EditInvoicePage({
                     <TableCell>{formatCurrency(item.total, currency)}</TableCell>
                     <TableCell>
                       <div className="flex gap-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => duplicateItem(item)}
+                          title="Duplicate this item"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
                         <Button
                           type="button"
                           variant="ghost"
@@ -1349,7 +1443,9 @@ export default function EditInvoicePage({
               Cancel
             </Button>
           </Link>
-          <Button type="submit">Update Invoice</Button>
+          <Button type="submit" disabled={isPaid}>
+            {isPaid ? "Cannot Update Paid Invoice" : "Update Invoice"}
+          </Button>
         </div>
       </form>
 

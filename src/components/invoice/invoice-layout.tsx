@@ -146,6 +146,19 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
               <span className="font-semibold text-gray-900">{invoice.roomType}</span>
             </div>
           )}
+          {(invoice.adults !== undefined || invoice.children !== undefined || invoice.babies !== undefined) && (
+            <div className="flex items-center gap-2 text-gray-700">
+              <User className="h-4 w-4 text-gray-500 print:h-3 print:w-3" />
+              <span className="font-medium text-gray-600">Guests:</span>
+              <span className="font-semibold text-gray-900">
+                {[
+                  invoice.adults !== undefined && invoice.adults > 0 ? `${invoice.adults} Adult${invoice.adults !== 1 ? 's' : ''}` : null,
+                  invoice.children !== undefined && invoice.children > 0 ? `${invoice.children} Child${invoice.children !== 1 ? 'ren' : ''}` : null,
+                  invoice.babies !== undefined && invoice.babies > 0 ? `${invoice.babies} Bab${invoice.babies !== 1 ? 'ies' : 'y'}` : null,
+                ].filter(Boolean).join(', ') || 'N/A'}
+              </span>
+            </div>
+          )}
         </div>
       </div>
       <Separator className="mb-6 print:mb-4" />
@@ -256,7 +269,11 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
               {invoice.guest.idNumber && (
                 <div className="flex items-start gap-2">
                   <IdCard className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
-                  <p className="text-gray-600">ID: {invoice.guest.idNumber}</p>
+                  <p className="text-gray-600">
+                    ID: {invoice.guest.idNumber.length > 2 
+                      ? "*".repeat(Math.max(0, invoice.guest.idNumber.length - 2)) + invoice.guest.idNumber.slice(-2)
+                      : invoice.guest.idNumber}
+                  </p>
                 </div>
               )}
             </div>

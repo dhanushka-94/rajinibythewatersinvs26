@@ -7,6 +7,8 @@ const publicRoutes = ["/login"];
 // Routes that require specific roles
 const roleRoutes: Record<string, string[]> = {
   "/settings/users": ["admin"],
+  "/settings/activity-logs": ["admin"],
+  "/settings": ["admin"], // Main settings page
   "/reports": ["admin", "manager", "viewer"],
   "/payments": ["admin", "manager", "viewer"],
 };

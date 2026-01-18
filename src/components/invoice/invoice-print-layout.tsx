@@ -157,6 +157,19 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
               <span style={{ fontWeight: '600', color: '#111827' }}>{invoice.roomType}</span>
             </div>
           )}
+          {(invoice.adults !== undefined || invoice.children !== undefined || invoice.babies !== undefined) && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#374151' }}>
+              <User style={{ width: '12px', height: '12px', color: '#6b7280' }} />
+              <span style={{ fontWeight: '500', color: '#4b5563' }}>Guests:</span>
+              <span style={{ fontWeight: '600', color: '#111827' }}>
+                {[
+                  invoice.adults !== undefined && invoice.adults > 0 ? `${invoice.adults} Adult${invoice.adults !== 1 ? 's' : ''}` : null,
+                  invoice.children !== undefined && invoice.children > 0 ? `${invoice.children} Child${invoice.children !== 1 ? 'ren' : ''}` : null,
+                  invoice.babies !== undefined && invoice.babies > 0 ? `${invoice.babies} Bab${invoice.babies !== 1 ? 'ies' : 'y'}` : null,
+                ].filter(Boolean).join(', ') || 'N/A'}
+              </span>
+            </div>
+          )}
         </div>
       </div>
       <Separator style={{ border: 'none', borderTop: '1px solid #e5e7eb', marginBottom: '16px' }} />
@@ -272,7 +285,11 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
               {invoice.guest.idNumber && (
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
                   <IdCard style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
-                  <p className="text-gray-600">ID: {invoice.guest.idNumber}</p>
+                  <p className="text-gray-600">
+                    ID: {invoice.guest.idNumber.length > 2 
+                      ? "*".repeat(Math.max(0, invoice.guest.idNumber.length - 2)) + invoice.guest.idNumber.slice(-2)
+                      : invoice.guest.idNumber}
+                  </p>
                 </div>
               )}
             </div>

@@ -31,7 +31,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Plus, Trash2, UserPlus } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, UserPlus, Copy } from "lucide-react";
 import Link from "next/link";
 import { generateInvoiceNumber, calculateInvoiceTotal } from "@/lib/data";
 import { addGuest, getGuestById, getGuests } from "@/lib/guests";
@@ -120,6 +120,9 @@ export default function NewInvoicePage() {
   });
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
+  const [adults, setAdults] = useState<number | undefined>(undefined);
+  const [children, setChildren] = useState<number | undefined>(undefined);
+  const [babies, setBabies] = useState<number | undefined>(undefined);
   const [items, setItems] = useState<InvoiceItem[]>([
     { id: "1", description: "", quantity: 1, unitPrice: 0, total: 0 },
   ]);
@@ -148,6 +151,7 @@ export default function NewInvoicePage() {
   });
   const [savedItems, setSavedItems] = useState<InvoiceItem[]>([]);
   const [savedItemsSearchTerm, setSavedItemsSearchTerm] = useState("");
+  const [selectedSavedItemId, setSelectedSavedItemId] = useState<string>("");
   const calculations = calculateInvoiceTotal(
     items,
     taxRate,
@@ -267,6 +271,16 @@ export default function NewInvoicePage() {
     ]);
   };
 
+  const duplicateItem = (item: InvoiceItem) => {
+    setItems((prev) => [
+      ...prev,
+      {
+        ...item,
+        id: Date.now().toString(),
+      },
+    ]);
+  };
+
   const handleSaveItem = (item: InvoiceItem) => {
     setItemToSave(item);
     setIsSaveItemDialogOpen(true);
@@ -318,6 +332,9 @@ export default function NewInvoicePage() {
          checkIn,
          checkOut,
          roomType: "",
+         adults: adults || undefined,
+         children: children || undefined,
+         babies: babies || undefined,
          items,
          subtotal: calculations.subtotal,
          serviceCharge: calculations.serviceCharge,
@@ -758,6 +775,42 @@ export default function NewInvoicePage() {
                    required
                  />
                </div>
+               <Separator />
+               <div className="grid grid-cols-3 gap-4">
+                 <div className="space-y-2">
+                   <Label htmlFor="adults">Adults (Optional)</Label>
+                   <Input
+                     id="adults"
+                     type="number"
+                     min="0"
+                     value={adults || ""}
+                     onChange={(e) => setAdults(e.target.value ? Number(e.target.value) : undefined)}
+                     placeholder="0"
+                   />
+                 </div>
+                 <div className="space-y-2">
+                   <Label htmlFor="children">Children (Optional)</Label>
+                   <Input
+                     id="children"
+                     type="number"
+                     min="0"
+                     value={children || ""}
+                     onChange={(e) => setChildren(e.target.value ? Number(e.target.value) : undefined)}
+                     placeholder="0"
+                   />
+                 </div>
+                 <div className="space-y-2">
+                   <Label htmlFor="babies">Babies (Optional)</Label>
+                   <Input
+                     id="babies"
+                     type="number"
+                     min="0"
+                     value={babies || ""}
+                     onChange={(e) => setBabies(e.target.value ? Number(e.target.value) : undefined)}
+                     placeholder="0"
+                   />
+                 </div>
+               </div>
             </CardContent>
           </Card>
         </div>
@@ -768,11 +821,13 @@ export default function NewInvoicePage() {
               <CardTitle>Invoice Items</CardTitle>
                <div className="flex gap-2">
                  <Select 
+                   value={selectedSavedItemId}
                    onValueChange={(value) => {
                      const selectedItem = savedItems.find(i => i.id === value);
                      if (selectedItem) {
                        addItemFromSaved(selectedItem);
                        setSavedItemsSearchTerm(""); // Reset search after selection
+                       setSelectedSavedItemId(""); // Reset select to allow adding same item again
                      }
                    }}
                  >
@@ -836,7 +891,7 @@ export default function NewInvoicePage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Description</TableHead>
-                  <TableHead className="w-32">Quantity/Days</TableHead>
+                  <TableHead className="w-48">Quantity/Days</TableHead>
                   <TableHead className="w-32">Unit Price</TableHead>
                   <TableHead className="w-32">Total</TableHead>
                   <TableHead className="w-12"></TableHead>
@@ -862,7 +917,7 @@ export default function NewInvoicePage() {
                             handleItemChange(item.id, "quantityType", value)
                           }
                         >
-                          <SelectTrigger className="w-24">
+                          <SelectTrigger className="w-20">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -877,7 +932,7 @@ export default function NewInvoicePage() {
                           onChange={(e) =>
                             handleItemChange(item.id, "quantity", Number(e.target.value))
                           }
-                          className="flex-1"
+                          className="w-24"
                         />
                       </div>
                     </TableCell>
@@ -895,6 +950,15 @@ export default function NewInvoicePage() {
                     <TableCell>{formatCurrency(item.total, currency)}</TableCell>
                     <TableCell>
                       <div className="flex gap-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => duplicateItem(item)}
+                          title="Duplicate this item"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
                         <Button
                           type="button"
                           variant="ghost"

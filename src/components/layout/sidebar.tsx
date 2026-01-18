@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -15,25 +16,54 @@ import {
   CreditCard,
   Briefcase,
   History,
+  Package,
 } from "lucide-react";
 import { hotelInfo } from "@/lib/hotel-info";
+import { User as UserType } from "@/types/user";
 
-const navigation = [
-  { name: "Dashboard", href: "/", icon: LayoutDashboard },
-  { name: "Invoices", href: "/invoices", icon: FileText },
-  { name: "Create Invoice", href: "/invoices/new", icon: PlusCircle },
-  { name: "Payments", href: "/payments", icon: CreditCard },
-  { name: "Reports", href: "/reports", icon: BarChart3 },
-  { name: "Guests", href: "/settings/guests", icon: Users },
-  { name: "Travel Companies", href: "/settings/travel-companies", icon: Briefcase },
-  { name: "Activity Logs", href: "/settings/activity-logs", icon: History },
-  { name: "Settings", href: "/settings", icon: Settings },
-  { name: "Bank Accounts", href: "/settings/bank-accounts", icon: Building2 },
-  { name: "Users", href: "/settings/users", icon: Users },
+const allNavigation = [
+  { name: "Dashboard", href: "/", icon: LayoutDashboard, roles: ["admin", "manager", "staff", "viewer"] },
+  { name: "Invoices", href: "/invoices", icon: FileText, roles: ["admin", "manager", "staff", "viewer"] },
+  { name: "Create Invoice", href: "/invoices/new", icon: PlusCircle, roles: ["admin", "manager", "staff"] },
+  { name: "Payments", href: "/payments", icon: CreditCard, roles: ["admin", "manager", "viewer"] },
+  { name: "Reports", href: "/reports", icon: BarChart3, roles: ["admin", "manager", "viewer"] },
+  { name: "Guests", href: "/settings/guests", icon: Users, roles: ["admin", "manager", "staff", "viewer"] },
+  { name: "Travel Companies", href: "/settings/travel-companies", icon: Briefcase, roles: ["admin", "manager", "staff", "viewer"] },
+  { name: "Invoice Items", href: "/settings/invoice-items", icon: Package, roles: ["admin", "manager", "staff", "viewer"] },
+  { name: "Activity Logs", href: "/settings/activity-logs", icon: History, roles: ["admin"] },
+  { name: "Settings", href: "/settings", icon: Settings, roles: ["admin"] },
+  { name: "Bank Accounts", href: "/settings/bank-accounts", icon: Building2, roles: ["admin", "manager", "staff", "viewer"] },
+  { name: "Users", href: "/settings/users", icon: Users, roles: ["admin"] },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const [currentUser, setCurrentUser] = useState<UserType | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadCurrentUser();
+  }, []);
+
+  const loadCurrentUser = async () => {
+    try {
+      const response = await fetch("/api/auth/me");
+      const data = await response.json();
+      if (data.success) {
+        setCurrentUser(data.user);
+      }
+    } catch (error) {
+      console.error("Error loading current user:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Filter navigation based on user role
+  const navigation = allNavigation.filter((item) => {
+    if (!currentUser) return false;
+    return item.roles.includes(currentUser.role);
+  });
 
   return (
     <div className="flex h-full w-64 flex-col border-r bg-card">

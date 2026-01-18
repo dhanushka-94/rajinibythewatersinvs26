@@ -57,7 +57,8 @@ export default function InvoicesPage() {
       setInvoices(data);
     } catch (error) {
       console.error("Error deleting invoice:", error);
-      alert("Failed to delete invoice. Please try again.");
+      const errorMessage = error instanceof Error ? error.message : "Failed to delete invoice. Please try again.";
+      alert(errorMessage);
     } finally {
       setDeletingInvoiceId(null);
     }
@@ -363,20 +364,29 @@ export default function InvoicesPage() {
                               <Eye className="h-4 w-4" />
                             </Button>
                           </Link>
-                          <Link href={`/invoices/${invoice.id}/edit`}>
-                            <Button variant="ghost" size="sm" title="Edit">
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                          </Link>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDelete(invoice.id, invoice.invoiceNumber)}
-                            disabled={deletingInvoiceId === invoice.id}
-                            title="Delete"
-                          >
-                            <Trash2 className="h-4 w-4 text-red-600" />
-                          </Button>
+                          {invoice.status !== "paid" ? (
+                            <>
+                              <Link href={`/invoices/${invoice.id}/edit`}>
+                                <Button variant="ghost" size="sm" title="Edit">
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                              </Link>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDelete(invoice.id, invoice.invoiceNumber)}
+                                disabled={deletingInvoiceId === invoice.id}
+                                title="Delete"
+                              >
+                                <Trash2 className="h-4 w-4 text-red-600" />
+                              </Button>
+                            </>
+                          ) : (
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <AlertCircle className="h-4 w-4" />
+                              <span>Protected</span>
+                            </div>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>

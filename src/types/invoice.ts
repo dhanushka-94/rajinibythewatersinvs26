@@ -49,6 +49,9 @@ export interface Invoice {
   checkIn: string;
   checkOut: string;
   roomType?: string;
+  adults?: number; // Optional: Number of adults
+  children?: number; // Optional: Number of children
+  babies?: number; // Optional: Number of babies
   items: InvoiceItem[];
   subtotal: number;
   serviceCharge: number;

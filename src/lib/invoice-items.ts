@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { InvoiceItem } from '@/types/invoice';
+import { createActivityLog } from './activity-logs';
 
 // Default saved invoice items
 const defaultItems: InvoiceItem[] = [
@@ -131,6 +132,35 @@ export async function getSavedItems(): Promise<InvoiceItem[]> {
   }
 }
 
+export async function getSavedItemById(id: string): Promise<InvoiceItem | undefined> {
+  if (!isSupabaseConfigured()) {
+    return fallbackItems.find((item) => item.id === id);
+  }
+
+  try {
+    if (!supabase) {
+      return fallbackItems.find((item) => item.id === id);
+    }
+    
+    const { data, error } = await supabase
+      .from('invoice_items')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      console.error('Error fetching invoice item:', error);
+      return fallbackItems.find((item) => item.id === id);
+    }
+
+    if (!data) return undefined;
+    return mapDbToItem(data);
+  } catch (error) {
+    console.error('Error fetching invoice item:', error);
+    return fallbackItems.find((item) => item.id === id);
+  }
+}
+
 export async function addSavedItem(item: Omit<InvoiceItem, "id">): Promise<InvoiceItem> {
   if (!isSupabaseConfigured()) {
     const newItem: InvoiceItem = {
@@ -168,7 +198,24 @@ export async function addSavedItem(item: Omit<InvoiceItem, "id">): Promise<Invoi
       return newItem;
     }
 
-    return mapDbToItem(data);
+    const createdItem = mapDbToItem(data);
+    
+    // Log activity
+    await createActivityLog(
+      "other",
+      "invoice_item",
+      `Created invoice item: ${createdItem.description}`,
+      {
+        entityId: createdItem.id,
+        entityName: createdItem.description,
+        metadata: {
+          unitPrice: createdItem.unitPrice,
+          currency: createdItem.currency,
+        },
+      }
+    );
+    
+    return createdItem;
   } catch (error) {
     console.error('Error adding invoice item:', error);
     const newItem: InvoiceItem = {
@@ -213,6 +260,24 @@ export async function updateSavedItem(id: string, item: Partial<InvoiceItem>): P
 
     if (error) {
       console.error('Error updating invoice item:', error);
+    } else {
+      // Get item details for logging
+      const updatedItem = await getSavedItemById(id);
+      if (updatedItem) {
+        // Log activity
+        await createActivityLog(
+          "other",
+          "invoice_item",
+          `Updated invoice item: ${updatedItem.description}`,
+          {
+            entityId: id,
+            entityName: updatedItem.description,
+            metadata: {
+              changes: Object.keys(item),
+            },
+          }
+        );
+      }
     }
   } catch (error) {
     console.error('Error updating invoice item:', error);
@@ -237,6 +302,9 @@ export async function deleteSavedItem(id: string): Promise<void> {
       return;
     }
 
+    // Get item details before deletion for logging
+    const itemToDelete = await getSavedItemById(id);
+    
     const { error } = await supabase
       .from('invoice_items')
       .delete()
@@ -244,6 +312,21 @@ export async function deleteSavedItem(id: string): Promise<void> {
 
     if (error) {
       console.error('Error deleting invoice item:', error);
+    } else if (itemToDelete) {
+      // Log activity
+      await createActivityLog(
+        "other",
+        "invoice_item",
+        `Deleted invoice item: ${itemToDelete.description}`,
+        {
+          entityId: id,
+          entityName: itemToDelete.description,
+          metadata: {
+            unitPrice: itemToDelete.unitPrice,
+            currency: itemToDelete.currency,
+          },
+        }
+      );
     }
   } catch (error) {
     console.error('Error deleting invoice item:', error);
