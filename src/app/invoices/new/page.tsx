@@ -124,7 +124,6 @@ export default function NewInvoicePage() {
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [selectedBankDetailId, setSelectedBankDetailId] = useState<string>("");
   const [checksPayableTo, setChecksPayableTo] = useState<string>("PHOENIX GLOBAL SOLUTIONS");
-  const [cardLast4Digits, setCardLast4Digits] = useState<string>("");
   const [bankDetails, setBankDetails] = useState<BankDetail[]>([]);
   const [isAddBankDialogOpen, setIsAddBankDialogOpen] = useState(false);
   const [newBankDetail, setNewBankDetail] = useState<Omit<BankDetail, "id" | "createdAt" | "updatedAt">>({
@@ -214,6 +213,7 @@ export default function NewInvoicePage() {
         id: Date.now().toString(),
         description: "",
         quantity: 1,
+        quantityType: "quantity" as const,
         unitPrice: 0,
         total: 0,
       },
@@ -300,7 +300,6 @@ export default function NewInvoicePage() {
         paymentMethods,
         selectedBankDetailId: selectedBankDetailId || undefined,
         checksPayableTo: paymentMethods.includes("cheque") ? checksPayableTo : undefined,
-        cardLast4Digits: paymentMethods.includes("card") && cardLast4Digits ? cardLast4Digits : undefined,
         status: "draft" as const,
         notes: notes || undefined,
       };
@@ -757,7 +756,7 @@ export default function NewInvoicePage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Description</TableHead>
-                  <TableHead className="w-24">Quantity</TableHead>
+                  <TableHead className="w-32">Quantity/Days</TableHead>
                   <TableHead className="w-32">Unit Price</TableHead>
                   <TableHead className="w-32">Total</TableHead>
                   <TableHead className="w-12"></TableHead>
@@ -776,14 +775,31 @@ export default function NewInvoicePage() {
                       />
                     </TableCell>
                     <TableCell>
-                      <Input
-                        type="number"
-                        min="1"
-                        value={item.quantity}
-                        onChange={(e) =>
-                          handleItemChange(item.id, "quantity", Number(e.target.value))
-                        }
-                      />
+                      <div className="flex gap-2">
+                        <Select
+                          value={item.quantityType || "quantity"}
+                          onValueChange={(value: "quantity" | "days") =>
+                            handleItemChange(item.id, "quantityType", value)
+                          }
+                        >
+                          <SelectTrigger className="w-24">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="quantity">Qty</SelectItem>
+                            <SelectItem value="days">Days</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Input
+                          type="number"
+                          min="1"
+                          value={item.quantity}
+                          onChange={(e) =>
+                            handleItemChange(item.id, "quantity", Number(e.target.value))
+                          }
+                          className="flex-1"
+                        />
+                      </div>
                     </TableCell>
                     <TableCell>
                       <Input
@@ -1010,7 +1026,7 @@ export default function NewInvoicePage() {
                     className="flex items-center gap-2 cursor-pointer"
                   >
                     <Building2 className="h-4 w-4" />
-                    Bank Account
+                    Bank Transfer/Deposit
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -1031,26 +1047,6 @@ export default function NewInvoicePage() {
                   >
                     <FileText className="h-4 w-4" />
                     Cheque Payment
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="payment-offline"
-                    checked={paymentMethods.includes("offline")}
-                    onCheckedChange={(checked) => {
-                      if (checked) {
-                        setPaymentMethods([...paymentMethods, "offline"]);
-                      } else {
-                        setPaymentMethods(paymentMethods.filter((m) => m !== "offline"));
-                      }
-                    }}
-                  />
-                  <Label
-                    htmlFor="payment-offline"
-                    className="flex items-center gap-2 cursor-pointer"
-                  >
-                    <Wallet className="h-4 w-4" />
-                    Offline Payment
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -1103,7 +1099,6 @@ export default function NewInvoicePage() {
                         setPaymentMethods([...paymentMethods, "card"]);
                       } else {
                         setPaymentMethods(paymentMethods.filter((m) => m !== "card"));
-                        setCardLast4Digits("");
                       }
                     }}
                   />
@@ -1121,7 +1116,7 @@ export default function NewInvoicePage() {
             {paymentMethods.includes("bank_account") && (
               <div className="space-y-4 pt-4 border-t">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="bankDetail">Select Bank Account</Label>
+                  <Label htmlFor="bankDetail">Select Bank Transfer/Deposit</Label>
                   <Button
                     type="button"
                     variant="outline"
@@ -1129,7 +1124,7 @@ export default function NewInvoicePage() {
                     onClick={() => setIsAddBankDialogOpen(true)}
                   >
                     <Plus className="mr-2 h-4 w-4" />
-                    Add Bank Account
+                    Add Bank Transfer/Deposit
                   </Button>
                 </div>
                 <div className="flex gap-2">
@@ -1138,7 +1133,7 @@ export default function NewInvoicePage() {
                     onValueChange={setSelectedBankDetailId}
                   >
                     <SelectTrigger id="bankDetail" className="flex-1">
-                      <SelectValue placeholder="Select bank account from saved list" />
+                      <SelectValue placeholder="Select bank transfer/deposit from saved list" />
                     </SelectTrigger>
                     <SelectContent>
                       {bankDetails.map((bank) => (
@@ -1154,7 +1149,7 @@ export default function NewInvoicePage() {
                       variant="ghost"
                       size="icon"
                       onClick={async () => {
-                        if (confirm("Are you sure you want to delete this bank account?")) {
+                        if (confirm("Are you sure you want to delete this bank transfer/deposit account?")) {
                           await deleteBankDetail(selectedBankDetailId);
                           const banks = await getBankDetails();
                           setBankDetails(banks);
@@ -1211,41 +1206,18 @@ export default function NewInvoicePage() {
             {paymentMethods.includes("cheque") && (
               <div className="space-y-4 pt-4 border-t">
                 <div className="space-y-2">
-                  <Label htmlFor="checksPayableTo">Checks Payable To *</Label>
+                  <Label htmlFor="checksPayableTo">Make Checks Payable To *</Label>
                   <Input
                     id="checksPayableTo"
                     value={checksPayableTo}
                     onChange={(e) => setChecksPayableTo(e.target.value)}
-                    placeholder="Enter name for checks payable to"
+                    placeholder="Enter name to make checks payable to"
                     required={paymentMethods.includes("cheque")}
                   />
                 </div>
               </div>
             )}
 
-            {paymentMethods.includes("card") && (
-              <div className="space-y-4 pt-4 border-t">
-                <div className="space-y-2">
-                  <Label htmlFor="cardLast4Digits">Card Last 4 Digits *</Label>
-                  <Input
-                    id="cardLast4Digits"
-                    type="text"
-                    maxLength={4}
-                    value={cardLast4Digits}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/\D/g, '').slice(0, 4);
-                      setCardLast4Digits(value);
-                    }}
-                    placeholder="1234"
-                    required={paymentMethods.includes("card")}
-                    className="w-32"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Enter the last 4 digits of the card used for payment
-                  </p>
-                </div>
-              </div>
-            )}
           </CardContent>
         </Card>
 

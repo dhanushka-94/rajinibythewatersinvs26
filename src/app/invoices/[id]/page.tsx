@@ -47,6 +47,7 @@ export default function InvoiceDetailPage({
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
   const [paymentAmount, setPaymentAmount] = useState<string>("");
   const [paymentNotes, setPaymentNotes] = useState("");
+  const [paymentCardLast4Digits, setPaymentCardLast4Digits] = useState<string>("");
   const [newStatus, setNewStatus] = useState<string>("");
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
@@ -209,12 +210,24 @@ export default function InvoiceDetailPage({
       return;
     }
 
+    // Validate card last 4 digits if card payment method is selected
+    if (invoice.paymentMethods.includes("card") && !paymentCardLast4Digits) {
+      alert("Card Last 4 Digits is required for card payments.");
+      return;
+    }
+
+    if (invoice.paymentMethods.includes("card") && paymentCardLast4Digits.length !== 4) {
+      alert("Please enter exactly 4 digits for the card number.");
+      return;
+    }
+
     try {
       const newPayment: Payment = {
         id: `payment-${Date.now()}`,
         amount: amount,
         date: paymentDate,
         notes: paymentNotes || undefined,
+        cardLast4Digits: invoice.paymentMethods.includes("card") && paymentCardLast4Digits ? paymentCardLast4Digits : undefined,
         createdAt: new Date().toISOString(),
       };
 
@@ -243,6 +256,7 @@ export default function InvoiceDetailPage({
       setIsPaymentDialogOpen(false);
       setPaymentAmount("");
       setPaymentNotes("");
+      setPaymentCardLast4Digits("");
       setPaymentDate(new Date().toISOString().split('T')[0]);
     } catch (error) {
       console.error("Error recording payment:", error);
@@ -376,6 +390,7 @@ export default function InvoiceDetailPage({
                       <p className="font-medium">{formatCurrency(payment.amount, invoice.currency)}</p>
                       <p className="text-sm text-muted-foreground">
                         {new Date(payment.date).toLocaleDateString()}
+                        {payment.cardLast4Digits && ` • Card: ****${payment.cardLast4Digits}`}
                         {payment.notes && ` • ${payment.notes}`}
                       </p>
                     </div>
@@ -453,6 +468,25 @@ export default function InvoiceDetailPage({
                 onChange={(e) => setPaymentDate(e.target.value)}
               />
             </div>
+            {invoice?.paymentMethods.includes("card") && (
+              <div className="space-y-2">
+                <Label htmlFor="paymentCardLast4Digits">Card Last 4 Digits *</Label>
+                <Input
+                  id="paymentCardLast4Digits"
+                  type="text"
+                  maxLength={4}
+                  value={paymentCardLast4Digits}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 4);
+                    setPaymentCardLast4Digits(value);
+                  }}
+                  placeholder="1234"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Enter the last 4 digits of the card used for this payment
+                </p>
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="paymentNotes">Payment Notes (Optional)</Label>
               <Textarea
@@ -465,7 +499,12 @@ export default function InvoiceDetailPage({
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsPaymentDialogOpen(false)}>
+            <Button variant="outline" onClick={() => {
+              setIsPaymentDialogOpen(false);
+              setPaymentAmount("");
+              setPaymentNotes("");
+              setPaymentCardLast4Digits("");
+            }}>
               Cancel
             </Button>
             <Button onClick={handleRecordPayment}>

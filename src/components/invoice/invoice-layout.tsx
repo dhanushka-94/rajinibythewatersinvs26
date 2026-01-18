@@ -153,12 +153,11 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
       </div>
 
       <div className="mb-8 print:mb-4 invoice-items">
-        <h2 className="font-semibold text-lg mb-4 text-gray-900 print:text-base print:mb-2">Invoice Items</h2>
         <Table className="print:text-xs">
           <TableHeader>
             <TableRow className="bg-gray-50">
               <TableHead className="font-semibold text-gray-900">Description</TableHead>
-              <TableHead className="text-right font-semibold text-gray-900">Quantity</TableHead>
+              <TableHead className="text-right font-semibold text-gray-900">Qty/Days</TableHead>
               <TableHead className="text-right font-semibold text-gray-900">Unit Price</TableHead>
               <TableHead className="text-right font-semibold text-gray-900">Total</TableHead>
             </TableRow>
@@ -250,19 +249,13 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
                 {invoice.paymentMethods.includes("bank_account") && (
                   <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 rounded-md text-sm print:text-xs print:px-2 print:py-1">
                     <Building2 className="h-4 w-4 text-blue-600 print:h-3 print:w-3" />
-                    <span className="text-gray-900">Bank Account</span>
+                    <span className="text-gray-900">Bank Transfer/Deposit</span>
                   </div>
                 )}
                 {invoice.paymentMethods.includes("cheque") && (
                   <div className="flex items-center gap-2 px-3 py-1.5 bg-green-50 rounded-md text-sm print:text-xs print:px-2 print:py-1">
                     <FileText className="h-4 w-4 text-green-600 print:h-3 print:w-3" />
                     <span className="text-gray-900">Cheque Payment</span>
-                  </div>
-                )}
-                {invoice.paymentMethods.includes("offline") && (
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-50 rounded-md text-sm print:text-xs print:px-2 print:py-1">
-                    <Wallet className="h-4 w-4 text-purple-600 print:h-3 print:w-3" />
-                    <span className="text-gray-900">Offline Payment</span>
                   </div>
                 )}
                 {invoice.paymentMethods.includes("online") && (
@@ -291,14 +284,14 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
 
           {invoice.checksPayableTo && (
             <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200 print:p-2 print:mb-2">
-              <p className="text-sm font-medium text-gray-700 mb-1 print:text-xs print:mb-0.5">Checks Payable To:</p>
+              <p className="text-sm font-medium text-gray-700 mb-1 print:text-xs print:mb-0.5">Make Checks Payable To:</p>
               <p className="text-base font-semibold text-gray-900 print:text-sm">{invoice.checksPayableTo}</p>
             </div>
           )}
 
           {bankDetail && (
             <div className="p-4 bg-gray-50 rounded-lg border print:p-2">
-              <h4 className="font-semibold text-sm mb-3 text-gray-900 print:text-xs print:mb-2">Bank Account Details:</h4>
+              <h4 className="font-semibold text-sm mb-3 text-gray-900 print:text-xs print:mb-2">Bank Transfer/Deposit Details:</h4>
               <div className="grid grid-cols-2 gap-3 text-sm print:text-xs print:gap-2">
                 <div>
                   <span className="font-medium text-gray-700">Account Name:</span>

@@ -175,9 +175,6 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
 
       {/* Invoice Items Table */}
       <div className="mb-6" style={{ marginBottom: '24px', pageBreakInside: 'avoid' }}>
-        <h2 className="font-semibold text-base mb-3 text-gray-900" style={{ fontSize: '12pt', marginBottom: '12px', pageBreakAfter: 'avoid' }}>
-          Invoice Items
-        </h2>
         <Table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <TableHeader>
             <TableRow className="bg-gray-50" style={{ backgroundColor: '#f9fafb', pageBreakInside: 'avoid' }}>
@@ -199,7 +196,7 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
                 borderBottom: '1px solid #e5e7eb',
                 pageBreakInside: 'avoid'
               }}>
-                Quantity
+                Qty/Days
               </TableHead>
               <TableHead className="text-right font-semibold text-gray-900" style={{ 
                 padding: '8px 6px', 
@@ -351,7 +348,7 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
                     fontSize: '8pt'
                   }}>
                     <Building2 className="h-3 w-3 text-blue-600" />
-                    <span className="text-gray-900">Bank Account</span>
+                    <span className="text-gray-900">Bank Transfer/Deposit</span>
                   </div>
                 )}
                 {invoice.paymentMethods.includes("cheque") && (
@@ -363,17 +360,6 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
                   }}>
                     <FileText className="h-3 w-3 text-green-600" />
                     <span className="text-gray-900">Cheque Payment</span>
-                  </div>
-                )}
-                {invoice.paymentMethods.includes("offline") && (
-                  <div className="flex items-center gap-1.5 px-2 py-1 bg-purple-50 rounded text-xs" style={{ 
-                    padding: '4px 8px', 
-                    backgroundColor: '#faf5ff',
-                    borderRadius: '4px',
-                    fontSize: '8pt'
-                  }}>
-                    <Wallet className="h-3 w-3 text-purple-600" />
-                    <span className="text-gray-900">Offline Payment</span>
                   </div>
                 )}
                 {invoice.paymentMethods.includes("online") && (
@@ -423,7 +409,7 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
               borderRadius: '4px'
             }}>
               <p className="text-xs font-medium text-gray-700 mb-1" style={{ fontSize: '9pt', marginBottom: '4px' }}>
-                Checks Payable To:
+                Make Checks Payable To:
               </p>
               <p className="text-sm font-semibold text-gray-900" style={{ fontSize: '10pt', fontWeight: '600' }}>
                 {invoice.checksPayableTo}
@@ -438,7 +424,7 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
               borderRadius: '4px'
             }}>
               <h4 className="font-semibold text-xs mb-2 text-gray-900" style={{ fontSize: '9pt', marginBottom: '8px' }}>
-                Bank Account Details:
+                Bank Transfer/Deposit Details:
               </h4>
               <div className="grid grid-cols-2 gap-2 text-xs" style={{ 
                 display: 'grid', 

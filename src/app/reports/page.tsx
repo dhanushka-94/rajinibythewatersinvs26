@@ -108,6 +108,17 @@ export default function ReportsPage() {
     );
   };
 
+  const formatPaymentMethod = (method: string): string => {
+    const methodLabels: Record<string, string> = {
+      bank_account: "Bank Transfer/Deposit",
+      cheque: "Cheque Payment",
+      online: "Online Payment",
+      cash: "Cash Payment",
+      card: "Card Payment",
+    };
+    return methodLabels[method] || method.replace("_", " ");
+  };
+
   // Calculate statistics
   const totalInvoices = filteredInvoices.length;
   const paidInvoices = filteredInvoices.filter((inv) => inv.status === "paid");
@@ -155,7 +166,10 @@ export default function ReportsPage() {
       inv.discount.toFixed(2),
       inv.total.toFixed(2),
       inv.status,
-      inv.paymentMethods.join(", "),
+      inv.paymentMethods
+        .filter((method) => method !== "offline")
+        .map((method) => formatPaymentMethod(method))
+        .join(", "),
       new Date(inv.createdAt).toLocaleDateString(),
     ]);
 
@@ -510,11 +524,13 @@ export default function ReportsPage() {
                       <TableCell>{getStatusBadge(invoice.status)}</TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
-                          {invoice.paymentMethods.map((method) => (
-                            <Badge key={method} variant="outline" className="text-xs">
-                              {method.replace("_", " ")}
-                            </Badge>
-                          ))}
+                          {invoice.paymentMethods
+                            .filter((method) => method !== "offline")
+                            .map((method) => (
+                              <Badge key={method} variant="outline" className="text-xs">
+                                {formatPaymentMethod(method)}
+                              </Badge>
+                            ))}
                         </div>
                       </TableCell>
                       <TableCell className="text-right">

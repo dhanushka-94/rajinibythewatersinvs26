@@ -93,7 +93,7 @@ export const mockInvoices: Invoice[] = [
     discountType: "percentage",
     priceAdjustment: -10,
     total: 287,
-    paymentMethods: ["cheque", "offline"],
+    paymentMethods: ["cheque"],
     checksPayableTo: "PHOENIX GLOBAL SOLUTIONS",
     status: "pending",
     createdAt: "2024-01-20T14:00:00Z",

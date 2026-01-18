@@ -19,19 +19,21 @@ export interface InvoiceItem {
   id: string;
   description: string;
   quantity: number;
+  quantityType?: "quantity" | "days"; // Whether quantity represents quantity or days
   unitPrice: number;
   total: number;
   currency?: Currency; // Currency when item was saved
 }
 
 export type Currency = "USD" | "LKR";
-export type PaymentMethod = "bank_account" | "cheque" | "offline" | "online" | "cash" | "card";
+export type PaymentMethod = "bank_account" | "cheque" | "online" | "cash" | "card";
 
 export interface Payment {
   id: string;
   amount: number;
   date: string;
   notes?: string;
+  cardLast4Digits?: string; // Last 4 digits of card for card payment
   createdAt: string;
 }
 
