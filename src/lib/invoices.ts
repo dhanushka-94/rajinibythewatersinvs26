@@ -278,9 +278,11 @@ export async function updateInvoice(id: string, invoice: Partial<Invoice>): Prom
   // Prevent editing of paid invoices (except status changes to cancelled if needed)
   if (existingInvoice.status === "paid") {
     // Only allow status change to cancelled, nothing else
-    if (invoice.status && invoice.status === "cancelled") {
-      // Allow status change to cancelled
-    } else if (Object.keys(invoice).length > 0 && !(Object.keys(invoice).length === 1 && invoice.status === "cancelled")) {
+    const isOnlyStatusChangeToCancelled = 
+      Object.keys(invoice).length === 1 && 
+      invoice.status === "cancelled";
+    
+    if (!isOnlyStatusChangeToCancelled) {
       throw new Error("Cannot edit a paid invoice. Paid invoices are protected from modification.");
     }
   }
