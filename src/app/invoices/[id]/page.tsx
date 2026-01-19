@@ -44,10 +44,14 @@ export default function InvoiceDetailPage({
   const [loading, setLoading] = useState(true);
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
+  const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
   const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
   const [paymentAmount, setPaymentAmount] = useState<string>("");
   const [paymentNotes, setPaymentNotes] = useState("");
   const [paymentCardLast4Digits, setPaymentCardLast4Digits] = useState<string>("");
+  const [emailRecipient, setEmailRecipient] = useState<string>("");
+  const [emailRecipientName, setEmailRecipientName] = useState<string>("");
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [newStatus, setNewStatus] = useState<string>("");
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
@@ -284,6 +288,51 @@ export default function InvoiceDetailPage({
     }
   };
 
+  const handleSendEmail = async () => {
+    if (!emailRecipient) {
+      alert("Please enter recipient email address.");
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailRecipient)) {
+      alert("Please enter a valid email address.");
+      return;
+    }
+
+    setIsSendingEmail(true);
+
+    try {
+      const response = await fetch(`/api/invoices/${id}/send-email`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          recipientEmail: emailRecipient,
+          recipientName: emailRecipientName || undefined,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Failed to send email");
+      }
+
+      alert(`Invoice sent successfully to ${emailRecipient}`);
+      setIsEmailDialogOpen(false);
+      setEmailRecipient("");
+      setEmailRecipientName("");
+    } catch (error: any) {
+      console.error("Error sending email:", error);
+      alert(error.message || "Failed to send email. Please check your email service configuration.");
+    } finally {
+      setIsSendingEmail(false);
+    }
+  };
+
   const totalPaid = invoice ? (invoice.payments || []).reduce((sum, p) => sum + p.amount, 0) : 0;
   const remainingBalance = invoice ? invoice.total - totalPaid : 0;
   const isFullyPaid = invoice ? totalPaid >= invoice.total : false;
@@ -345,6 +394,23 @@ export default function InvoiceDetailPage({
               Mark as Sent
             </Button>
           )}
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              // Pre-fill email from invoice
+              if (invoice.billingType === "company" && invoice.travelCompanyId) {
+                // Could fetch travel company email here if available
+                setEmailRecipient("");
+              } else {
+                setEmailRecipient(invoice.guest.email || "");
+                setEmailRecipientName(invoice.guest.name || "");
+              }
+              setIsEmailDialogOpen(true);
+            }}
+          >
+            <Send className="mr-2 h-4 w-4" />
+            Send Email
+          </Button>
           <Button 
             variant="outline" 
             onClick={handleDownloadPDF}
@@ -548,6 +614,57 @@ export default function InvoiceDetailPage({
             </Button>
             <Button onClick={handleStatusChange} disabled={!newStatus}>
               Update Status
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Send Email Dialog */}
+      <Dialog open={isEmailDialogOpen} onOpenChange={setIsEmailDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Send Invoice via Email</DialogTitle>
+            <DialogDescription>
+              Send invoice {invoice?.invoiceNumber} to the recipient's email address
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="emailRecipientName">Recipient Name (Optional)</Label>
+              <Input
+                id="emailRecipientName"
+                type="text"
+                value={emailRecipientName}
+                onChange={(e) => setEmailRecipientName(e.target.value)}
+                placeholder="Enter recipient name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="emailRecipient">Recipient Email *</Label>
+              <Input
+                id="emailRecipient"
+                type="email"
+                value={emailRecipient}
+                onChange={(e) => setEmailRecipient(e.target.value)}
+                placeholder="recipient@example.com"
+                required
+              />
+              <p className="text-xs text-muted-foreground">
+                The invoice will be sent as an HTML email to this address
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setIsEmailDialogOpen(false);
+              setEmailRecipient("");
+              setEmailRecipientName("");
+            }}>
+              Cancel
+            </Button>
+            <Button onClick={handleSendEmail} disabled={!emailRecipient || isSendingEmail}>
+              <Send className="mr-2 h-4 w-4" />
+              {isSendingEmail ? "Sending..." : "Send Email"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -4,6 +4,7 @@ export type ActivityType =
   | "invoice_deleted"
   | "invoice_viewed"
   | "invoice_printed"
+  | "invoice_sent"
   | "invoice_status_changed"
   | "guest_created"
   | "guest_updated"

@@ -12,7 +12,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import Image from "next/image";
 import { getHotelInfo, type HotelInfo } from "@/lib/hotel-info";
 import { formatCurrency } from "@/lib/currency";
 import { getBankDetailById } from "@/lib/bank-details";
@@ -103,13 +102,16 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
             {hotelInfo && (
               <>
                 <div className="mb-1" style={{ marginBottom: '4px' }}>
-                  <Image
+                  <img
                     src={hotelInfo.logoPath || "/images/rajini-logo-flat-color.png"}
                     alt={hotelInfo.name}
-                    width={120}
-                    height={48}
-                    className="h-auto"
-                    priority
+                    style={{
+                      width: '120px',
+                      height: 'auto',
+                      maxWidth: '120px',
+                      objectFit: 'contain',
+                      display: 'block'
+                    }}
                   />
                 </div>
                 <div className="text-xs text-gray-600 leading-tight" style={{ fontSize: '7pt', lineHeight: '1.4' }}>
@@ -294,55 +296,51 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
             <Calendar style={{ width: '16px', height: '16px', color: '#4b5563' }} />
             Booking Details:
           </h3>
-          <div className="space-y-2 text-xs" style={{ fontSize: '9pt', lineHeight: '1.5' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-              <Calendar style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
+          <div style={{ fontSize: '9pt', lineHeight: '1.5' }}>
+            {/* Line 1: Check-in and Check-out */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px 16px', marginBottom: '6px' }}>
               <div>
-                <span style={{ fontWeight: '500', color: '#4b5563' }}>Check-in:</span>
-                <p style={{ color: '#111827', margin: '2px 0' }}>
+                <span style={{ fontWeight: '500', color: '#4b5563' }}>Check-in: </span>
+                <span style={{ color: '#111827' }}>
                   {new Date(invoice.checkIn).toLocaleDateString("en-US", {
                     year: "numeric",
-                    month: "long",
+                    month: "short",
                     day: "numeric",
                   })}
-                </p>
+                </span>
               </div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-              <Calendar style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
               <div>
-                <span style={{ fontWeight: '500', color: '#4b5563' }}>Check-out:</span>
-                <p style={{ color: '#111827', margin: '2px 0' }}>
+                <span style={{ fontWeight: '500', color: '#4b5563' }}>Check-out: </span>
+                <span style={{ color: '#111827' }}>
                   {new Date(invoice.checkOut).toLocaleDateString("en-US", {
                     year: "numeric",
-                    month: "long",
+                    month: "short",
                     day: "numeric",
                   })}
-                </p>
+                </span>
               </div>
             </div>
-            {invoice.roomType && (
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                <Building style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
-                <div>
-                  <span style={{ fontWeight: '500', color: '#4b5563' }}>Room:</span>
-                  <p style={{ color: '#111827', margin: '2px 0' }}>{invoice.roomType}</p>
-                </div>
-              </div>
-            )}
-            {(invoice.adults !== undefined || invoice.children !== undefined || invoice.babies !== undefined) && (
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                <User style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
-                <div>
-                  <span style={{ fontWeight: '500', color: '#4b5563' }}>Guests:</span>
-                  <p style={{ color: '#111827', margin: '2px 0' }}>
-                    {[
-                      invoice.adults !== undefined && invoice.adults > 0 ? `${invoice.adults} Adult${invoice.adults !== 1 ? 's' : ''}` : null,
-                      invoice.children !== undefined && invoice.children > 0 ? `${invoice.children} Child${invoice.children !== 1 ? 'ren' : ''}` : null,
-                      invoice.babies !== undefined && invoice.babies > 0 ? `${invoice.babies} Bab${invoice.babies !== 1 ? 'ies' : 'y'}` : null,
-                    ].filter(Boolean).join(', ') || 'N/A'}
-                  </p>
-                </div>
+            {/* Line 2: Room and Guests */}
+            {(invoice.roomType || invoice.adults !== undefined || invoice.children !== undefined || invoice.babies !== undefined) && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px 16px' }}>
+                {invoice.roomType && (
+                  <div>
+                    <span style={{ fontWeight: '500', color: '#4b5563' }}>Room: </span>
+                    <span style={{ color: '#111827' }}>{invoice.roomType}</span>
+                  </div>
+                )}
+                {(invoice.adults !== undefined || invoice.children !== undefined || invoice.babies !== undefined) && (
+                  <div>
+                    <span style={{ fontWeight: '500', color: '#4b5563' }}>Guests: </span>
+                    <span style={{ color: '#111827' }}>
+                      {[
+                        invoice.adults !== undefined && invoice.adults > 0 ? `${invoice.adults} Adult${invoice.adults !== 1 ? 's' : ''}` : null,
+                        invoice.children !== undefined && invoice.children > 0 ? `${invoice.children} Child${invoice.children !== 1 ? 'ren' : ''}` : null,
+                        invoice.babies !== undefined && invoice.babies > 0 ? `${invoice.babies} Bab${invoice.babies !== 1 ? 'ies' : 'y'}` : null,
+                      ].filter(Boolean).join(', ') || 'N/A'}
+                    </span>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -646,48 +644,81 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
                     </h4>
                   )}
                   {bankDetails.length === 1 && (
-                    <h4 className="font-semibold text-xs mb-1 text-gray-900" style={{ fontSize: '8pt', marginBottom: '4px' }}>
+                    <h4 className="font-semibold text-xs mb-1 text-gray-900" style={{ fontSize: '8pt', marginBottom: '6px' }}>
                       Bank Transfer/Deposit Details:
                     </h4>
                   )}
-                  <div style={{ 
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '3px',
-                    fontSize: '8pt',
-                    pageBreakInside: 'avoid',
-                    breakInside: 'avoid'
-                  }}>
+                  {bankDetails.length === 1 ? (
+                    <div style={{ 
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr',
+                      gap: '8px 16px',
+                      fontSize: '8pt',
+                      pageBreakInside: 'avoid',
+                      breakInside: 'avoid',
+                      lineHeight: '1.4'
+                    }}>
+                      <div>
+                        <span style={{ fontWeight: '500', color: '#374151' }}>Account Name:</span>
+                        <span style={{ color: '#111827', marginLeft: '4px' }}>{bankDetail.accountName}</span>
+                      </div>
+                      <div>
+                        <span style={{ fontWeight: '500', color: '#374151' }}>Bank Name:</span>
+                        <span style={{ color: '#111827', marginLeft: '4px' }}>{bankDetail.bankName}</span>
+                      </div>
+                      <div>
+                        <span style={{ fontWeight: '500', color: '#374151' }}>Branch:</span>
+                        <span style={{ color: '#111827', marginLeft: '4px' }}>{bankDetail.branch}</span>
+                      </div>
+                      <div>
+                        <span style={{ fontWeight: '500', color: '#374151' }}>Account Number:</span>
+                        <span style={{ color: '#111827', marginLeft: '4px' }}>{bankDetail.accountNumber}</span>
+                      </div>
+                      <div style={{ gridColumn: '1 / -1' }}>
+                        <span style={{ fontWeight: '500', color: '#374151' }}>SWIFT Code:</span>
+                        <span style={{ color: '#111827', marginLeft: '4px' }}>{bankDetail.swiftCode}</span>
+                      </div>
+                    </div>
+                  ) : (
                     <div style={{ 
                       display: 'flex',
-                      flexWrap: 'wrap',
-                      gap: '12px 12px',
-                      lineHeight: '1.3'
+                      flexDirection: 'column',
+                      gap: '3px',
+                      fontSize: '8pt',
+                      pageBreakInside: 'avoid',
+                      breakInside: 'avoid'
                     }}>
-                      <span style={{ color: '#111827' }}>
-                        <span style={{ fontWeight: '500', color: '#374151' }}>Account Name:</span> {bankDetail.accountName}
-                      </span>
-                      <span style={{ color: '#111827' }}>
-                        <span style={{ fontWeight: '500', color: '#374151' }}>Bank Name:</span> {bankDetail.bankName}
-                      </span>
-                      <span style={{ color: '#111827' }}>
-                        <span style={{ fontWeight: '500', color: '#374151' }}>Branch:</span> {bankDetail.branch}
-                      </span>
+                      <div style={{ 
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '12px 12px',
+                        lineHeight: '1.3'
+                      }}>
+                        <span style={{ color: '#111827' }}>
+                          <span style={{ fontWeight: '500', color: '#374151' }}>Account Name:</span> {bankDetail.accountName}
+                        </span>
+                        <span style={{ color: '#111827' }}>
+                          <span style={{ fontWeight: '500', color: '#374151' }}>Bank Name:</span> {bankDetail.bankName}
+                        </span>
+                        <span style={{ color: '#111827' }}>
+                          <span style={{ fontWeight: '500', color: '#374151' }}>Branch:</span> {bankDetail.branch}
+                        </span>
+                      </div>
+                      <div style={{ 
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '12px 12px',
+                        lineHeight: '1.3'
+                      }}>
+                        <span style={{ color: '#111827' }}>
+                          <span style={{ fontWeight: '500', color: '#374151' }}>Account Number:</span> {bankDetail.accountNumber}
+                        </span>
+                        <span style={{ color: '#111827' }}>
+                          <span style={{ fontWeight: '500', color: '#374151' }}>SWIFT Code:</span> {bankDetail.swiftCode}
+                        </span>
+                      </div>
                     </div>
-                    <div style={{ 
-                      display: 'flex',
-                      flexWrap: 'wrap',
-                      gap: '12px 12px',
-                      lineHeight: '1.3'
-                    }}>
-                      <span style={{ color: '#111827' }}>
-                        <span style={{ fontWeight: '500', color: '#374151' }}>Account Number:</span> {bankDetail.accountNumber}
-                      </span>
-                      <span style={{ color: '#111827' }}>
-                        <span style={{ fontWeight: '500', color: '#374151' }}>SWIFT Code:</span> {bankDetail.swiftCode}
-                      </span>
-                    </div>
-                  </div>
+                  )}
                 </div>
               ))}
             </div>

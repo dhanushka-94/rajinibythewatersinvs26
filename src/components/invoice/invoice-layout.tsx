@@ -278,55 +278,51 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
             <Calendar className="h-5 w-5 text-gray-600 print:h-4 print:w-4" />
             Booking Details:
           </h3>
-          <div className="space-y-2 text-sm print:text-xs">
-            <div className="flex items-start gap-2">
-              <Calendar className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
+          <div className="space-y-1.5 text-sm print:text-xs">
+            {/* Line 1: Check-in and Check-out */}
+            <div className="flex flex-wrap gap-x-4 gap-y-1">
               <div>
-                <span className="font-medium text-gray-600">Check-in:</span>
-                <p className="text-gray-900">
+                <span className="font-medium text-gray-600">Check-in: </span>
+                <span className="text-gray-900">
                   {new Date(invoice.checkIn).toLocaleDateString("en-US", {
                     year: "numeric",
-                    month: "long",
+                    month: "short",
                     day: "numeric",
                   })}
-                </p>
+                </span>
               </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <Calendar className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
               <div>
-                <span className="font-medium text-gray-600">Check-out:</span>
-                <p className="text-gray-900">
+                <span className="font-medium text-gray-600">Check-out: </span>
+                <span className="text-gray-900">
                   {new Date(invoice.checkOut).toLocaleDateString("en-US", {
                     year: "numeric",
-                    month: "long",
+                    month: "short",
                     day: "numeric",
                   })}
-                </p>
+                </span>
               </div>
             </div>
-            {invoice.roomType && (
-              <div className="flex items-start gap-2">
-                <Building className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
-                <div>
-                  <span className="font-medium text-gray-600">Room:</span>
-                  <p className="text-gray-900">{invoice.roomType}</p>
-                </div>
-              </div>
-            )}
-            {(invoice.adults !== undefined || invoice.children !== undefined || invoice.babies !== undefined) && (
-              <div className="flex items-start gap-2">
-                <User className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
-                <div>
-                  <span className="font-medium text-gray-600">Guests:</span>
-                  <p className="text-gray-900">
-                    {[
-                      invoice.adults !== undefined && invoice.adults > 0 ? `${invoice.adults} Adult${invoice.adults !== 1 ? 's' : ''}` : null,
-                      invoice.children !== undefined && invoice.children > 0 ? `${invoice.children} Child${invoice.children !== 1 ? 'ren' : ''}` : null,
-                      invoice.babies !== undefined && invoice.babies > 0 ? `${invoice.babies} Bab${invoice.babies !== 1 ? 'ies' : 'y'}` : null,
-                    ].filter(Boolean).join(', ') || 'N/A'}
-                  </p>
-                </div>
+            {/* Line 2: Room and Guests */}
+            {(invoice.roomType || invoice.adults !== undefined || invoice.children !== undefined || invoice.babies !== undefined) && (
+              <div className="flex flex-wrap gap-x-4 gap-y-1">
+                {invoice.roomType && (
+                  <div>
+                    <span className="font-medium text-gray-600">Room: </span>
+                    <span className="text-gray-900">{invoice.roomType}</span>
+                  </div>
+                )}
+                {(invoice.adults !== undefined || invoice.children !== undefined || invoice.babies !== undefined) && (
+                  <div>
+                    <span className="font-medium text-gray-600">Guests: </span>
+                    <span className="text-gray-900">
+                      {[
+                        invoice.adults !== undefined && invoice.adults > 0 ? `${invoice.adults} Adult${invoice.adults !== 1 ? 's' : ''}` : null,
+                        invoice.children !== undefined && invoice.children > 0 ? `${invoice.children} Child${invoice.children !== 1 ? 'ren' : ''}` : null,
+                        invoice.babies !== undefined && invoice.babies > 0 ? `${invoice.babies} Bab${invoice.babies !== 1 ? 'ies' : 'y'}` : null,
+                      ].filter(Boolean).join(', ') || 'N/A'}
+                    </span>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -483,21 +479,46 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
                     </h4>
                   )}
                   {bankDetails.length === 1 && (
-                    <h4 className="font-semibold text-xs mb-1.5 text-gray-900 print:text-xs print:mb-1">
+                    <h4 className="font-semibold text-xs mb-2 text-gray-900 print:text-xs print:mb-1.5">
                       Bank Transfer/Deposit Details:
                     </h4>
                   )}
-                  <div className="space-y-1 text-xs print:text-xs print:space-y-0.5">
-                    <div className="flex flex-wrap gap-x-3 gap-y-0.5">
-                      <span className="text-gray-900"><span className="font-medium text-gray-700">Account Name:</span> {bankDetail.accountName}</span>
-                      <span className="text-gray-900"><span className="font-medium text-gray-700">Bank Name:</span> {bankDetail.bankName}</span>
-                      <span className="text-gray-900"><span className="font-medium text-gray-700">Branch:</span> {bankDetail.branch}</span>
+                  {bankDetails.length === 1 ? (
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs print:text-xs print:gap-x-3 print:gap-y-1">
+                      <div>
+                        <span className="font-medium text-gray-700">Account Name:</span>
+                        <span className="text-gray-900 ml-1">{bankDetail.accountName}</span>
+                      </div>
+                      <div>
+                        <span className="font-medium text-gray-700">Bank Name:</span>
+                        <span className="text-gray-900 ml-1">{bankDetail.bankName}</span>
+                      </div>
+                      <div>
+                        <span className="font-medium text-gray-700">Branch:</span>
+                        <span className="text-gray-900 ml-1">{bankDetail.branch}</span>
+                      </div>
+                      <div>
+                        <span className="font-medium text-gray-700">Account Number:</span>
+                        <span className="text-gray-900 ml-1">{bankDetail.accountNumber}</span>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="font-medium text-gray-700">SWIFT Code:</span>
+                        <span className="text-gray-900 ml-1">{bankDetail.swiftCode}</span>
+                      </div>
                     </div>
-                    <div className="flex flex-wrap gap-x-3 gap-y-0.5">
-                      <span className="text-gray-900"><span className="font-medium text-gray-700">Account Number:</span> {bankDetail.accountNumber}</span>
-                      <span className="text-gray-900"><span className="font-medium text-gray-700">SWIFT Code:</span> {bankDetail.swiftCode}</span>
+                  ) : (
+                    <div className="space-y-1 text-xs print:text-xs print:space-y-0.5">
+                      <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+                        <span className="text-gray-900"><span className="font-medium text-gray-700">Account Name:</span> {bankDetail.accountName}</span>
+                        <span className="text-gray-900"><span className="font-medium text-gray-700">Bank Name:</span> {bankDetail.bankName}</span>
+                        <span className="text-gray-900"><span className="font-medium text-gray-700">Branch:</span> {bankDetail.branch}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+                        <span className="text-gray-900"><span className="font-medium text-gray-700">Account Number:</span> {bankDetail.accountNumber}</span>
+                        <span className="text-gray-900"><span className="font-medium text-gray-700">SWIFT Code:</span> {bankDetail.swiftCode}</span>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               ))}
             </div>
