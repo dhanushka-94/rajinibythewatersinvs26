@@ -99,7 +99,7 @@ export function generateInvoiceEmailHtml({
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <!-- Bill To -->
-                  <td width="33%" style="vertical-align: top; padding-right: 15px;">
+                  <td width="${(invoice.billingType === "company" || (invoice.guests && invoice.guests.length > 0)) ? "33%" : "50%"}" style="vertical-align: top; padding-right: 15px;">
                     <h3 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #111827;">🏢 Bill To:</h3>
                     ${invoice.billingType === "company" && travelCompany
                       ? `
@@ -125,7 +125,9 @@ export function generateInvoiceEmailHtml({
                       `}
                   </td>
                   
-                  <!-- Guest Information -->
+                  <!-- Guest Information - Only show if there's content -->
+                  ${(invoice.billingType === "company" || (invoice.guests && invoice.guests.length > 0))
+                    ? `
                   <td width="33%" style="vertical-align: top; padding: 0 15px; border-left: 1px solid #e5e7eb; border-right: 1px solid #e5e7eb;">
                     <h3 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #111827;">👤 Guest Information:</h3>
                     <div style="font-size: 11px; line-height: 1.6; color: #374151;">
@@ -137,9 +139,11 @@ export function generateInvoiceEmailHtml({
                         : ""}
                     </div>
                   </td>
+                  `
+                    : ""}
                   
                   <!-- Booking Details -->
-                  <td width="34%" style="vertical-align: top; padding-left: 15px;">
+                  <td width="${(invoice.billingType === "company" || (invoice.guests && invoice.guests.length > 0)) ? "34%" : "50%"}" style="vertical-align: top; padding-left: 15px;">
                     <h3 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #111827;">📅 Booking Details:</h3>
                     <div style="font-size: 11px; line-height: 1.6; color: #374151;">
                       <div style="margin-bottom: 6px;">
@@ -307,33 +311,33 @@ export function generateInvoiceEmailHtml({
             
             ${bankDetails.length > 0
               ? `
-            <div style="padding: 8px; background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 4px;">
+            <div style="padding: 6px; background-color: #eff6ff; border: 2px solid #bfdbfe; border-radius: 4px;">
               ${bankDetails.length > 1
                 ? `<table width="100%" cellpadding="0" cellspacing="0">
                     ${bankDetails
                       .map(
                         (bankDetail, index) => `
                       <tr>
-                        <td width="50%" style="vertical-align: top; padding-right: 12px; ${index < bankDetails.length - 1 ? "border-right: 1px solid #d1d5db;" : ""}">
-                          <h4 style="margin: 0 0 6px 0; font-size: 10px; font-weight: 600; color: #111827;">Bank Transfer/Deposit Details #${index + 1}:</h4>
-                          <div style="font-size: 9px; line-height: 1.5; color: #374151;">
-                            <div style="margin-bottom: 3px;"><strong>Account Name:</strong> ${bankDetail.accountName}</div>
-                            <div style="margin-bottom: 3px;"><strong>Bank Name:</strong> ${bankDetail.bankName}</div>
-                            <div style="margin-bottom: 3px;"><strong>Branch:</strong> ${bankDetail.branch}</div>
-                            <div style="margin-bottom: 3px;"><strong>Account Number:</strong> ${bankDetail.accountNumber}</div>
-                            <div><strong>SWIFT Code:</strong> ${bankDetail.swiftCode}</div>
+                        <td width="50%" style="vertical-align: top; padding-right: 10px; ${index < bankDetails.length - 1 ? "border-right: 2px solid #93c5fd;" : ""}">
+                          <h4 style="margin: 0 0 4px 0; font-size: 9px; font-weight: 700; color: #1e3a8a;">Bank Transfer/Deposit Details #${index + 1}:</h4>
+                          <div style="font-size: 8.5px; line-height: 1.3; color: #1e3a8a;">
+                            <div style="margin-bottom: 2px;"><strong style="color: #1e40af; font-weight: 600;">Account Name:</strong> <span style="font-weight: 500;">${bankDetail.accountName}</span></div>
+                            <div style="margin-bottom: 2px;"><strong style="color: #1e40af; font-weight: 600;">Bank Name:</strong> <span style="font-weight: 500;">${bankDetail.bankName}</span></div>
+                            <div style="margin-bottom: 2px;"><strong style="color: #1e40af; font-weight: 600;">Branch:</strong> <span style="font-weight: 500;">${bankDetail.branch}</span></div>
+                            <div style="margin-bottom: 2px;"><strong style="color: #1e40af; font-weight: 600;">Account Number:</strong> <span style="font-weight: 500;">${bankDetail.accountNumber}</span></div>
+                            <div><strong style="color: #1e40af; font-weight: 600;">SWIFT Code:</strong> <span style="font-weight: 500;">${bankDetail.swiftCode}</span></div>
                           </div>
                         </td>
                         ${index < bankDetails.length - 1
                           ? `
-                        <td width="50%" style="vertical-align: top; padding-left: 12px;">
-                          <h4 style="margin: 0 0 6px 0; font-size: 10px; font-weight: 600; color: #111827;">Bank Transfer/Deposit Details #${index + 2}:</h4>
-                          <div style="font-size: 9px; line-height: 1.5; color: #374151;">
-                            <div style="margin-bottom: 3px;"><strong>Account Name:</strong> ${bankDetails[index + 1].accountName}</div>
-                            <div style="margin-bottom: 3px;"><strong>Bank Name:</strong> ${bankDetails[index + 1].bankName}</div>
-                            <div style="margin-bottom: 3px;"><strong>Branch:</strong> ${bankDetails[index + 1].branch}</div>
-                            <div style="margin-bottom: 3px;"><strong>Account Number:</strong> ${bankDetails[index + 1].accountNumber}</div>
-                            <div><strong>SWIFT Code:</strong> ${bankDetails[index + 1].swiftCode}</div>
+                        <td width="50%" style="vertical-align: top; padding-left: 10px;">
+                          <h4 style="margin: 0 0 4px 0; font-size: 9px; font-weight: 700; color: #1e3a8a;">Bank Transfer/Deposit Details #${index + 2}:</h4>
+                          <div style="font-size: 8.5px; line-height: 1.3; color: #1e3a8a;">
+                            <div style="margin-bottom: 2px;"><strong style="color: #1e40af; font-weight: 600;">Account Name:</strong> <span style="font-weight: 500;">${bankDetails[index + 1].accountName}</span></div>
+                            <div style="margin-bottom: 2px;"><strong style="color: #1e40af; font-weight: 600;">Bank Name:</strong> <span style="font-weight: 500;">${bankDetails[index + 1].bankName}</span></div>
+                            <div style="margin-bottom: 2px;"><strong style="color: #1e40af; font-weight: 600;">Branch:</strong> <span style="font-weight: 500;">${bankDetails[index + 1].branch}</span></div>
+                            <div style="margin-bottom: 2px;"><strong style="color: #1e40af; font-weight: 600;">Account Number:</strong> <span style="font-weight: 500;">${bankDetails[index + 1].accountNumber}</span></div>
+                            <div><strong style="color: #1e40af; font-weight: 600;">SWIFT Code:</strong> <span style="font-weight: 500;">${bankDetails[index + 1].swiftCode}</span></div>
                           </div>
                         </td>
                         `
@@ -344,14 +348,24 @@ export function generateInvoiceEmailHtml({
                       .join("")}
                   </table>`
                 : `
-                  <h4 style="margin: 0 0 6px 0; font-size: 10px; font-weight: 600; color: #111827;">Bank Transfer/Deposit Details:</h4>
-                  <div style="font-size: 9px; line-height: 1.5; color: #374151;">
-                    <div style="margin-bottom: 3px;"><strong>Account Name:</strong> ${bankDetails[0].accountName}</div>
-                    <div style="margin-bottom: 3px;"><strong>Bank Name:</strong> ${bankDetails[0].bankName}</div>
-                    <div style="margin-bottom: 3px;"><strong>Branch:</strong> ${bankDetails[0].branch}</div>
-                    <div style="margin-bottom: 3px;"><strong>Account Number:</strong> ${bankDetails[0].accountNumber}</div>
-                    <div><strong>SWIFT Code:</strong> ${bankDetails[0].swiftCode}</div>
-                  </div>
+                  <h4 style="margin: 0 0 4px 0; font-size: 9px; font-weight: 700; color: #1e3a8a;">Bank Transfer/Deposit Details:</h4>
+                  <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td width="50%" style="vertical-align: top; padding-right: 8px;">
+                        <div style="font-size: 8.5px; line-height: 1.3; color: #1e3a8a;">
+                          <div style="margin-bottom: 2px;"><strong style="color: #1e40af; font-weight: 600;">Account Name:</strong> <span style="font-weight: 500;">${bankDetails[0].accountName}</span></div>
+                          <div style="margin-bottom: 2px;"><strong style="color: #1e40af; font-weight: 600;">Bank Name:</strong> <span style="font-weight: 500;">${bankDetails[0].bankName}</span></div>
+                          <div style="margin-bottom: 2px;"><strong style="color: #1e40af; font-weight: 600;">Branch:</strong> <span style="font-weight: 500;">${bankDetails[0].branch}</span></div>
+                        </div>
+                      </td>
+                      <td width="50%" style="vertical-align: top; padding-left: 8px;">
+                        <div style="font-size: 8.5px; line-height: 1.3; color: #1e3a8a;">
+                          <div style="margin-bottom: 2px;"><strong style="color: #1e40af; font-weight: 600;">Account Number:</strong> <span style="font-weight: 500;">${bankDetails[0].accountNumber}</span></div>
+                          <div><strong style="color: #1e40af; font-weight: 600;">SWIFT Code:</strong> <span style="font-weight: 500;">${bankDetails[0].swiftCode}</span></div>
+                        </div>
+                      </td>
+                    </tr>
+                  </table>
                 `}
             </div>
             `

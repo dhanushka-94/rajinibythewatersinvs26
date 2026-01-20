@@ -167,8 +167,8 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
         </div>
       )}
 
-      {/* Bill To, Guest Information, and Booking Details - Three columns */}
-      <div className="grid grid-cols-3 gap-6 mb-8 print:gap-4 print:mb-4">
+      {/* Bill To, Guest Information, and Booking Details - Dynamic columns */}
+      <div className={`grid gap-6 mb-8 print:gap-4 print:mb-4 ${(invoice.billingType === "company" || (invoice.guests && invoice.guests.length > 0)) ? 'grid-cols-3' : 'grid-cols-2'}`}>
         {/* Bill To Section */}
         <div className="break-inside-avoid">
           <h2 className="font-semibold text-lg mb-4 text-gray-900 print:text-base print:mb-2 flex items-center gap-2">
@@ -242,35 +242,37 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
           )}
         </div>
 
-        {/* Guest Information Section */}
-        <div className="break-inside-avoid">
-          <h3 className="font-semibold text-lg mb-4 text-gray-900 print:text-base print:mb-2 flex items-center gap-2">
-            <UserCircle className="h-5 w-5 text-gray-600 print:h-4 print:w-4" />
-            Guest Information:
-          </h3>
-          <div className="space-y-1.5 text-sm print:text-xs">
-            {/* Show primary guest if billing to company OR if there are additional guests */}
-            {(invoice.billingType === "company" || (invoice.guests && invoice.guests.length > 0)) && invoice.guest.name && (
-              <div className="flex items-start gap-2">
-                <User className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
-                <p className="text-gray-600">{invoice.guest.name}</p>
-              </div>
-            )}
-            {/* Show additional guests (only names) */}
-            {invoice.guests && invoice.guests.length > 0 && (
-              <>
-                {invoice.guests.map((guest, index) => (
-                  guest.name && (
-                    <div key={index} className="flex items-start gap-2">
-                      <User className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
-                      <p className="text-gray-600">{guest.name}</p>
-                    </div>
-                  )
-                ))}
-              </>
-            )}
+        {/* Guest Information Section - Only show if there's content */}
+        {(invoice.billingType === "company" || (invoice.guests && invoice.guests.length > 0)) && (
+          <div className="break-inside-avoid">
+            <h3 className="font-semibold text-lg mb-4 text-gray-900 print:text-base print:mb-2 flex items-center gap-2">
+              <UserCircle className="h-5 w-5 text-gray-600 print:h-4 print:w-4" />
+              Guest Information:
+            </h3>
+            <div className="space-y-1.5 text-sm print:text-xs">
+              {/* Show primary guest if billing to company OR if there are additional guests */}
+              {(invoice.billingType === "company" || (invoice.guests && invoice.guests.length > 0)) && invoice.guest.name && (
+                <div className="flex items-start gap-2">
+                  <User className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
+                  <p className="text-gray-600">{invoice.guest.name}</p>
+                </div>
+              )}
+              {/* Show additional guests (only names) */}
+              {invoice.guests && invoice.guests.length > 0 && (
+                <>
+                  {invoice.guests.map((guest, index) => (
+                    guest.name && (
+                      <div key={index} className="flex items-start gap-2">
+                        <User className="h-4 w-4 text-gray-400 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
+                        <p className="text-gray-600">{guest.name}</p>
+                      </div>
+                    )
+                  ))}
+                </>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Booking Details Section */}
         <div className="break-inside-avoid">
@@ -470,52 +472,52 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
           )}
 
           {bankDetails.length > 0 && (
-            <div className={`p-3 bg-gray-50 rounded-lg border print:p-2 ${bankDetails.length > 1 ? 'grid grid-cols-2 gap-4 print:gap-3' : ''}`}>
+            <div className={`p-2.5 bg-blue-50 rounded-md border-2 border-blue-200 print:p-2 print:bg-gray-50 print:border print:border-gray-300 ${bankDetails.length > 1 ? 'grid grid-cols-2 gap-3 print:gap-2.5' : ''}`}>
               {bankDetails.map((bankDetail, index) => (
-                <div key={bankDetail.id || index} className={bankDetails.length > 1 ? 'border-r border-gray-300 pr-4 print:pr-3 last:border-r-0 last:pr-0' : ''}>
+                <div key={bankDetail.id || index} className={bankDetails.length > 1 ? 'border-r-2 border-blue-300 pr-3 print:border-r print:border-gray-300 print:pr-2.5 last:border-r-0 last:pr-0' : ''}>
                   {bankDetails.length > 1 && (
-                    <h4 className="font-semibold text-xs mb-1.5 text-gray-900 print:text-xs print:mb-1">
+                    <h4 className="font-bold text-xs mb-1.5 text-blue-900 print:text-gray-900 print:mb-1 print:text-[8pt]">
                       Bank Transfer/Deposit Details #{index + 1}:
                     </h4>
                   )}
                   {bankDetails.length === 1 && (
-                    <h4 className="font-semibold text-xs mb-2 text-gray-900 print:text-xs print:mb-1.5">
+                    <h4 className="font-bold text-xs mb-1.5 text-blue-900 print:text-gray-900 print:mb-1 print:text-[8pt]">
                       Bank Transfer/Deposit Details:
                     </h4>
                   )}
                   {bankDetails.length === 1 ? (
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs print:text-xs print:gap-x-3 print:gap-y-1">
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] leading-tight print:text-[8pt] print:gap-x-2 print:gap-y-0.5">
                       <div>
-                        <span className="font-medium text-gray-700">Account Name:</span>
-                        <span className="text-gray-900 ml-1">{bankDetail.accountName}</span>
+                        <span className="font-semibold text-blue-800 print:text-gray-700">Account Name:</span>
+                        <span className="text-blue-900 font-medium ml-1 print:text-gray-900">{bankDetail.accountName}</span>
                       </div>
                       <div>
-                        <span className="font-medium text-gray-700">Bank Name:</span>
-                        <span className="text-gray-900 ml-1">{bankDetail.bankName}</span>
+                        <span className="font-semibold text-blue-800 print:text-gray-700">Bank Name:</span>
+                        <span className="text-blue-900 font-medium ml-1 print:text-gray-900">{bankDetail.bankName}</span>
                       </div>
                       <div>
-                        <span className="font-medium text-gray-700">Branch:</span>
-                        <span className="text-gray-900 ml-1">{bankDetail.branch}</span>
+                        <span className="font-semibold text-blue-800 print:text-gray-700">Branch:</span>
+                        <span className="text-blue-900 font-medium ml-1 print:text-gray-900">{bankDetail.branch}</span>
                       </div>
                       <div>
-                        <span className="font-medium text-gray-700">Account Number:</span>
-                        <span className="text-gray-900 ml-1">{bankDetail.accountNumber}</span>
+                        <span className="font-semibold text-blue-800 print:text-gray-700">Account Number:</span>
+                        <span className="text-blue-900 font-medium ml-1 print:text-gray-900">{bankDetail.accountNumber}</span>
                       </div>
                       <div className="col-span-2">
-                        <span className="font-medium text-gray-700">SWIFT Code:</span>
-                        <span className="text-gray-900 ml-1">{bankDetail.swiftCode}</span>
+                        <span className="font-semibold text-blue-800 print:text-gray-700">SWIFT Code:</span>
+                        <span className="text-blue-900 font-medium ml-1 print:text-gray-900">{bankDetail.swiftCode}</span>
                       </div>
                     </div>
                   ) : (
-                    <div className="space-y-1 text-xs print:text-xs print:space-y-0.5">
-                      <div className="flex flex-wrap gap-x-3 gap-y-0.5">
-                        <span className="text-gray-900"><span className="font-medium text-gray-700">Account Name:</span> {bankDetail.accountName}</span>
-                        <span className="text-gray-900"><span className="font-medium text-gray-700">Bank Name:</span> {bankDetail.bankName}</span>
-                        <span className="text-gray-900"><span className="font-medium text-gray-700">Branch:</span> {bankDetail.branch}</span>
+                    <div className="space-y-0.5 text-[11px] leading-tight print:text-[8pt] print:space-y-0">
+                      <div className="flex flex-wrap gap-x-2.5 gap-y-0.5">
+                        <span className="text-blue-900 font-medium print:text-gray-900"><span className="font-semibold text-blue-800 print:text-gray-700">Account Name:</span> {bankDetail.accountName}</span>
+                        <span className="text-blue-900 font-medium print:text-gray-900"><span className="font-semibold text-blue-800 print:text-gray-700">Bank Name:</span> {bankDetail.bankName}</span>
+                        <span className="text-blue-900 font-medium print:text-gray-900"><span className="font-semibold text-blue-800 print:text-gray-700">Branch:</span> {bankDetail.branch}</span>
                       </div>
-                      <div className="flex flex-wrap gap-x-3 gap-y-0.5">
-                        <span className="text-gray-900"><span className="font-medium text-gray-700">Account Number:</span> {bankDetail.accountNumber}</span>
-                        <span className="text-gray-900"><span className="font-medium text-gray-700">SWIFT Code:</span> {bankDetail.swiftCode}</span>
+                      <div className="flex flex-wrap gap-x-2.5 gap-y-0.5">
+                        <span className="text-blue-900 font-medium print:text-gray-900"><span className="font-semibold text-blue-800 print:text-gray-700">Account Number:</span> {bankDetail.accountNumber}</span>
+                        <span className="text-blue-900 font-medium print:text-gray-900"><span className="font-semibold text-blue-800 print:text-gray-700">SWIFT Code:</span> {bankDetail.swiftCode}</span>
                       </div>
                     </div>
                   )}

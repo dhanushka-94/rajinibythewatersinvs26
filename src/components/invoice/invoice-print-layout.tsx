@@ -180,10 +180,10 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
         <Separator style={{ border: 'none', borderTop: '1px solid #e5e7eb', marginTop: '8px' }} />
       </div>
 
-      {/* Bill To, Guest Information, and Booking Details - Three columns */}
+      {/* Bill To, Guest Information, and Booking Details - Dynamic columns */}
       <div style={{ 
         display: 'grid', 
-        gridTemplateColumns: '1fr 1fr 1fr', 
+        gridTemplateColumns: (invoice.billingType === "company" || (invoice.guests && invoice.guests.length > 0)) ? '1fr 1fr 1fr' : '1fr 1fr', 
         gap: '16px', 
         marginBottom: '24px' 
       }}>
@@ -260,35 +260,37 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
           )}
         </div>
 
-        {/* Guest Information Section */}
-        <div>
-          <h3 className="font-semibold text-base mb-3 text-gray-900" style={{ fontSize: '12pt', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <UserCircle style={{ width: '16px', height: '16px', color: '#4b5563' }} />
-            Guest Information:
-          </h3>
-          <div className="space-y-1.5 text-xs" style={{ fontSize: '9pt', lineHeight: '1.5' }}>
-            {/* Show primary guest if billing to company OR if there are additional guests */}
-            {(invoice.billingType === "company" || (invoice.guests && invoice.guests.length > 0)) && invoice.guest.name && (
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                <User style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
-                <p className="text-gray-600">{invoice.guest.name}</p>
-              </div>
-            )}
-            {/* Show additional guests (only names) */}
-            {invoice.guests && invoice.guests.length > 0 && (
-              <>
-                {invoice.guests.map((guest, index) => (
-                  guest.name && (
-                    <div key={index} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                      <User style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
-                      <p className="text-gray-600">{guest.name}</p>
-                    </div>
-                  )
-                ))}
-              </>
-            )}
+        {/* Guest Information Section - Only show if there's content */}
+        {(invoice.billingType === "company" || (invoice.guests && invoice.guests.length > 0)) && (
+          <div>
+            <h3 className="font-semibold text-base mb-3 text-gray-900" style={{ fontSize: '12pt', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <UserCircle style={{ width: '16px', height: '16px', color: '#4b5563' }} />
+              Guest Information:
+            </h3>
+            <div className="space-y-1.5 text-xs" style={{ fontSize: '9pt', lineHeight: '1.5' }}>
+              {/* Show primary guest if billing to company OR if there are additional guests */}
+              {(invoice.billingType === "company" || (invoice.guests && invoice.guests.length > 0)) && invoice.guest.name && (
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                  <User style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
+                  <p className="text-gray-600">{invoice.guest.name}</p>
+                </div>
+              )}
+              {/* Show additional guests (only names) */}
+              {invoice.guests && invoice.guests.length > 0 && (
+                <>
+                  {invoice.guests.map((guest, index) => (
+                    guest.name && (
+                      <div key={index} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                        <User style={{ width: '12px', height: '12px', color: '#9ca3af', marginTop: '2px', flexShrink: 0 }} />
+                        <p className="text-gray-600">{guest.name}</p>
+                      </div>
+                    )
+                  ))}
+                </>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Booking Details Section */}
         <div>
@@ -621,30 +623,31 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
           )}
 
           {bankDetails.length > 0 && (
-            <div className="p-2 bg-gray-50 rounded" style={{ 
-              padding: '8px', 
-              backgroundColor: '#f9fafb',
+            <div className="p-2 bg-blue-50 rounded border-2 border-blue-200" style={{ 
+              padding: '6px', 
+              backgroundColor: '#eff6ff',
+              border: '2px solid #bfdbfe',
               borderRadius: '4px',
               pageBreakInside: 'avoid',
               breakInside: 'avoid',
               display: bankDetails.length > 1 ? 'grid' : 'block',
               gridTemplateColumns: bankDetails.length > 1 ? '1fr 1fr' : 'none',
-              gap: bankDetails.length > 1 ? '12px' : '0'
+              gap: bankDetails.length > 1 ? '10px' : '0'
             }}>
               {bankDetails.map((bankDetail, index) => (
                 <div key={bankDetail.id || index} style={{
                   pageBreakInside: 'avoid',
                   breakInside: 'avoid',
-                  borderRight: bankDetails.length > 1 && index < bankDetails.length - 1 ? '1px solid #d1d5db' : 'none',
-                  paddingRight: bankDetails.length > 1 && index < bankDetails.length - 1 ? '12px' : '0'
+                  borderRight: bankDetails.length > 1 && index < bankDetails.length - 1 ? '2px solid #93c5fd' : 'none',
+                  paddingRight: bankDetails.length > 1 && index < bankDetails.length - 1 ? '10px' : '0'
                 }}>
                   {bankDetails.length > 1 && (
-                    <h4 className="font-semibold text-xs mb-1 text-gray-900" style={{ fontSize: '8pt', marginBottom: '4px' }}>
+                    <h4 className="font-bold text-xs mb-1 text-blue-900" style={{ fontSize: '8pt', fontWeight: '700', marginBottom: '4px', color: '#1e3a8a' }}>
                       Bank Transfer/Deposit Details #{index + 1}:
                     </h4>
                   )}
                   {bankDetails.length === 1 && (
-                    <h4 className="font-semibold text-xs mb-1 text-gray-900" style={{ fontSize: '8pt', marginBottom: '6px' }}>
+                    <h4 className="font-bold text-xs mb-1 text-blue-900" style={{ fontSize: '8pt', fontWeight: '700', marginBottom: '4px', color: '#1e3a8a' }}>
                       Bank Transfer/Deposit Details:
                     </h4>
                   )}
@@ -652,69 +655,68 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
                     <div style={{ 
                       display: 'grid',
                       gridTemplateColumns: '1fr 1fr',
-                      gap: '8px 16px',
-                      fontSize: '8pt',
+                      gap: '6px 12px',
+                      fontSize: '7.5pt',
                       pageBreakInside: 'avoid',
                       breakInside: 'avoid',
-                      lineHeight: '1.4'
+                      lineHeight: '1.3'
                     }}>
                       <div>
-                        <span style={{ fontWeight: '500', color: '#374151' }}>Account Name:</span>
-                        <span style={{ color: '#111827', marginLeft: '4px' }}>{bankDetail.accountName}</span>
+                        <span style={{ fontWeight: '600', color: '#1e40af' }}>Account Name:</span>
+                        <span style={{ color: '#1e3a8a', fontWeight: '500', marginLeft: '3px' }}>{bankDetail.accountName}</span>
                       </div>
                       <div>
-                        <span style={{ fontWeight: '500', color: '#374151' }}>Bank Name:</span>
-                        <span style={{ color: '#111827', marginLeft: '4px' }}>{bankDetail.bankName}</span>
+                        <span style={{ fontWeight: '600', color: '#1e40af' }}>Bank Name:</span>
+                        <span style={{ color: '#1e3a8a', fontWeight: '500', marginLeft: '3px' }}>{bankDetail.bankName}</span>
                       </div>
                       <div>
-                        <span style={{ fontWeight: '500', color: '#374151' }}>Branch:</span>
-                        <span style={{ color: '#111827', marginLeft: '4px' }}>{bankDetail.branch}</span>
+                        <span style={{ fontWeight: '600', color: '#1e40af' }}>Branch:</span>
+                        <span style={{ color: '#1e3a8a', fontWeight: '500', marginLeft: '3px' }}>{bankDetail.branch}</span>
                       </div>
                       <div>
-                        <span style={{ fontWeight: '500', color: '#374151' }}>Account Number:</span>
-                        <span style={{ color: '#111827', marginLeft: '4px' }}>{bankDetail.accountNumber}</span>
+                        <span style={{ fontWeight: '600', color: '#1e40af' }}>Account Number:</span>
+                        <span style={{ color: '#1e3a8a', fontWeight: '500', marginLeft: '3px' }}>{bankDetail.accountNumber}</span>
                       </div>
                       <div style={{ gridColumn: '1 / -1' }}>
-                        <span style={{ fontWeight: '500', color: '#374151' }}>SWIFT Code:</span>
-                        <span style={{ color: '#111827', marginLeft: '4px' }}>{bankDetail.swiftCode}</span>
+                        <span style={{ fontWeight: '600', color: '#1e40af' }}>SWIFT Code:</span>
+                        <span style={{ color: '#1e3a8a', fontWeight: '500', marginLeft: '3px' }}>{bankDetail.swiftCode}</span>
                       </div>
                     </div>
                   ) : (
                     <div style={{ 
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '3px',
-                      fontSize: '8pt',
+                      gap: '2px',
+                      fontSize: '7.5pt',
                       pageBreakInside: 'avoid',
-                      breakInside: 'avoid'
+                      breakInside: 'avoid',
+                      lineHeight: '1.3'
                     }}>
                       <div style={{ 
                         display: 'flex',
                         flexWrap: 'wrap',
-                        gap: '12px 12px',
-                        lineHeight: '1.3'
+                        gap: '10px 10px'
                       }}>
-                        <span style={{ color: '#111827' }}>
-                          <span style={{ fontWeight: '500', color: '#374151' }}>Account Name:</span> {bankDetail.accountName}
+                        <span style={{ color: '#1e3a8a', fontWeight: '500' }}>
+                          <span style={{ fontWeight: '600', color: '#1e40af' }}>Account Name:</span> {bankDetail.accountName}
                         </span>
-                        <span style={{ color: '#111827' }}>
-                          <span style={{ fontWeight: '500', color: '#374151' }}>Bank Name:</span> {bankDetail.bankName}
+                        <span style={{ color: '#1e3a8a', fontWeight: '500' }}>
+                          <span style={{ fontWeight: '600', color: '#1e40af' }}>Bank Name:</span> {bankDetail.bankName}
                         </span>
-                        <span style={{ color: '#111827' }}>
-                          <span style={{ fontWeight: '500', color: '#374151' }}>Branch:</span> {bankDetail.branch}
+                        <span style={{ color: '#1e3a8a', fontWeight: '500' }}>
+                          <span style={{ fontWeight: '600', color: '#1e40af' }}>Branch:</span> {bankDetail.branch}
                         </span>
                       </div>
                       <div style={{ 
                         display: 'flex',
                         flexWrap: 'wrap',
-                        gap: '12px 12px',
-                        lineHeight: '1.3'
+                        gap: '10px 10px'
                       }}>
-                        <span style={{ color: '#111827' }}>
-                          <span style={{ fontWeight: '500', color: '#374151' }}>Account Number:</span> {bankDetail.accountNumber}
+                        <span style={{ color: '#1e3a8a', fontWeight: '500' }}>
+                          <span style={{ fontWeight: '600', color: '#1e40af' }}>Account Number:</span> {bankDetail.accountNumber}
                         </span>
-                        <span style={{ color: '#111827' }}>
-                          <span style={{ fontWeight: '500', color: '#374151' }}>SWIFT Code:</span> {bankDetail.swiftCode}
+                        <span style={{ color: '#1e3a8a', fontWeight: '500' }}>
+                          <span style={{ fontWeight: '600', color: '#1e40af' }}>SWIFT Code:</span> {bankDetail.swiftCode}
                         </span>
                       </div>
                     </div>
