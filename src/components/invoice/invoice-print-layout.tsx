@@ -358,51 +358,85 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
 
       {/* Invoice Items Table */}
       <div className="mb-4" style={{ marginBottom: '24px', pageBreakInside: 'avoid' }}>
-        <Table style={{ width: '100%', borderCollapse: 'collapse', borderSpacing: 0 }}>
-          <TableHeader>
-            <TableRow style={{ pageBreakInside: 'avoid', backgroundColor: '#f3f4f6' }}>
-              <TableHead className="font-semibold text-left" style={{ 
+        <Table style={{ width: '100%', borderCollapse: 'collapse', borderSpacing: 0, border: '1px solid #ffffff' }}>
+          <TableHeader className="[&_tr]:border-0" style={{ border: 'none', borderWidth: 0 }}>
+            <TableRow className="border-0" style={{ 
+              pageBreakInside: 'avoid', 
+              backgroundColor: '#f3f4f6', 
+              borderBottom: '1px solid #ffffff !important',
+              borderTop: 'none !important',
+              borderLeft: 'none !important',
+              borderRight: 'none !important',
+              borderWidth: '0 0 1px 0',
+              borderColor: 'transparent transparent #ffffff transparent',
+              borderStyle: 'none none solid none'
+            }}>
+              <TableHead className="font-semibold text-left border-0" style={{ 
                 padding: '10px 6px', 
                 fontSize: '9pt',
                 fontWeight: '600',
                 textAlign: 'left',
-                border: 'none',
+                borderRight: '1px solid #ffffff !important',
+                borderBottom: '1px solid #ffffff !important',
+                borderTop: 'none !important',
+                borderLeft: 'none !important',
+                borderWidth: '0 1px 1px 0',
+                borderColor: 'transparent #ffffff #ffffff transparent',
+                borderStyle: 'none solid solid none',
                 pageBreakInside: 'avoid',
                 color: '#111827',
                 backgroundColor: '#f3f4f6'
               }}>
                 Description
               </TableHead>
-              <TableHead className="text-right font-semibold" style={{ 
+              <TableHead className="text-right font-semibold border-0" style={{ 
                 padding: '10px 6px', 
                 fontSize: '9pt',
                 fontWeight: '600',
                 textAlign: 'right',
-                border: 'none',
+                borderRight: '1px solid #ffffff !important',
+                borderBottom: '1px solid #ffffff !important',
+                borderTop: 'none !important',
+                borderLeft: 'none !important',
+                borderWidth: '0 1px 1px 0',
+                borderColor: 'transparent #ffffff #ffffff transparent',
+                borderStyle: 'none solid solid none',
                 pageBreakInside: 'avoid',
                 color: '#111827',
                 backgroundColor: '#f3f4f6'
               }}>
                 Qty/Days
               </TableHead>
-              <TableHead className="text-right font-semibold" style={{ 
+              <TableHead className="text-right font-semibold border-0" style={{ 
                 padding: '10px 6px', 
                 fontSize: '9pt',
                 fontWeight: '600',
                 textAlign: 'right',
-                border: 'none',
+                borderRight: '1px solid #ffffff !important',
+                borderBottom: '1px solid #ffffff !important',
+                borderTop: 'none !important',
+                borderLeft: 'none !important',
+                borderWidth: '0 1px 1px 0',
+                borderColor: 'transparent #ffffff #ffffff transparent',
+                borderStyle: 'none solid solid none',
                 pageBreakInside: 'avoid',
                 color: '#111827',
                 backgroundColor: '#f3f4f6'
               }}>
                 Unit Price
               </TableHead>
-              <TableHead className="text-right font-semibold" style={{ 
+              <TableHead className="text-right font-semibold border-0" style={{ 
                 padding: '10px 6px', 
                 fontSize: '9pt',
                 fontWeight: '600',
                 textAlign: 'right',
-                border: 'none',
+                borderBottom: '1px solid #ffffff !important',
+                borderTop: 'none !important',
+                borderLeft: 'none !important',
+                borderRight: 'none !important',
+                borderWidth: '0 0 1px 0',
+                borderColor: 'transparent transparent #ffffff transparent',
+                borderStyle: 'none none solid none',
                 pageBreakInside: 'avoid',
                 color: '#111827',
                 backgroundColor: '#f3f4f6'
@@ -411,45 +445,78 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
               </TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
-            {invoice.items.map((item) => (
-              <TableRow key={item.id} style={{ pageBreakInside: 'avoid' }}>
-                <TableCell className="font-medium text-left" style={{ 
+          <TableBody className="[&_tr]:border-0" style={{ border: 'none', borderWidth: 0 }}>
+            {invoice.items.map((item, index) => (
+              <TableRow key={item.id} className="border-0" style={{ 
+                pageBreakInside: 'avoid', 
+                borderBottom: index < invoice.items.length - 1 ? '1px solid #ffffff !important' : 'none !important',
+                borderTop: 'none !important',
+                borderLeft: 'none !important',
+                borderRight: 'none !important',
+                borderWidth: index < invoice.items.length - 1 ? '0 0 1px 0' : '0',
+                borderColor: index < invoice.items.length - 1 ? 'transparent transparent #ffffff transparent' : 'transparent',
+                borderStyle: index < invoice.items.length - 1 ? 'none none solid none' : 'none'
+              }}>
+                <TableCell className="font-medium text-left border-0" style={{ 
                   padding: '10px 6px', 
                   fontSize: '9pt',
                   textAlign: 'left',
-                  border: 'none',
+                  borderRight: '1px solid #ffffff !important',
+                  borderTop: 'none !important',
+                  borderLeft: 'none !important',
+                  borderBottom: 'none !important',
+                  borderWidth: '0 1px 0 0',
+                  borderColor: 'transparent #ffffff transparent transparent',
+                  borderStyle: 'none solid none none',
                   pageBreakInside: 'avoid',
                   color: '#111827'
                 }}>
                   {item.description}
                 </TableCell>
-                <TableCell className="text-right" style={{ 
+                <TableCell className="text-right border-0" style={{ 
                   padding: '10px 6px', 
                   fontSize: '9pt',
                   textAlign: 'right',
-                  border: 'none',
+                  borderRight: '1px solid #ffffff !important',
+                  borderTop: 'none !important',
+                  borderLeft: 'none !important',
+                  borderBottom: 'none !important',
+                  borderWidth: '0 1px 0 0',
+                  borderColor: 'transparent #ffffff transparent transparent',
+                  borderStyle: 'none solid none none',
                   pageBreakInside: 'avoid',
                   color: '#111827'
                 }}>
                   {item.quantity} {item.quantityType === "days" ? "Days" : "Qty"}
                 </TableCell>
-                <TableCell className="text-right" style={{ 
+                <TableCell className="text-right border-0" style={{ 
                   padding: '10px 6px', 
                   fontSize: '9pt',
                   textAlign: 'right',
-                  border: 'none',
+                  borderRight: '1px solid #ffffff !important',
+                  borderTop: 'none !important',
+                  borderLeft: 'none !important',
+                  borderBottom: 'none !important',
+                  borderWidth: '0 1px 0 0',
+                  borderColor: 'transparent #ffffff transparent transparent',
+                  borderStyle: 'none solid none none',
                   pageBreakInside: 'avoid',
                   color: '#111827'
                 }}>
                   {formatCurrency(item.unitPrice, invoice.currency)}
                 </TableCell>
-                <TableCell className="text-right font-medium" style={{ 
+                <TableCell className="text-right font-medium border-0" style={{ 
                   padding: '10px 6px', 
                   fontSize: '9pt',
                   fontWeight: '500',
                   textAlign: 'right',
-                  border: 'none',
+                  borderTop: 'none !important',
+                  borderLeft: 'none !important',
+                  borderRight: 'none !important',
+                  borderBottom: 'none !important',
+                  borderWidth: '0',
+                  borderColor: 'transparent',
+                  borderStyle: 'none',
                   pageBreakInside: 'avoid',
                   color: '#111827'
                 }}>

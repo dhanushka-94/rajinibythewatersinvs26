@@ -422,15 +422,28 @@
   box-shadow: none !important;
 }
 
-.invoice-print-template table,
-.invoice-print-template th,
-.invoice-print-template td {
+.invoice-print-template table {
+  border: 1px solid #ffffff !important;
+}
+
+.invoice-print-template table th,
+.invoice-print-template table td {
   border: none !important;
-  border-bottom: 1px solid #111827 !important;
+  border-right: 1px solid #ffffff !important;
+  border-bottom: 1px solid #ffffff !important;
+}
+
+.invoice-print-template table th:last-child,
+.invoice-print-template table td:last-child {
+  border-right: none !important;
+}
+
+.invoice-print-template table tbody tr:last-child td {
+  border-bottom: none !important;
 }
 
 .invoice-print-template thead th {
-  border-bottom: 1px solid #111827 !important;
+  border-bottom: 1px solid #ffffff !important;
 }
 
 .invoice-print-template .card,
