@@ -30,14 +30,36 @@ export async function generatePDF(
     element.style.display = 'block';
     element.style.overflow = 'visible';
     element.style.width = '210mm'; // A4 width
+    element.style.minHeight = '297mm';
     element.style.margin = '0';
     element.style.padding = '0'; // No padding, margins handled by PDF
     element.style.border = 'none';
     element.style.boxShadow = 'none';
+    element.style.position = 'relative';
+    element.style.visibility = 'visible';
+    element.style.opacity = '1';
     element.className = originalClassName;
     
-    // Wait for styles to apply
-    await new Promise(resolve => setTimeout(resolve, 150));
+    // Wait for styles and fonts to apply
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    // Force a reflow to ensure all styles are applied
+    void element.offsetHeight;
+    
+    // Wait for all images to load
+    const images = element.getElementsByTagName('img');
+    const imagePromises = Array.from(images).map((img) => {
+      if (img.complete) return Promise.resolve();
+      return new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = resolve; // Continue even if image fails
+        setTimeout(resolve, 2000); // Timeout after 2 seconds
+      });
+    });
+    await Promise.all(imagePromises);
+    
+    // Additional wait for any remaining async rendering
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     // A4 dimensions in mm with 1cm (10mm) margins on all sides
     const a4Width = 210;
@@ -52,16 +74,41 @@ export async function generatePDF(
       useCORS: true,
       logging: false,
       backgroundColor: '#ffffff',
-      width: element.scrollWidth,
-      height: element.scrollHeight,
-      windowWidth: element.scrollWidth,
-      windowHeight: element.scrollHeight,
+      width: element.scrollWidth || element.offsetWidth,
+      height: element.scrollHeight || element.offsetHeight,
+      windowWidth: element.scrollWidth || element.offsetWidth,
+      windowHeight: element.scrollHeight || element.offsetHeight,
       x: 0,
       y: 0,
       scrollX: 0,
       scrollY: 0,
       allowTaint: false,
       removeContainer: false,
+      ignoreElements: (element) => {
+        // Ignore elements that might cause issues
+        return element.classList?.contains('print:hidden') || false;
+      },
+      onclone: (clonedDoc) => {
+        // Ensure all styles are preserved in the cloned document
+        const clonedElement = clonedDoc.getElementById(elementId);
+        if (clonedElement) {
+          clonedElement.style.width = '210mm';
+          clonedElement.style.minHeight = '297mm';
+          clonedElement.style.backgroundColor = 'white';
+          clonedElement.style.visibility = 'visible';
+          clonedElement.style.opacity = '1';
+          clonedElement.style.position = 'relative';
+          clonedElement.style.display = 'block';
+        }
+        
+        // Ensure all images in cloned document are visible
+        const clonedImages = clonedDoc.getElementsByTagName('img');
+        Array.from(clonedImages).forEach((img: HTMLImageElement) => {
+          img.style.display = 'block';
+          img.style.visibility = 'visible';
+          img.style.opacity = '1';
+        });
+      },
     });
 
     // Calculate dimensions to fit A4 with 2cm margins

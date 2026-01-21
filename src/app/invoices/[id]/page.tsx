@@ -167,11 +167,17 @@ export default function InvoiceDetailPage({
       // Create a temporary container for the print template
       const printContainer = document.createElement('div');
       printContainer.id = 'invoice-print-container';
-      printContainer.style.position = 'absolute';
-      printContainer.style.left = '-9999px';
+      // Position off-screen but visible for html2canvas
+      printContainer.style.position = 'fixed';
+      printContainer.style.left = '0';
       printContainer.style.top = '0';
       printContainer.style.width = '210mm';
+      printContainer.style.minHeight = '297mm';
       printContainer.style.backgroundColor = 'white';
+      printContainer.style.zIndex = '9999';
+      printContainer.style.visibility = 'hidden';
+      printContainer.style.opacity = '0';
+      printContainer.style.pointerEvents = 'none';
       document.body.appendChild(printContainer);
 
       // Render the print template
@@ -179,8 +185,15 @@ export default function InvoiceDetailPage({
       root.render(React.createElement(InvoicePrintLayout, { invoice }));
       
       // Wait for rendering and async data loading (bank details, travel company, hotel info)
-      // Increased timeout to ensure all async data is loaded before PDF generation
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Increased timeout to ensure all async data is loaded and images are rendered
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Make visible for html2canvas (but still off-screen)
+      printContainer.style.visibility = 'visible';
+      printContainer.style.opacity = '1';
+      
+      // Additional wait for styles to apply
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       // Generate PDF from the print template
       await generatePDF('invoice-print-container', `${invoice.invoiceNumber}.pdf`);
