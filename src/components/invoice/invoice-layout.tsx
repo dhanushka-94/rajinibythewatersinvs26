@@ -424,79 +424,65 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
       )}
 
       {(invoice.paymentMethods.length > 0 || bankDetails.length > 0) && (
-        <div className="mt-4 pt-3 border-t border-gray-900 print:mt-3 print:pt-2">
-          <h3 className="font-semibold text-base mb-2 text-gray-900 print:text-sm print:mb-1.5">Payment Information</h3>
+        <div className="mt-3 pt-2 border-t border-gray-900 print:mt-2 print:pt-1.5">
+          <h3 className="font-semibold text-sm mb-1.5 text-gray-900 print:text-xs print:mb-1">Payment Information</h3>
           
-          {invoice.paymentMethods.length > 0 && (
-            <div className="mb-2 print:mb-1.5">
-              <p className="text-xs font-medium text-gray-900 mb-1 print:text-xs print:mb-0.5">Accepted Payment Methods:</p>
-              <div className="flex flex-wrap gap-1.5 print:gap-1">
-                {invoice.paymentMethods.includes("bank_account") && (
-                  <span className="text-xs text-gray-900 print:text-xs">Bank Transfer/Wire/Deposit</span>
-                )}
-                {invoice.paymentMethods.includes("cheque") && (
-                  <span className="text-xs text-gray-900 print:text-xs">Cheque Payment</span>
-                )}
-                {invoice.paymentMethods.includes("online") && (
-                  <span className="text-xs text-gray-900 print:text-xs">Online Payment</span>
-                )}
-                {invoice.paymentMethods.includes("cash") && (
-                  <span className="text-xs text-gray-900 print:text-xs">Cash Payment</span>
-                )}
-                {invoice.paymentMethods.includes("card") && (
-                  <span className="text-xs text-gray-900 print:text-xs">
-                    Card Payment{invoice.cardLast4Digits ? ` (****${invoice.cardLast4Digits})` : ''}
-                  </span>
-                )}
+          <div className="space-y-1.5 print:space-y-1">
+            {invoice.paymentMethods.length > 0 && (
+              <div>
+                <span className="text-[10px] font-medium text-gray-900 print:text-[7pt]">Payment Methods: </span>
+                <span className="text-[10px] text-gray-900 print:text-[7pt]">
+                  {[
+                    invoice.paymentMethods.includes("bank_account") && "Bank Transfer/Wire/Deposit",
+                    invoice.paymentMethods.includes("cheque") && "Cheque",
+                    invoice.paymentMethods.includes("online") && "Online",
+                    invoice.paymentMethods.includes("cash") && "Cash",
+                    invoice.paymentMethods.includes("card") && `Card${invoice.cardLast4Digits ? ` (****${invoice.cardLast4Digits})` : ''}`
+                  ].filter(Boolean).join(" • ")}
+                </span>
               </div>
-            </div>
-          )}
+            )}
 
-          {invoice.checksPayableTo && (
-            <div className="mb-2 p-2 border border-gray-900 print:p-1.5 print:mb-1.5">
-              <p className="text-xs font-medium text-gray-900 mb-0.5 print:text-xs print:mb-0.5">Make Checks Payable To:</p>
-              <p className="text-sm font-semibold text-gray-900 print:text-xs">{invoice.checksPayableTo}</p>
-            </div>
-          )}
+            {invoice.checksPayableTo && (
+              <div>
+                <span className="text-[10px] font-medium text-gray-900 print:text-[7pt]">Checks Payable To: </span>
+                <span className="text-[10px] font-semibold text-gray-900 print:text-[7pt]">{invoice.checksPayableTo}</span>
+              </div>
+            )}
 
-          {bankDetails.length > 0 && (
-            <div className={`${bankDetails.length > 1 ? 'grid grid-cols-2 gap-4 print:gap-3' : ''}`}>
-              {bankDetails.map((bankDetail, index) => (
-                <div key={bankDetail.id || index} className={bankDetails.length > 1 ? '' : ''}>
-                  {bankDetails.length > 1 && (
-                    <h4 className="font-bold text-xs mb-1 text-gray-900 print:text-[8pt] print:mb-0.5">
-                      Bank Transfer/Wire/Deposit Details #{index + 1}:
-                    </h4>
-                  )}
-                  {bankDetails.length === 1 && (
-                    <h4 className="font-bold text-xs mb-1 text-gray-900 print:text-[8pt] print:mb-0.5">
-                      Bank Transfer/Wire/Deposit Details:
-                    </h4>
-                  )}
-                  <div className="space-y-0.5 text-xs leading-tight print:text-[8pt] print:space-y-0">
-                    <div className="text-gray-900">
-                      <span className="font-semibold">Bank Name:</span> {bankDetail.bankName}
-                    </div>
-                    <div className="text-gray-900">
-                      <span className="font-semibold">Branch:</span> {bankDetail.branch}
-                    </div>
-                    <div className="text-gray-900">
-                      <span className="font-semibold">Account Name:</span> {bankDetail.accountName}
-                    </div>
-                    <div className="text-gray-900">
-                      <span className="font-semibold">Account Number:</span> {bankDetail.accountNumber}
-                    </div>
-                    <div className="text-gray-900">
-                      <span className="font-semibold">Bank Address:</span> {bankDetail.bankAddress}
-                    </div>
-                    <div className="text-gray-900">
-                      <span className="font-semibold">SWIFT Code:</span> {bankDetail.swiftCode}
+            {bankDetails.length > 0 && (
+              <div className={`${bankDetails.length > 1 ? 'grid grid-cols-2 gap-3 print:gap-2' : ''}`}>
+                {bankDetails.map((bankDetail, index) => (
+                  <div key={bankDetail.id || index} className="border border-gray-300 p-1.5 print:p-1 print:border-gray-400">
+                    {bankDetails.length > 1 && (
+                      <div className="text-[9px] font-bold text-gray-900 mb-0.5 print:text-[7pt] print:mb-0">
+                        Bank #{index + 1}:
+                      </div>
+                    )}
+                    {bankDetails.length === 1 && (
+                      <div className="text-[9px] font-bold text-gray-900 mb-0.5 print:text-[7pt] print:mb-0">
+                        Bank Details:
+                      </div>
+                    )}
+                    <div className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-0 text-[9px] leading-tight print:text-[7pt] print:gap-x-1.5">
+                      <span className="font-semibold text-gray-900">Bank:</span>
+                      <span className="text-gray-900">{bankDetail.bankName}</span>
+                      <span className="font-semibold text-gray-900">Branch:</span>
+                      <span className="text-gray-900">{bankDetail.branch}</span>
+                      <span className="font-semibold text-gray-900">Account:</span>
+                      <span className="text-gray-900">{bankDetail.accountName}</span>
+                      <span className="font-semibold text-gray-900">A/C No:</span>
+                      <span className="text-gray-900">{bankDetail.accountNumber}</span>
+                      <span className="font-semibold text-gray-900">Address:</span>
+                      <span className="text-gray-900">{bankDetail.bankAddress}</span>
+                      <span className="font-semibold text-gray-900">SWIFT:</span>
+                      <span className="text-gray-900">{bankDetail.swiftCode}</span>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 

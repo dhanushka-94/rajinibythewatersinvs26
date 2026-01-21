@@ -282,87 +282,155 @@ export function generateInvoiceEmailHtml({
           ${invoice.paymentMethods.length > 0 || bankDetails.length > 0
             ? `
           <tr>
-            <td style="padding: 0 20px 12px 20px; border-top: 1px solid #111827; padding-top: 12px;">
-            <h3 style="margin: 0 0 8px 0; font-size: 12px; font-weight: 600; color: #111827;">Payment Information</h3>
+            <td style="padding: 0 20px 10px 20px; border-top: 1px solid #111827; padding-top: 8px;">
+            <h3 style="margin: 0 0 6px 0; font-size: 11px; font-weight: 600; color: #111827;">Payment Information</h3>
             
-            ${invoice.paymentMethods.length > 0
-              ? `
-            <div style="margin-bottom: 8px;">
-              <p style="margin: 0 0 4px 0; font-size: 10px; font-weight: 500; color: #111827;">Accepted Payment Methods:</p>
-              <div style="font-size: 10px; color: #111827;">
-                ${invoice.paymentMethods.includes("bank_account") ? "Bank Transfer/Wire/Deposit " : ""}
-                ${invoice.paymentMethods.includes("cheque") ? "Cheque Payment " : ""}
-                ${invoice.paymentMethods.includes("online") ? "Online Payment " : ""}
-                ${invoice.paymentMethods.includes("cash") ? "Cash Payment " : ""}
-                ${invoice.paymentMethods.includes("card") ? `Card Payment${invoice.cardLast4Digits ? ` (****${invoice.cardLast4Digits})` : ""}` : ""}
-              </div>
-            </div>
-            `
-              : ""}
-            
-            ${invoice.checksPayableTo
-              ? `
-            <div style="margin-bottom: 8px; padding: 6px; border: 1px solid #111827;">
-              <p style="margin: 0 0 3px 0; font-size: 10px; font-weight: 500; color: #111827;">Make Checks Payable To:</p>
-              <p style="margin: 0; font-size: 11px; font-weight: 600; color: #111827;">${invoice.checksPayableTo}</p>
-            </div>
-            `
-              : ""}
-            
-            ${bankDetails.length > 0
-              ? `
-            <div style="padding: 6px;">
-              ${bankDetails.length > 1
-                ? `<table width="100%" cellpadding="0" cellspacing="0">
-                    ${bankDetails
-                      .map(
-                        (bankDetail, index) => `
-                      <tr>
-                        <td width="50%" style="vertical-align: top; padding-right: 12px;">
-                          <h4 style="margin: 0 0 3px 0; font-size: 9px; font-weight: 700; color: #111827;">Bank Transfer/Wire/Deposit Details #${index + 1}:</h4>
-                          <div style="font-size: 8.5px; line-height: 1.3; color: #111827;">
-                            <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Bank Name:</strong> ${bankDetail.bankName}</div>
-                            <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Branch:</strong> ${bankDetail.branch}</div>
-                            <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Account Name:</strong> ${bankDetail.accountName}</div>
-                            <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Account Number:</strong> ${bankDetail.accountNumber}</div>
-                            <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Bank Address:</strong> ${bankDetail.bankAddress}</div>
-                            <div><strong style="font-weight: 600;">SWIFT Code:</strong> ${bankDetail.swiftCode}</div>
-                          </div>
-                        </td>
-                        ${index < bankDetails.length - 1
-                          ? `
-                        <td width="50%" style="vertical-align: top; padding-left: 12px;">
-                          <h4 style="margin: 0 0 3px 0; font-size: 9px; font-weight: 700; color: #111827;">Bank Transfer/Wire/Deposit Details #${index + 2}:</h4>
-                          <div style="font-size: 8.5px; line-height: 1.3; color: #111827;">
-                            <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Bank Name:</strong> ${bankDetails[index + 1].bankName}</div>
-                            <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Branch:</strong> ${bankDetails[index + 1].branch}</div>
-                            <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Account Name:</strong> ${bankDetails[index + 1].accountName}</div>
-                            <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Account Number:</strong> ${bankDetails[index + 1].accountNumber}</div>
-                            <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Bank Address:</strong> ${bankDetails[index + 1].bankAddress}</div>
-                            <div><strong style="font-weight: 600;">SWIFT Code:</strong> ${bankDetails[index + 1].swiftCode}</div>
-                          </div>
-                        </td>
+            <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
+              ${invoice.paymentMethods.length > 0
+                ? `
+              <tr>
+                <td style="padding: 2px 0; font-size: 8px; line-height: 1.4; color: #111827;">
+                  <strong style="font-weight: 600;">Payment Methods:</strong> 
+                  ${[
+                    invoice.paymentMethods.includes("bank_account") && "Bank Transfer/Wire/Deposit",
+                    invoice.paymentMethods.includes("cheque") && "Cheque",
+                    invoice.paymentMethods.includes("online") && "Online",
+                    invoice.paymentMethods.includes("cash") && "Cash",
+                    invoice.paymentMethods.includes("card") && `Card${invoice.cardLast4Digits ? ` (****${invoice.cardLast4Digits})` : ""}`
+                  ].filter(Boolean).join(" • ")}
+                </td>
+              </tr>
+              `
+                : ""}
+              
+              ${invoice.checksPayableTo
+                ? `
+              <tr>
+                <td style="padding: 2px 0; font-size: 8px; line-height: 1.4; color: #111827;">
+                  <strong style="font-weight: 600;">Checks Payable To:</strong> 
+                  <strong style="font-weight: 600;">${invoice.checksPayableTo}</strong>
+                </td>
+              </tr>
+              `
+                : ""}
+              
+              ${bankDetails.length > 0
+                ? `
+              <tr>
+                <td style="padding-top: 4px;">
+                  ${bankDetails.length > 1
+                    ? `<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
+                        ${bankDetails
+                          .map(
+                            (bankDetail, index) => `
+                          <tr>
+                            <td width="50%" style="vertical-align: top; padding-right: 8px; padding-bottom: 4px;">
+                              <div style="border: 1px solid #9ca3af; padding: 5px; font-size: 7.5px; line-height: 1.3;">
+                                <div style="font-weight: 700; margin-bottom: 3px; color: #111827;">Bank #${index + 1}:</div>
+                                <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
+                                  <tr>
+                                    <td style="padding: 1px 0; font-weight: 600; color: #111827; width: 35%;">Bank:</td>
+                                    <td style="padding: 1px 0; color: #111827;">${bankDetail.bankName}</td>
+                                  </tr>
+                                  <tr>
+                                    <td style="padding: 1px 0; font-weight: 600; color: #111827;">Branch:</td>
+                                    <td style="padding: 1px 0; color: #111827;">${bankDetail.branch}</td>
+                                  </tr>
+                                  <tr>
+                                    <td style="padding: 1px 0; font-weight: 600; color: #111827;">Account:</td>
+                                    <td style="padding: 1px 0; color: #111827;">${bankDetail.accountName}</td>
+                                  </tr>
+                                  <tr>
+                                    <td style="padding: 1px 0; font-weight: 600; color: #111827;">A/C No:</td>
+                                    <td style="padding: 1px 0; color: #111827;">${bankDetail.accountNumber}</td>
+                                  </tr>
+                                  <tr>
+                                    <td style="padding: 1px 0; font-weight: 600; color: #111827;">Address:</td>
+                                    <td style="padding: 1px 0; color: #111827;">${bankDetail.bankAddress}</td>
+                                  </tr>
+                                  <tr>
+                                    <td style="padding: 1px 0; font-weight: 600; color: #111827;">SWIFT:</td>
+                                    <td style="padding: 1px 0; color: #111827;">${bankDetail.swiftCode}</td>
+                                  </tr>
+                                </table>
+                              </div>
+                            </td>
+                            ${index < bankDetails.length - 1
+                              ? `
+                            <td width="50%" style="vertical-align: top; padding-left: 8px; padding-bottom: 4px;">
+                              <div style="border: 1px solid #9ca3af; padding: 5px; font-size: 7.5px; line-height: 1.3;">
+                                <div style="font-weight: 700; margin-bottom: 3px; color: #111827;">Bank #${index + 2}:</div>
+                                <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
+                                  <tr>
+                                    <td style="padding: 1px 0; font-weight: 600; color: #111827; width: 35%;">Bank:</td>
+                                    <td style="padding: 1px 0; color: #111827;">${bankDetails[index + 1].bankName}</td>
+                                  </tr>
+                                  <tr>
+                                    <td style="padding: 1px 0; font-weight: 600; color: #111827;">Branch:</td>
+                                    <td style="padding: 1px 0; color: #111827;">${bankDetails[index + 1].branch}</td>
+                                  </tr>
+                                  <tr>
+                                    <td style="padding: 1px 0; font-weight: 600; color: #111827;">Account:</td>
+                                    <td style="padding: 1px 0; color: #111827;">${bankDetails[index + 1].accountName}</td>
+                                  </tr>
+                                  <tr>
+                                    <td style="padding: 1px 0; font-weight: 600; color: #111827;">A/C No:</td>
+                                    <td style="padding: 1px 0; color: #111827;">${bankDetails[index + 1].accountNumber}</td>
+                                  </tr>
+                                  <tr>
+                                    <td style="padding: 1px 0; font-weight: 600; color: #111827;">Address:</td>
+                                    <td style="padding: 1px 0; color: #111827;">${bankDetails[index + 1].bankAddress}</td>
+                                  </tr>
+                                  <tr>
+                                    <td style="padding: 1px 0; font-weight: 600; color: #111827;">SWIFT:</td>
+                                    <td style="padding: 1px 0; color: #111827;">${bankDetails[index + 1].swiftCode}</td>
+                                  </tr>
+                                </table>
+                              </div>
+                            </td>
+                            `
+                              : ""}
+                          </tr>
                         `
-                          : ""}
-                      </tr>
-                    `
-                      )
-                      .join("")}
-                  </table>`
-                : `
-                  <h4 style="margin: 0 0 3px 0; font-size: 9px; font-weight: 700; color: #111827;">Bank Transfer/Wire/Deposit Details:</h4>
-                  <div style="font-size: 8.5px; line-height: 1.3; color: #111827;">
-                    <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Bank Name:</strong> ${bankDetails[0].bankName}</div>
-                    <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Branch:</strong> ${bankDetails[0].branch}</div>
-                    <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Account Name:</strong> ${bankDetails[0].accountName}</div>
-                    <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Account Number:</strong> ${bankDetails[0].accountNumber}</div>
-                    <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Bank Address:</strong> ${bankDetails[0].bankAddress}</div>
-                    <div><strong style="font-weight: 600;">SWIFT Code:</strong> ${bankDetails[0].swiftCode}</div>
-                  </div>
-                `}
-            </div>
-            `
-              : ""}
+                          )
+                          .join("")}
+                        </table>`
+                    : `
+                      <div style="border: 1px solid #9ca3af; padding: 5px; font-size: 7.5px; line-height: 1.3;">
+                        <div style="font-weight: 700; margin-bottom: 3px; color: #111827;">Bank Details:</div>
+                        <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
+                          <tr>
+                            <td style="padding: 1px 0; font-weight: 600; color: #111827; width: 35%;">Bank:</td>
+                            <td style="padding: 1px 0; color: #111827;">${bankDetails[0].bankName}</td>
+                          </tr>
+                          <tr>
+                            <td style="padding: 1px 0; font-weight: 600; color: #111827;">Branch:</td>
+                            <td style="padding: 1px 0; color: #111827;">${bankDetails[0].branch}</td>
+                          </tr>
+                          <tr>
+                            <td style="padding: 1px 0; font-weight: 600; color: #111827;">Account:</td>
+                            <td style="padding: 1px 0; color: #111827;">${bankDetails[0].accountName}</td>
+                          </tr>
+                          <tr>
+                            <td style="padding: 1px 0; font-weight: 600; color: #111827;">A/C No:</td>
+                            <td style="padding: 1px 0; color: #111827;">${bankDetails[0].accountNumber}</td>
+                          </tr>
+                          <tr>
+                            <td style="padding: 1px 0; font-weight: 600; color: #111827;">Address:</td>
+                            <td style="padding: 1px 0; color: #111827;">${bankDetails[0].bankAddress}</td>
+                          </tr>
+                          <tr>
+                            <td style="padding: 1px 0; font-weight: 600; color: #111827;">SWIFT:</td>
+                            <td style="padding: 1px 0; color: #111827;">${bankDetails[0].swiftCode}</td>
+                          </tr>
+                        </table>
+                      </div>
+                    `}
+                </td>
+              </tr>
+              `
+                : ""}
+            </table>
           </td>
           </tr>
           `

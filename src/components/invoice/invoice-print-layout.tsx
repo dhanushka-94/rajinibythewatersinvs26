@@ -529,127 +529,98 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
 
       {/* Payment Information */}
       {(invoice.paymentMethods.length > 0 || bankDetails.length > 0) && (
-        <div className="mt-3 pt-2" style={{ 
-          marginTop: '20px', 
-          paddingTop: '12px', 
+        <div style={{ 
+          marginTop: '12px', 
+          paddingTop: '8px', 
           borderTop: '1px solid #111827',
           pageBreakInside: 'avoid',
           breakInside: 'avoid'
         }}>
-          <h3 className="font-semibold text-sm mb-1.5" style={{ 
-            fontSize: '10pt', 
-            marginBottom: '10px',
+          <h3 style={{ 
+            fontSize: '9pt', 
+            fontWeight: '600',
+            marginBottom: '8px',
             pageBreakAfter: 'avoid',
             color: '#111827'
           }}>
             Payment Information
           </h3>
           
-          {invoice.paymentMethods.length > 0 && (
-            <div className="mb-1.5" style={{ 
-              marginBottom: '10px'
-            }}>
-              <p className="text-xs font-medium mb-0.5" style={{ 
-                fontSize: '8pt', 
-                marginBottom: '6px',
-                color: '#111827'
-              }}>
-                Accepted Payment Methods:
-              </p>
-              <div className="flex flex-wrap gap-1.5" style={{ 
-                gap: '6px'
-              }}>
-                {invoice.paymentMethods.includes("bank_account") && (
-                  <span className="text-xs" style={{ fontSize: '7pt', color: '#111827' }}>Bank Transfer/Wire/Deposit</span>
-                )}
-                {invoice.paymentMethods.includes("cheque") && (
-                  <span className="text-xs" style={{ fontSize: '7pt', color: '#111827' }}>Cheque Payment</span>
-                )}
-                {invoice.paymentMethods.includes("online") && (
-                  <span className="text-xs" style={{ fontSize: '7pt', color: '#111827' }}>Online Payment</span>
-                )}
-                {invoice.paymentMethods.includes("cash") && (
-                  <span className="text-xs" style={{ fontSize: '7pt', color: '#111827' }}>Cash Payment</span>
-                )}
-                {invoice.paymentMethods.includes("card") && (
-                  <span className="text-xs" style={{ fontSize: '7pt', color: '#111827' }}>
-                    Card Payment{invoice.cardLast4Digits ? ` (****${invoice.cardLast4Digits})` : ''}
-                  </span>
-                )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            {invoice.paymentMethods.length > 0 && (
+              <div style={{ fontSize: '7pt', lineHeight: '1.4', color: '#111827' }}>
+                <span style={{ fontWeight: '600' }}>Payment Methods: </span>
+                <span>
+                  {[
+                    invoice.paymentMethods.includes("bank_account") && "Bank Transfer/Wire/Deposit",
+                    invoice.paymentMethods.includes("cheque") && "Cheque",
+                    invoice.paymentMethods.includes("online") && "Online",
+                    invoice.paymentMethods.includes("cash") && "Cash",
+                    invoice.paymentMethods.includes("card") && `Card${invoice.cardLast4Digits ? ` (****${invoice.cardLast4Digits})` : ''}`
+                  ].filter(Boolean).join(" • ")}
+                </span>
               </div>
-            </div>
-          )}
+            )}
 
-          {invoice.checksPayableTo && (
-            <div className="mb-1.5 p-1.5 border border-gray-900" style={{ 
-              marginBottom: '10px', 
-              padding: '8px', 
-              border: '1px solid #111827'
-            }}>
-              <p className="text-xs font-medium mb-0.5" style={{ fontSize: '8pt', marginBottom: '4px', color: '#111827' }}>
-                Make Checks Payable To:
-              </p>
-              <p className="text-xs font-semibold" style={{ fontSize: '9pt', fontWeight: '600', color: '#111827' }}>
-                {invoice.checksPayableTo}
-              </p>
-            </div>
-          )}
+            {invoice.checksPayableTo && (
+              <div style={{ fontSize: '7pt', lineHeight: '1.4', color: '#111827' }}>
+                <span style={{ fontWeight: '600' }}>Checks Payable To: </span>
+                <span style={{ fontWeight: '600' }}>{invoice.checksPayableTo}</span>
+              </div>
+            )}
 
-          {bankDetails.length > 0 && (
-            <div style={{ 
-              pageBreakInside: 'avoid',
-              breakInside: 'avoid',
-              display: bankDetails.length > 1 ? 'grid' : 'block',
-              gridTemplateColumns: bankDetails.length > 1 ? '1fr 1fr' : 'none',
-              gap: bankDetails.length > 1 ? '16px' : '0'
-            }}>
-              {bankDetails.map((bankDetail, index) => (
-                <div key={bankDetail.id || index} style={{
-                  pageBreakInside: 'avoid',
-                  breakInside: 'avoid'
-                }}>
-                  {bankDetails.length > 1 && (
-                    <h4 className="font-bold text-xs mb-0.5" style={{ fontSize: '8pt', fontWeight: '700', marginBottom: '6px', color: '#111827' }}>
-                      Bank Transfer/Wire/Deposit Details #{index + 1}:
-                    </h4>
-                  )}
-                  {bankDetails.length === 1 && (
-                    <h4 className="font-bold text-xs mb-0.5" style={{ fontSize: '8pt', fontWeight: '700', marginBottom: '6px', color: '#111827' }}>
-                      Bank Transfer/Wire/Deposit Details:
-                    </h4>
-                  )}
-                  <div style={{ 
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '4px',
-                    fontSize: '7.5pt',
+            {bankDetails.length > 0 && (
+              <div style={{ 
+                pageBreakInside: 'avoid',
+                breakInside: 'avoid',
+                display: bankDetails.length > 1 ? 'grid' : 'block',
+                gridTemplateColumns: bankDetails.length > 1 ? '1fr 1fr' : 'none',
+                gap: bankDetails.length > 1 ? '10px' : '0'
+              }}>
+                {bankDetails.map((bankDetail, index) => (
+                  <div key={bankDetail.id || index} style={{
                     pageBreakInside: 'avoid',
                     breakInside: 'avoid',
-                    lineHeight: '1.5'
+                    border: '1px solid #9ca3af',
+                    padding: '6px',
+                    fontSize: '7pt',
+                    lineHeight: '1.3'
                   }}>
-                    <div style={{ color: '#111827' }}>
-                      <span style={{ fontWeight: '600' }}>Bank Name:</span> {bankDetail.bankName}
-                    </div>
-                    <div style={{ color: '#111827' }}>
-                      <span style={{ fontWeight: '600' }}>Branch:</span> {bankDetail.branch}
-                    </div>
-                    <div style={{ color: '#111827' }}>
-                      <span style={{ fontWeight: '600' }}>Account Name:</span> {bankDetail.accountName}
-                    </div>
-                    <div style={{ color: '#111827' }}>
-                      <span style={{ fontWeight: '600' }}>Account Number:</span> {bankDetail.accountNumber}
-                    </div>
-                    <div style={{ color: '#111827' }}>
-                      <span style={{ fontWeight: '600' }}>Bank Address:</span> {bankDetail.bankAddress}
-                    </div>
-                    <div style={{ color: '#111827' }}>
-                      <span style={{ fontWeight: '600' }}>SWIFT Code:</span> {bankDetail.swiftCode}
+                    {bankDetails.length > 1 && (
+                      <div style={{ fontSize: '7pt', fontWeight: '700', marginBottom: '4px', color: '#111827' }}>
+                        Bank #{index + 1}:
+                      </div>
+                    )}
+                    {bankDetails.length === 1 && (
+                      <div style={{ fontSize: '7pt', fontWeight: '700', marginBottom: '4px', color: '#111827' }}>
+                        Bank Details:
+                      </div>
+                    )}
+                    <div style={{ 
+                      display: 'grid',
+                      gridTemplateColumns: 'auto 1fr',
+                      gap: '4px 8px',
+                      fontSize: '7pt',
+                      lineHeight: '1.3'
+                    }}>
+                      <span style={{ fontWeight: '600', color: '#111827' }}>Bank:</span>
+                      <span style={{ color: '#111827' }}>{bankDetail.bankName}</span>
+                      <span style={{ fontWeight: '600', color: '#111827' }}>Branch:</span>
+                      <span style={{ color: '#111827' }}>{bankDetail.branch}</span>
+                      <span style={{ fontWeight: '600', color: '#111827' }}>Account:</span>
+                      <span style={{ color: '#111827' }}>{bankDetail.accountName}</span>
+                      <span style={{ fontWeight: '600', color: '#111827' }}>A/C No:</span>
+                      <span style={{ color: '#111827' }}>{bankDetail.accountNumber}</span>
+                      <span style={{ fontWeight: '600', color: '#111827' }}>Address:</span>
+                      <span style={{ color: '#111827' }}>{bankDetail.bankAddress}</span>
+                      <span style={{ fontWeight: '600', color: '#111827' }}>SWIFT:</span>
+                      <span style={{ color: '#111827' }}>{bankDetail.swiftCode}</span>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
