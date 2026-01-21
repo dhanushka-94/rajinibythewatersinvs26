@@ -361,7 +361,7 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
       <div className="mb-4" style={{ marginBottom: '24px', pageBreakInside: 'avoid' }}>
         <Table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <TableHeader>
-            <TableRow style={{ pageBreakInside: 'avoid' }}>
+            <TableRow style={{ pageBreakInside: 'avoid', backgroundColor: '#f3f4f6' }}>
               <TableHead className="font-semibold text-left" style={{ 
                 padding: '10px 6px', 
                 fontSize: '9pt',
@@ -370,7 +370,8 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
                 borderBottom: '1px solid #111827',
                 borderRight: 'none',
                 pageBreakInside: 'avoid',
-                color: '#111827'
+                color: '#111827',
+                backgroundColor: '#f3f4f6'
               }}>
                 Description
               </TableHead>
@@ -382,7 +383,8 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
                 borderBottom: '1px solid #111827',
                 borderRight: 'none',
                 pageBreakInside: 'avoid',
-                color: '#111827'
+                color: '#111827',
+                backgroundColor: '#f3f4f6'
               }}>
                 Qty/Days
               </TableHead>
@@ -394,7 +396,8 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
                 borderBottom: '1px solid #111827',
                 borderRight: 'none',
                 pageBreakInside: 'avoid',
-                color: '#111827'
+                color: '#111827',
+                backgroundColor: '#f3f4f6'
               }}>
                 Unit Price
               </TableHead>
@@ -406,7 +409,8 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
                 borderBottom: '1px solid #111827',
                 borderRight: 'none',
                 pageBreakInside: 'avoid',
-                color: '#111827'
+                color: '#111827',
+                backgroundColor: '#f3f4f6'
               }}>
                 Total
               </TableHead>
@@ -419,7 +423,6 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
                   padding: '10px 6px', 
                   fontSize: '9pt',
                   textAlign: 'left',
-                  borderBottom: '1px solid #d1d5db',
                   borderRight: 'none',
                   pageBreakInside: 'avoid',
                   color: '#111827'
@@ -430,7 +433,6 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
                   padding: '10px 6px', 
                   fontSize: '9pt',
                   textAlign: 'right',
-                  borderBottom: '1px solid #d1d5db',
                   borderRight: 'none',
                   pageBreakInside: 'avoid',
                   color: '#111827'
@@ -441,7 +443,6 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
                   padding: '10px 6px', 
                   fontSize: '9pt',
                   textAlign: 'right',
-                  borderBottom: '1px solid #d1d5db',
                   borderRight: 'none',
                   pageBreakInside: 'avoid',
                   color: '#111827'
@@ -453,7 +454,6 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
                   fontSize: '9pt',
                   fontWeight: '500',
                   textAlign: 'right',
-                  borderBottom: '1px solid #d1d5db',
                   borderRight: 'none',
                   pageBreakInside: 'avoid',
                   color: '#111827'
@@ -624,75 +624,12 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
 
       </div>
 
-      {/* Footer - Includes Signatures and Footer Text */}
+      {/* Footer */}
       <div className="mt-auto invoice-footer" style={{ 
         marginTop: 'auto', 
         flexShrink: 0,
         pageBreakInside: 'avoid'
       }}>
-        {/* Signature Section */}
-        <div className="pt-2" style={{ 
-          paddingTop: '8px', 
-          borderTop: '1px solid #111827',
-          pageBreakInside: 'avoid',
-          marginTop: '4px',
-          marginBottom: '8px'
-        }}>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between',
-            gap: '24px',
-            pageBreakInside: 'avoid'
-          }}>
-            {/* Guest Signature - Left Aligned */}
-            <div style={{ 
-              pageBreakInside: 'avoid',
-              textAlign: 'left',
-              flex: '0 0 auto'
-            }}>
-              <div className="mb-1.5" style={{ 
-                marginBottom: '6px', 
-                borderBottom: '1px solid #111827', 
-                paddingBottom: '2px',
-                minHeight: '1px',
-                width: '150px'
-              }}>
-                {/* Signature line */}
-              </div>
-              <p className="text-xs font-medium" style={{ fontSize: '9pt', fontWeight: '600', color: '#111827', textAlign: 'left' }}>
-                Guest Signature
-              </p>
-            </div>
-
-            {/* Hotel Signature - Right Aligned */}
-            <div style={{ 
-              pageBreakInside: 'avoid',
-              textAlign: 'right',
-              flex: '0 0 auto',
-              marginLeft: 'auto'
-            }}>
-              <div className="mb-1.5" style={{ 
-                marginBottom: '6px', 
-                borderBottom: '1px solid #111827', 
-                paddingBottom: '2px',
-                minHeight: '1px',
-                width: '150px',
-                marginLeft: 'auto'
-              }}>
-                {/* Signature line */}
-              </div>
-              <p className="text-xs font-medium" style={{ fontSize: '9pt', fontWeight: '600', color: '#111827', textAlign: 'right' }}>
-                Authorized Signature
-              </p>
-              {hotelInfo && (
-                <p className="text-xs mt-0.5" style={{ fontSize: '9pt', marginTop: '2px', color: '#111827', textAlign: 'right' }}>
-                  {hotelInfo.name}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-
         {/* Footer Text */}
         {hotelInfo && (
           <div className="pt-2" style={{ 

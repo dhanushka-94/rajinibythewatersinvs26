@@ -338,16 +338,16 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
       <div className="mb-4 print:mb-3 invoice-items">
         <Table className="print:text-xs">
           <TableHeader>
-            <TableRow className="border-b border-gray-900">
-              <TableHead className="font-semibold text-gray-900 border-0">Description</TableHead>
-              <TableHead className="text-right font-semibold text-gray-900 border-0">Qty/Days</TableHead>
-              <TableHead className="text-right font-semibold text-gray-900 border-0">Unit Price</TableHead>
-              <TableHead className="text-right font-semibold text-gray-900 border-0">Total</TableHead>
+            <TableRow className="border-b border-gray-900 bg-gray-100">
+              <TableHead className="font-semibold text-gray-900 border-0 bg-gray-100">Description</TableHead>
+              <TableHead className="text-right font-semibold text-gray-900 border-0 bg-gray-100">Qty/Days</TableHead>
+              <TableHead className="text-right font-semibold text-gray-900 border-0 bg-gray-100">Unit Price</TableHead>
+              <TableHead className="text-right font-semibold text-gray-900 border-0 bg-gray-100">Total</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {invoice.items.map((item) => (
-              <TableRow key={item.id} className="break-inside-avoid border-b border-gray-300">
+              <TableRow key={item.id} className="break-inside-avoid">
                 <TableCell className="font-medium text-gray-900 border-0">
                   {item.description}
                 </TableCell>
