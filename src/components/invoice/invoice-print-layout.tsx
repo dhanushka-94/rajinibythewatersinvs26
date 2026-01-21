@@ -581,8 +581,6 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
                   <div key={bankDetail.id || index} style={{
                     pageBreakInside: 'avoid',
                     breakInside: 'avoid',
-                    border: '1px solid #9ca3af',
-                    padding: '6px',
                     fontSize: '7pt',
                     lineHeight: '1.3'
                   }}>

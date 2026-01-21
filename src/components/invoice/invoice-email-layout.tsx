@@ -325,7 +325,7 @@ export function generateInvoiceEmailHtml({
                             (bankDetail, index) => `
                           <tr>
                             <td width="50%" style="vertical-align: top; padding-right: 8px; padding-bottom: 4px;">
-                              <div style="border: 1px solid #9ca3af; padding: 5px; font-size: 7.5px; line-height: 1.3;">
+                              <div style="font-size: 7.5px; line-height: 1.3;">
                                 <div style="font-weight: 700; margin-bottom: 3px; color: #111827;">Bank #${index + 1}:</div>
                                 <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
                                   <tr>
@@ -358,7 +358,7 @@ export function generateInvoiceEmailHtml({
                             ${index < bankDetails.length - 1
                               ? `
                             <td width="50%" style="vertical-align: top; padding-left: 8px; padding-bottom: 4px;">
-                              <div style="border: 1px solid #9ca3af; padding: 5px; font-size: 7.5px; line-height: 1.3;">
+                              <div style="font-size: 7.5px; line-height: 1.3;">
                                 <div style="font-weight: 700; margin-bottom: 3px; color: #111827;">Bank #${index + 2}:</div>
                                 <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
                                   <tr>
@@ -396,7 +396,7 @@ export function generateInvoiceEmailHtml({
                           .join("")}
                         </table>`
                     : `
-                      <div style="border: 1px solid #9ca3af; padding: 5px; font-size: 7.5px; line-height: 1.3;">
+                      <div style="font-size: 7.5px; line-height: 1.3;">
                         <div style="font-weight: 700; margin-bottom: 3px; color: #111827;">Bank Details:</div>
                         <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
                           <tr>

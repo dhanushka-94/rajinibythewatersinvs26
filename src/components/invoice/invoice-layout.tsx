@@ -453,7 +453,7 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
             {bankDetails.length > 0 && (
               <div className={`${bankDetails.length > 1 ? 'grid grid-cols-2 gap-3 print:gap-2' : ''}`}>
                 {bankDetails.map((bankDetail, index) => (
-                  <div key={bankDetail.id || index} className="border border-gray-300 p-1.5 print:p-1 print:border-gray-400">
+                  <div key={bankDetail.id || index}>
                     {bankDetails.length > 1 && (
                       <div className="text-[9px] font-bold text-gray-900 mb-0.5 print:text-[7pt] print:mb-0">
                         Bank #{index + 1}:
