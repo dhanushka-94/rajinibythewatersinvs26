@@ -55,7 +55,7 @@ export function generateInvoiceEmailHtml({
           
           <!-- Header -->
           <tr>
-            <td style="padding: 20px; border-bottom: 1px solid #e5e7eb;">
+            <td style="padding: 16px 20px; border-bottom: 1px solid #111827;">
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td width="60%" style="vertical-align: top;">
@@ -95,7 +95,7 @@ export function generateInvoiceEmailHtml({
 
           <!-- Bill To, Guest Info, Booking Details - Three columns -->
           <tr>
-            <td style="padding: 20px;">
+            <td style="padding: 12px 20px;">
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <!-- Bill To -->
@@ -128,7 +128,7 @@ export function generateInvoiceEmailHtml({
                   <!-- Guest Information - Only show if there's content -->
                   ${(invoice.billingType === "company" || (invoice.guests && invoice.guests.length > 0))
                     ? `
-                  <td width="33%" style="vertical-align: top; padding: 0 15px; border-left: 1px solid #e5e7eb; border-right: 1px solid #e5e7eb;">
+                  <td width="33%" style="vertical-align: top; padding: 0 15px;">
                     <h3 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #111827;">👤 Guest Information:</h3>
                     <div style="font-size: 11px; line-height: 1.6; color: #374151;">
                       ${(invoice.billingType === "company" || (invoice.guests && invoice.guests.length > 0)) && invoice.guest.name
@@ -181,22 +181,22 @@ export function generateInvoiceEmailHtml({
 
           <!-- Invoice Items -->
           <tr>
-            <td style="padding: 0 20px 20px 20px;">
-              <table width="100%" cellpadding="8" cellspacing="0" style="border-collapse: collapse; border: 1px solid #e5e7eb;">
-                <tr style="background-color: #f9fafb;">
-                  <th style="text-align: left; font-size: 11px; font-weight: 600; color: #111827; padding: 8px; border-bottom: 1px solid #e5e7eb;">Description</th>
-                  <th style="text-align: right; font-size: 11px; font-weight: 600; color: #111827; padding: 8px; border-bottom: 1px solid #e5e7eb;">Qty/Days</th>
-                  <th style="text-align: right; font-size: 11px; font-weight: 600; color: #111827; padding: 8px; border-bottom: 1px solid #e5e7eb;">Unit Price</th>
-                  <th style="text-align: right; font-size: 11px; font-weight: 600; color: #111827; padding: 8px; border-bottom: 1px solid #e5e7eb;">Total</th>
+            <td style="padding: 0 20px 12px 20px;">
+              <table width="100%" cellpadding="6" cellspacing="0" style="border-collapse: collapse;">
+                <tr>
+                  <th style="text-align: left; font-size: 11px; font-weight: 600; color: #111827; padding: 6px; border-bottom: 1px solid #111827;">Description</th>
+                  <th style="text-align: right; font-size: 11px; font-weight: 600; color: #111827; padding: 6px; border-bottom: 1px solid #111827;">Qty/Days</th>
+                  <th style="text-align: right; font-size: 11px; font-weight: 600; color: #111827; padding: 6px; border-bottom: 1px solid #111827;">Unit Price</th>
+                  <th style="text-align: right; font-size: 11px; font-weight: 600; color: #111827; padding: 6px; border-bottom: 1px solid #111827;">Total</th>
                 </tr>
                 ${invoice.items
                   .map(
                     (item) => `
                   <tr>
-                    <td style="font-size: 11px; color: #111827; padding: 8px; border-bottom: 1px solid #f3f4f6;">${item.description}</td>
-                    <td style="text-align: right; font-size: 11px; color: #6b7280; padding: 8px; border-bottom: 1px solid #f3f4f6;">${item.quantity} ${item.quantityType === "days" ? "Days" : "Qty"}</td>
-                    <td style="text-align: right; font-size: 11px; color: #6b7280; padding: 8px; border-bottom: 1px solid #f3f4f6;">${formatCurrency(item.unitPrice, invoice.currency)}</td>
-                    <td style="text-align: right; font-size: 11px; font-weight: 500; color: #111827; padding: 8px; border-bottom: 1px solid #f3f4f6;">${formatCurrency(item.total, invoice.currency)}</td>
+                    <td style="font-size: 11px; color: #111827; padding: 6px; border-bottom: 1px solid #d1d5db;">${item.description}</td>
+                    <td style="text-align: right; font-size: 11px; color: #111827; padding: 6px; border-bottom: 1px solid #d1d5db;">${item.quantity} ${item.quantityType === "days" ? "Days" : "Qty"}</td>
+                    <td style="text-align: right; font-size: 11px; color: #111827; padding: 6px; border-bottom: 1px solid #d1d5db;">${formatCurrency(item.unitPrice, invoice.currency)}</td>
+                    <td style="text-align: right; font-size: 11px; font-weight: 500; color: #111827; padding: 6px; border-bottom: 1px solid #d1d5db;">${formatCurrency(item.total, invoice.currency)}</td>
                   </tr>
                 `
                   )
@@ -207,19 +207,19 @@ export function generateInvoiceEmailHtml({
 
           <!-- Summary -->
           <tr>
-            <td style="padding: 0 20px 20px 20px;">
+            <td style="padding: 0 20px 12px 20px;">
               <table width="100%" cellpadding="0" cellspacing="0" align="right" style="max-width: 300px; margin-left: auto;">
                 <tr>
-                  <td style="padding: 2px 0; font-size: 11px;">
+                  <td style="padding: 1px 0; font-size: 11px;">
                     <table width="100%" cellpadding="0" cellspacing="0">
                       <tr>
-                        <td style="color: #6b7280;">Subtotal:</td>
+                        <td style="color: #111827;">Subtotal:</td>
                         <td style="text-align: right; font-weight: 500; color: #111827;">${formatCurrency(invoice.subtotal, invoice.currency)}</td>
                       </tr>
                       ${invoice.serviceCharge > 0
                         ? `
                       <tr>
-                        <td style="color: #6b7280;">Service Charge (${invoice.serviceChargeRate}%):</td>
+                        <td style="color: #111827;">Service Charge (${invoice.serviceChargeRate}%):</td>
                         <td style="text-align: right; font-weight: 500; color: #111827;">${formatCurrency(invoice.serviceCharge, invoice.currency)}</td>
                       </tr>
                       `
@@ -227,37 +227,37 @@ export function generateInvoiceEmailHtml({
                       ${invoice.damageCharge > 0
                         ? `
                       <tr>
-                        <td style="color: #6b7280;">Damage Charge:</td>
-                        <td style="text-align: right; font-weight: 500; color: #dc2626;">${formatCurrency(invoice.damageCharge, invoice.currency)}</td>
+                        <td style="color: #111827;">Damage Charge:</td>
+                        <td style="text-align: right; font-weight: 500; color: #111827;">${formatCurrency(invoice.damageCharge, invoice.currency)}</td>
                       </tr>
                       `
                         : ""}
                       ${invoice.discount > 0
                         ? `
                       <tr>
-                        <td style="color: #6b7280;">Discount ${invoice.discountType === "percentage" ? `(${invoice.discount}%)` : "(Fixed)"}:</td>
-                        <td style="text-align: right; font-weight: 500; color: #16a34a;">-${formatCurrency(invoice.discount, invoice.currency)}</td>
+                        <td style="color: #111827;">Discount ${invoice.discountType === "percentage" ? `(${invoice.discount}%)` : "(Fixed)"}:</td>
+                        <td style="text-align: right; font-weight: 500; color: #111827;">-${formatCurrency(invoice.discount, invoice.currency)}</td>
                       </tr>
                       `
                         : ""}
                       <tr>
-                        <td style="color: #6b7280;">Tax (${invoice.taxRate}%):</td>
+                        <td style="color: #111827;">Tax (${invoice.taxRate}%):</td>
                         <td style="text-align: right; font-weight: 500; color: #111827;">${formatCurrency(invoice.taxAmount, invoice.currency)}</td>
                       </tr>
                       ${invoice.priceAdjustment !== 0
                         ? `
                       <tr>
-                        <td style="color: #6b7280;">Price Adjustment${invoice.priceAdjustmentReason ? ` (${invoice.priceAdjustmentReason})` : ""}:</td>
-                        <td style="text-align: right; font-weight: 500; color: ${invoice.priceAdjustment > 0 ? "#dc2626" : "#16a34a"};">${invoice.priceAdjustment > 0 ? "+" : ""}${formatCurrency(invoice.priceAdjustment, invoice.currency)}</td>
+                        <td style="color: #111827;">Price Adjustment${invoice.priceAdjustmentReason ? ` (${invoice.priceAdjustmentReason})` : ""}:</td>
+                        <td style="text-align: right; font-weight: 500; color: #111827;">${invoice.priceAdjustment > 0 ? "+" : ""}${formatCurrency(invoice.priceAdjustment, invoice.currency)}</td>
                       </tr>
                       `
                         : ""}
                       <tr>
-                        <td colspan="2" style="border-top: 1px solid #e5e7eb; padding-top: 4px;"></td>
+                        <td colspan="2" style="border-top: 1px solid #111827; padding-top: 2px;"></td>
                       </tr>
                       <tr>
-                        <td style="font-size: 14px; font-weight: 700; color: #111827; padding-top: 4px;">Total Amount:</td>
-                        <td style="text-align: right; font-size: 14px; font-weight: 700; color: #111827; padding-top: 4px;">${formatCurrency(invoice.total, invoice.currency)}</td>
+                        <td style="font-size: 14px; font-weight: 700; color: #111827; padding-top: 2px;">Total Amount:</td>
+                        <td style="text-align: right; font-size: 14px; font-weight: 700; color: #111827; padding-top: 2px;">${formatCurrency(invoice.total, invoice.currency)}</td>
                       </tr>
                     </table>
                   </td>
@@ -270,9 +270,9 @@ export function generateInvoiceEmailHtml({
           ${invoice.notes
             ? `
           <tr>
-            <td style="padding: 0 20px 20px 20px; border-top: 1px solid #e5e7eb; padding-top: 20px;">
-            <h3 style="margin: 0 0 8px 0; font-size: 12px; font-weight: 600; color: #111827;">Notes:</h3>
-            <p style="margin: 0; font-size: 11px; color: #6b7280; white-space: pre-wrap;">${invoice.notes}</p>
+            <td style="padding: 0 20px 12px 20px; border-top: 1px solid #111827; padding-top: 12px;">
+            <h3 style="margin: 0 0 4px 0; font-size: 12px; font-weight: 600; color: #111827;">Notes:</h3>
+            <p style="margin: 0; font-size: 11px; color: #111827; white-space: pre-wrap;">${invoice.notes}</p>
           </td>
           </tr>
           `
@@ -282,19 +282,19 @@ export function generateInvoiceEmailHtml({
           ${invoice.paymentMethods.length > 0 || bankDetails.length > 0
             ? `
           <tr>
-            <td style="padding: 0 20px 20px 20px; border-top: 1px solid #e5e7eb; padding-top: 20px;">
-            <h3 style="margin: 0 0 12px 0; font-size: 12px; font-weight: 600; color: #111827;">Payment Information</h3>
+            <td style="padding: 0 20px 12px 20px; border-top: 1px solid #111827; padding-top: 12px;">
+            <h3 style="margin: 0 0 8px 0; font-size: 12px; font-weight: 600; color: #111827;">Payment Information</h3>
             
             ${invoice.paymentMethods.length > 0
               ? `
-            <div style="margin-bottom: 12px;">
-              <p style="margin: 0 0 6px 0; font-size: 10px; font-weight: 500; color: #374151;">Accepted Payment Methods:</p>
+            <div style="margin-bottom: 8px;">
+              <p style="margin: 0 0 4px 0; font-size: 10px; font-weight: 500; color: #111827;">Accepted Payment Methods:</p>
               <div style="font-size: 10px; color: #111827;">
-                ${invoice.paymentMethods.includes("bank_account") ? "🏦 Bank Transfer/Deposit " : ""}
-                ${invoice.paymentMethods.includes("cheque") ? "📄 Cheque Payment " : ""}
-                ${invoice.paymentMethods.includes("online") ? "🌐 Online Payment " : ""}
-                ${invoice.paymentMethods.includes("cash") ? "💵 Cash Payment " : ""}
-                ${invoice.paymentMethods.includes("card") ? `💳 Card Payment${invoice.cardLast4Digits ? ` (****${invoice.cardLast4Digits})` : ""}` : ""}
+                ${invoice.paymentMethods.includes("bank_account") ? "Bank Transfer/Deposit " : ""}
+                ${invoice.paymentMethods.includes("cheque") ? "Cheque Payment " : ""}
+                ${invoice.paymentMethods.includes("online") ? "Online Payment " : ""}
+                ${invoice.paymentMethods.includes("cash") ? "Cash Payment " : ""}
+                ${invoice.paymentMethods.includes("card") ? `Card Payment${invoice.cardLast4Digits ? ` (****${invoice.cardLast4Digits})` : ""}` : ""}
               </div>
             </div>
             `
@@ -302,8 +302,8 @@ export function generateInvoiceEmailHtml({
             
             ${invoice.checksPayableTo
               ? `
-            <div style="margin-bottom: 12px; padding: 8px; background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 4px;">
-              <p style="margin: 0 0 4px 0; font-size: 10px; font-weight: 500; color: #374151;">Make Checks Payable To:</p>
+            <div style="margin-bottom: 8px; padding: 6px; border: 1px solid #111827;">
+              <p style="margin: 0 0 3px 0; font-size: 10px; font-weight: 500; color: #111827;">Make Checks Payable To:</p>
               <p style="margin: 0; font-size: 11px; font-weight: 600; color: #111827;">${invoice.checksPayableTo}</p>
             </div>
             `
@@ -311,33 +311,35 @@ export function generateInvoiceEmailHtml({
             
             ${bankDetails.length > 0
               ? `
-            <div style="padding: 6px; background-color: #eff6ff; border: 2px solid #bfdbfe; border-radius: 4px;">
+            <div style="padding: 6px;">
               ${bankDetails.length > 1
                 ? `<table width="100%" cellpadding="0" cellspacing="0">
                     ${bankDetails
                       .map(
                         (bankDetail, index) => `
                       <tr>
-                        <td width="50%" style="vertical-align: top; padding-right: 10px; ${index < bankDetails.length - 1 ? "border-right: 2px solid #93c5fd;" : ""}">
-                          <h4 style="margin: 0 0 4px 0; font-size: 9px; font-weight: 700; color: #1e3a8a;">Bank Transfer/Deposit Details #${index + 1}:</h4>
-                          <div style="font-size: 8.5px; line-height: 1.3; color: #1e3a8a;">
-                            <div style="margin-bottom: 2px;"><strong style="color: #1e40af; font-weight: 600;">Account Name:</strong> <span style="font-weight: 500;">${bankDetail.accountName}</span></div>
-                            <div style="margin-bottom: 2px;"><strong style="color: #1e40af; font-weight: 600;">Bank Name:</strong> <span style="font-weight: 500;">${bankDetail.bankName}</span></div>
-                            <div style="margin-bottom: 2px;"><strong style="color: #1e40af; font-weight: 600;">Branch:</strong> <span style="font-weight: 500;">${bankDetail.branch}</span></div>
-                            <div style="margin-bottom: 2px;"><strong style="color: #1e40af; font-weight: 600;">Account Number:</strong> <span style="font-weight: 500;">${bankDetail.accountNumber}</span></div>
-                            <div><strong style="color: #1e40af; font-weight: 600;">SWIFT Code:</strong> <span style="font-weight: 500;">${bankDetail.swiftCode}</span></div>
+                        <td width="50%" style="vertical-align: top; padding-right: 12px;">
+                          <h4 style="margin: 0 0 3px 0; font-size: 9px; font-weight: 700; color: #111827;">Bank Transfer/Deposit Details #${index + 1}:</h4>
+                          <div style="font-size: 8.5px; line-height: 1.3; color: #111827;">
+                            <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Bank Name:</strong> ${bankDetail.bankName}</div>
+                            <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Branch:</strong> ${bankDetail.branch}</div>
+                            <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Account Name:</strong> ${bankDetail.accountName}</div>
+                            <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Account Number:</strong> ${bankDetail.accountNumber}</div>
+                            <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Bank Address:</strong> ${bankDetail.bankAddress}</div>
+                            <div><strong style="font-weight: 600;">SWIFT Code:</strong> ${bankDetail.swiftCode}</div>
                           </div>
                         </td>
                         ${index < bankDetails.length - 1
                           ? `
-                        <td width="50%" style="vertical-align: top; padding-left: 10px;">
-                          <h4 style="margin: 0 0 4px 0; font-size: 9px; font-weight: 700; color: #1e3a8a;">Bank Transfer/Deposit Details #${index + 2}:</h4>
-                          <div style="font-size: 8.5px; line-height: 1.3; color: #1e3a8a;">
-                            <div style="margin-bottom: 2px;"><strong style="color: #1e40af; font-weight: 600;">Account Name:</strong> <span style="font-weight: 500;">${bankDetails[index + 1].accountName}</span></div>
-                            <div style="margin-bottom: 2px;"><strong style="color: #1e40af; font-weight: 600;">Bank Name:</strong> <span style="font-weight: 500;">${bankDetails[index + 1].bankName}</span></div>
-                            <div style="margin-bottom: 2px;"><strong style="color: #1e40af; font-weight: 600;">Branch:</strong> <span style="font-weight: 500;">${bankDetails[index + 1].branch}</span></div>
-                            <div style="margin-bottom: 2px;"><strong style="color: #1e40af; font-weight: 600;">Account Number:</strong> <span style="font-weight: 500;">${bankDetails[index + 1].accountNumber}</span></div>
-                            <div><strong style="color: #1e40af; font-weight: 600;">SWIFT Code:</strong> <span style="font-weight: 500;">${bankDetails[index + 1].swiftCode}</span></div>
+                        <td width="50%" style="vertical-align: top; padding-left: 12px;">
+                          <h4 style="margin: 0 0 3px 0; font-size: 9px; font-weight: 700; color: #111827;">Bank Transfer/Deposit Details #${index + 2}:</h4>
+                          <div style="font-size: 8.5px; line-height: 1.3; color: #111827;">
+                            <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Bank Name:</strong> ${bankDetails[index + 1].bankName}</div>
+                            <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Branch:</strong> ${bankDetails[index + 1].branch}</div>
+                            <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Account Name:</strong> ${bankDetails[index + 1].accountName}</div>
+                            <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Account Number:</strong> ${bankDetails[index + 1].accountNumber}</div>
+                            <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Bank Address:</strong> ${bankDetails[index + 1].bankAddress}</div>
+                            <div><strong style="font-weight: 600;">SWIFT Code:</strong> ${bankDetails[index + 1].swiftCode}</div>
                           </div>
                         </td>
                         `
@@ -348,24 +350,15 @@ export function generateInvoiceEmailHtml({
                       .join("")}
                   </table>`
                 : `
-                  <h4 style="margin: 0 0 4px 0; font-size: 9px; font-weight: 700; color: #1e3a8a;">Bank Transfer/Deposit Details:</h4>
-                  <table width="100%" cellpadding="0" cellspacing="0">
-                    <tr>
-                      <td width="50%" style="vertical-align: top; padding-right: 8px;">
-                        <div style="font-size: 8.5px; line-height: 1.3; color: #1e3a8a;">
-                          <div style="margin-bottom: 2px;"><strong style="color: #1e40af; font-weight: 600;">Account Name:</strong> <span style="font-weight: 500;">${bankDetails[0].accountName}</span></div>
-                          <div style="margin-bottom: 2px;"><strong style="color: #1e40af; font-weight: 600;">Bank Name:</strong> <span style="font-weight: 500;">${bankDetails[0].bankName}</span></div>
-                          <div style="margin-bottom: 2px;"><strong style="color: #1e40af; font-weight: 600;">Branch:</strong> <span style="font-weight: 500;">${bankDetails[0].branch}</span></div>
-                        </div>
-                      </td>
-                      <td width="50%" style="vertical-align: top; padding-left: 8px;">
-                        <div style="font-size: 8.5px; line-height: 1.3; color: #1e3a8a;">
-                          <div style="margin-bottom: 2px;"><strong style="color: #1e40af; font-weight: 600;">Account Number:</strong> <span style="font-weight: 500;">${bankDetails[0].accountNumber}</span></div>
-                          <div><strong style="color: #1e40af; font-weight: 600;">SWIFT Code:</strong> <span style="font-weight: 500;">${bankDetails[0].swiftCode}</span></div>
-                        </div>
-                      </td>
-                    </tr>
-                  </table>
+                  <h4 style="margin: 0 0 3px 0; font-size: 9px; font-weight: 700; color: #111827;">Bank Transfer/Deposit Details:</h4>
+                  <div style="font-size: 8.5px; line-height: 1.3; color: #111827;">
+                    <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Bank Name:</strong> ${bankDetails[0].bankName}</div>
+                    <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Branch:</strong> ${bankDetails[0].branch}</div>
+                    <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Account Name:</strong> ${bankDetails[0].accountName}</div>
+                    <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Account Number:</strong> ${bankDetails[0].accountNumber}</div>
+                    <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Bank Address:</strong> ${bankDetails[0].bankAddress}</div>
+                    <div><strong style="font-weight: 600;">SWIFT Code:</strong> ${bankDetails[0].swiftCode}</div>
+                  </div>
                 `}
             </div>
             `
@@ -377,12 +370,12 @@ export function generateInvoiceEmailHtml({
 
           <!-- Footer -->
           <tr>
-            <td style="padding: 20px; border-top: 1px solid #e5e7eb; text-align: center; background-color: #f9fafb;">
-              <p style="margin: 0 0 8px 0; font-size: 11px; color: #6b7280;">
+            <td style="padding: 12px 20px; border-top: 1px solid #111827; text-align: center;">
+              <p style="margin: 0 0 4px 0; font-size: 11px; color: #111827;">
                 Thank you for choosing ${hotelInfo.name}! We hope to see you again soon.
               </p>
-              <p style="margin: 0; font-size: 10px; color: #9ca3af;">
-                ${hotelInfo.name} Powered by <strong style="color: #6b7280;">Phoenix Global Solutions</strong>
+              <p style="margin: 0; font-size: 10px; color: #111827;">
+                ${hotelInfo.name} Powered by <strong>Phoenix Global Solutions</strong>
               </p>
             </td>
           </tr>

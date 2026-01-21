@@ -412,6 +412,9 @@
   background: white !important;
   border: none !important;
   box-shadow: none !important;
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 277mm !important; /* 297mm - 20mm (top + bottom padding) */
 }
 
 .invoice-print-template * {
@@ -423,15 +426,41 @@
 .invoice-print-template th,
 .invoice-print-template td {
   border: none !important;
-  border-bottom: 1px solid #e5e7eb !important;
+  border-bottom: 1px solid #111827 !important;
 }
 
 .invoice-print-template thead th {
-  border-bottom: 1px solid #e5e7eb !important;
+  border-bottom: 1px solid #111827 !important;
 }
 
 .invoice-print-template .card,
 .invoice-print-template [class*="card"] {
   border: none !important;
   box-shadow: none !important;
+}
+
+/* Footer positioning for print/PDF */
+@media print {
+  .invoice-print-template {
+    position: relative !important;
+    min-height: 277mm !important;
+  }
+  
+  .invoice-footer {
+    margin-top: auto !important;
+    position: relative !important;
+    page-break-inside: avoid !important;
+  }
+}
+
+/* PDF export footer positioning */
+.pdf-export .invoice-footer {
+  margin-top: auto !important;
+  position: relative !important;
+}
+
+.pdf-export {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 277mm !important;
 }
