@@ -303,17 +303,6 @@ export function generateInvoiceEmailHtml({
               `
                 : ""}
               
-              ${invoice.checksPayableTo
-                ? `
-              <tr>
-                <td style="padding: 2px 0; font-size: 8px; line-height: 1.4; color: #111827;">
-                  <strong style="font-weight: 600;">Checks Payable To:</strong> 
-                  <strong style="font-weight: 600;">${invoice.checksPayableTo}</strong>
-                </td>
-              </tr>
-              `
-                : ""}
-              
               ${bankDetails.length > 0
                 ? `
               <tr>
@@ -426,6 +415,17 @@ export function generateInvoiceEmailHtml({
                         </table>
                       </div>
                     `}
+                </td>
+              </tr>
+              `
+                : ""}
+              
+              ${invoice.checksPayableTo
+                ? `
+              <tr>
+                <td style="padding: 2px 0; font-size: 8px; line-height: 1.4; color: #111827;">
+                  <strong style="font-weight: 600;">Make Checks Payable To:</strong> 
+                  <strong style="font-weight: 600;">${invoice.checksPayableTo}</strong>
                 </td>
               </tr>
               `

@@ -443,13 +443,6 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
               </div>
             )}
 
-            {invoice.checksPayableTo && (
-              <div>
-                <span className="text-[10px] font-medium text-gray-900 print:text-[7pt]">Checks Payable To: </span>
-                <span className="text-[10px] font-semibold text-gray-900 print:text-[7pt]">{invoice.checksPayableTo}</span>
-              </div>
-            )}
-
             {bankDetails.length > 0 && (
               <div className={`${bankDetails.length > 1 ? 'grid grid-cols-2 gap-3 print:gap-2' : ''}`}>
                 {bankDetails.map((bankDetail, index) => (
@@ -480,6 +473,13 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {invoice.checksPayableTo && (
+              <div>
+                <span className="text-[10px] font-medium text-gray-900 print:text-[7pt]">Make Checks Payable To: </span>
+                <span className="text-[10px] font-semibold text-gray-900 print:text-[7pt]">{invoice.checksPayableTo}</span>
               </div>
             )}
           </div>

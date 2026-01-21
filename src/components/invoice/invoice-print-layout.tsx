@@ -562,13 +562,6 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
               </div>
             )}
 
-            {invoice.checksPayableTo && (
-              <div style={{ fontSize: '7pt', lineHeight: '1.4', color: '#111827' }}>
-                <span style={{ fontWeight: '600' }}>Checks Payable To: </span>
-                <span style={{ fontWeight: '600' }}>{invoice.checksPayableTo}</span>
-              </div>
-            )}
-
             {bankDetails.length > 0 && (
               <div style={{ 
                 pageBreakInside: 'avoid',
@@ -616,6 +609,13 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {invoice.checksPayableTo && (
+              <div style={{ fontSize: '7pt', lineHeight: '1.4', color: '#111827' }}>
+                <span style={{ fontWeight: '600' }}>Make Checks Payable To: </span>
+                <span style={{ fontWeight: '600' }}>{invoice.checksPayableTo}</span>
               </div>
             )}
           </div>
