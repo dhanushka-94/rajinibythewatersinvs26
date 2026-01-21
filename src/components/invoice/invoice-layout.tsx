@@ -19,7 +19,7 @@ import { formatCurrency } from "@/lib/currency";
 import { getBankDetailById } from "@/lib/bank-details";
 import { getTravelCompanyById } from "@/lib/travel-companies";
 import { type TravelCompany } from "@/types/travel-company";
-import { Building2, FileText, Wallet, Globe, Banknote, CreditCard, Calendar, User, Mail, Phone, MapPin, Building, IdCard, UserCircle, Hash } from "lucide-react";
+import { Building2, FileText, Wallet, Globe, Banknote, CreditCard, Calendar, User, Mail, Phone, MapPin, Building, IdCard, UserCircle, Hash, LogIn, LogOut, Users } from "lucide-react";
 
 interface InvoiceLayoutProps {
   invoice: Invoice;
@@ -283,7 +283,8 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
           <div className="space-y-1 text-sm print:text-xs">
             {/* Line 1: Check-in and Check-out */}
             <div className="flex flex-wrap gap-x-3 gap-y-0.5">
-              <div>
+              <div className="flex items-center gap-1">
+                <LogIn className="h-3.5 w-3.5 text-gray-900 print:h-3 print:w-3 flex-shrink-0" />
                 <span className="font-medium text-gray-900">Check-in: </span>
                 <span className="text-gray-900">
                   {new Date(invoice.checkIn).toLocaleDateString("en-US", {
@@ -293,7 +294,8 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
                   })}
                 </span>
               </div>
-              <div>
+              <div className="flex items-center gap-1">
+                <LogOut className="h-3.5 w-3.5 text-gray-900 print:h-3 print:w-3 flex-shrink-0" />
                 <span className="font-medium text-gray-900">Check-out: </span>
                 <span className="text-gray-900">
                   {new Date(invoice.checkOut).toLocaleDateString("en-US", {
@@ -314,7 +316,8 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
                   </div>
                 )}
                 {(invoice.adults !== undefined || invoice.children !== undefined || invoice.babies !== undefined) && (
-                  <div>
+                  <div className="flex items-center gap-1">
+                    <Users className="h-3.5 w-3.5 text-gray-900 print:h-3 print:w-3 flex-shrink-0" />
                     <span className="font-medium text-gray-900">Guests: </span>
                     <span className="text-gray-900">
                       {[
@@ -429,7 +432,7 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
               <p className="text-xs font-medium text-gray-900 mb-1 print:text-xs print:mb-0.5">Accepted Payment Methods:</p>
               <div className="flex flex-wrap gap-1.5 print:gap-1">
                 {invoice.paymentMethods.includes("bank_account") && (
-                  <span className="text-xs text-gray-900 print:text-xs">Bank Transfer/Deposit</span>
+                  <span className="text-xs text-gray-900 print:text-xs">Bank Transfer/Wire/Deposit</span>
                 )}
                 {invoice.paymentMethods.includes("cheque") && (
                   <span className="text-xs text-gray-900 print:text-xs">Cheque Payment</span>
@@ -462,12 +465,12 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
                 <div key={bankDetail.id || index} className={bankDetails.length > 1 ? '' : ''}>
                   {bankDetails.length > 1 && (
                     <h4 className="font-bold text-xs mb-1 text-gray-900 print:text-[8pt] print:mb-0.5">
-                      Bank Transfer/Deposit Details #{index + 1}:
+                      Bank Transfer/Wire/Deposit Details #{index + 1}:
                     </h4>
                   )}
                   {bankDetails.length === 1 && (
                     <h4 className="font-bold text-xs mb-1 text-gray-900 print:text-[8pt] print:mb-0.5">
-                      Bank Transfer/Deposit Details:
+                      Bank Transfer/Wire/Deposit Details:
                     </h4>
                   )}
                   <div className="space-y-0.5 text-xs leading-tight print:text-[8pt] print:space-y-0">

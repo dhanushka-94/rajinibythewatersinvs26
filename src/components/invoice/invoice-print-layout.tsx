@@ -17,7 +17,7 @@ import { formatCurrency } from "@/lib/currency";
 import { getBankDetailById } from "@/lib/bank-details";
 import { getTravelCompanyById } from "@/lib/travel-companies";
 import { type TravelCompany } from "@/types/travel-company";
-import { Building2, FileText, Wallet, Globe, Banknote, CreditCard, Calendar, User, Mail, Phone, MapPin, Building, IdCard, UserCircle, Hash } from "lucide-react";
+import { Building2, FileText, Wallet, Globe, Banknote, CreditCard, Calendar, User, Mail, Phone, MapPin, Building, IdCard, UserCircle, Hash, LogIn, LogOut, Users } from "lucide-react";
 import { useState, useEffect } from "react";
 
 interface InvoicePrintLayoutProps {
@@ -305,7 +305,8 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
           <div style={{ fontSize: '9pt', lineHeight: '1.5' }}>
             {/* Line 1: Check-in and Check-out */}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px 12px', marginBottom: '6px' }}>
-              <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <LogIn style={{ width: '11px', height: '11px', color: '#111827', flexShrink: 0 }} />
                 <span style={{ fontWeight: '500', color: '#111827' }}>Check-in: </span>
                 <span style={{ color: '#111827' }}>
                   {new Date(invoice.checkIn).toLocaleDateString("en-US", {
@@ -315,7 +316,8 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
                   })}
                 </span>
               </div>
-              <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <LogOut style={{ width: '11px', height: '11px', color: '#111827', flexShrink: 0 }} />
                 <span style={{ fontWeight: '500', color: '#111827' }}>Check-out: </span>
                 <span style={{ color: '#111827' }}>
                   {new Date(invoice.checkOut).toLocaleDateString("en-US", {
@@ -336,7 +338,8 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
                   </div>
                 )}
                 {(invoice.adults !== undefined || invoice.children !== undefined || invoice.babies !== undefined) && (
-                  <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Users style={{ width: '11px', height: '11px', color: '#111827', flexShrink: 0 }} />
                     <span style={{ fontWeight: '500', color: '#111827' }}>Guests: </span>
                     <span style={{ color: '#111827' }}>
                       {[
@@ -557,7 +560,7 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
                 gap: '6px'
               }}>
                 {invoice.paymentMethods.includes("bank_account") && (
-                  <span className="text-xs" style={{ fontSize: '7pt', color: '#111827' }}>Bank Transfer/Deposit</span>
+                  <span className="text-xs" style={{ fontSize: '7pt', color: '#111827' }}>Bank Transfer/Wire/Deposit</span>
                 )}
                 {invoice.paymentMethods.includes("cheque") && (
                   <span className="text-xs" style={{ fontSize: '7pt', color: '#111827' }}>Cheque Payment</span>
@@ -607,12 +610,12 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
                 }}>
                   {bankDetails.length > 1 && (
                     <h4 className="font-bold text-xs mb-0.5" style={{ fontSize: '8pt', fontWeight: '700', marginBottom: '6px', color: '#111827' }}>
-                      Bank Transfer/Deposit Details #{index + 1}:
+                      Bank Transfer/Wire/Deposit Details #{index + 1}:
                     </h4>
                   )}
                   {bankDetails.length === 1 && (
                     <h4 className="font-bold text-xs mb-0.5" style={{ fontSize: '8pt', fontWeight: '700', marginBottom: '6px', color: '#111827' }}>
-                      Bank Transfer/Deposit Details:
+                      Bank Transfer/Wire/Deposit Details:
                     </h4>
                   )}
                   <div style={{ 

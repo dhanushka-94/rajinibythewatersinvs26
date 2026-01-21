@@ -147,7 +147,7 @@ export function generateInvoiceEmailHtml({
                     <h3 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #111827;">📅 Booking Details:</h3>
                     <div style="font-size: 11px; line-height: 1.6; color: #374151;">
                       <div style="margin-bottom: 6px;">
-                        <strong>Check-in:</strong><br>
+                        <strong>🔑 Check-in:</strong><br>
                         ${new Date(invoice.checkIn).toLocaleDateString("en-US", {
                           year: "numeric",
                           month: "long",
@@ -155,7 +155,7 @@ export function generateInvoiceEmailHtml({
                         })}
                       </div>
                       <div style="margin-bottom: 6px;">
-                        <strong>Check-out:</strong><br>
+                        <strong>🚪 Check-out:</strong><br>
                         ${new Date(invoice.checkOut).toLocaleDateString("en-US", {
                           year: "numeric",
                           month: "long",
@@ -165,7 +165,7 @@ export function generateInvoiceEmailHtml({
                       ${invoice.roomType ? `<div style="margin-bottom: 6px;"><strong>Room:</strong> ${invoice.roomType}</div>` : ""}
                       ${invoice.adults !== undefined || invoice.children !== undefined || invoice.babies !== undefined
                         ? `<div style="margin-bottom: 6px;">
-                            <strong>Guests:</strong> ${[
+                            <strong>👥 Guests:</strong> ${[
                               invoice.adults !== undefined && invoice.adults > 0 ? `${invoice.adults} Adult${invoice.adults !== 1 ? 's' : ''}` : null,
                               invoice.children !== undefined && invoice.children > 0 ? `${invoice.children} Child${invoice.children !== 1 ? 'ren' : ''}` : null,
                               invoice.babies !== undefined && invoice.babies > 0 ? `${invoice.babies} Bab${invoice.babies !== 1 ? 'ies' : 'y'}` : null,
@@ -290,7 +290,7 @@ export function generateInvoiceEmailHtml({
             <div style="margin-bottom: 8px;">
               <p style="margin: 0 0 4px 0; font-size: 10px; font-weight: 500; color: #111827;">Accepted Payment Methods:</p>
               <div style="font-size: 10px; color: #111827;">
-                ${invoice.paymentMethods.includes("bank_account") ? "Bank Transfer/Deposit " : ""}
+                ${invoice.paymentMethods.includes("bank_account") ? "Bank Transfer/Wire/Deposit " : ""}
                 ${invoice.paymentMethods.includes("cheque") ? "Cheque Payment " : ""}
                 ${invoice.paymentMethods.includes("online") ? "Online Payment " : ""}
                 ${invoice.paymentMethods.includes("cash") ? "Cash Payment " : ""}
@@ -319,7 +319,7 @@ export function generateInvoiceEmailHtml({
                         (bankDetail, index) => `
                       <tr>
                         <td width="50%" style="vertical-align: top; padding-right: 12px;">
-                          <h4 style="margin: 0 0 3px 0; font-size: 9px; font-weight: 700; color: #111827;">Bank Transfer/Deposit Details #${index + 1}:</h4>
+                          <h4 style="margin: 0 0 3px 0; font-size: 9px; font-weight: 700; color: #111827;">Bank Transfer/Wire/Deposit Details #${index + 1}:</h4>
                           <div style="font-size: 8.5px; line-height: 1.3; color: #111827;">
                             <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Bank Name:</strong> ${bankDetail.bankName}</div>
                             <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Branch:</strong> ${bankDetail.branch}</div>
@@ -332,7 +332,7 @@ export function generateInvoiceEmailHtml({
                         ${index < bankDetails.length - 1
                           ? `
                         <td width="50%" style="vertical-align: top; padding-left: 12px;">
-                          <h4 style="margin: 0 0 3px 0; font-size: 9px; font-weight: 700; color: #111827;">Bank Transfer/Deposit Details #${index + 2}:</h4>
+                          <h4 style="margin: 0 0 3px 0; font-size: 9px; font-weight: 700; color: #111827;">Bank Transfer/Wire/Deposit Details #${index + 2}:</h4>
                           <div style="font-size: 8.5px; line-height: 1.3; color: #111827;">
                             <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Bank Name:</strong> ${bankDetails[index + 1].bankName}</div>
                             <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Branch:</strong> ${bankDetails[index + 1].branch}</div>
@@ -350,7 +350,7 @@ export function generateInvoiceEmailHtml({
                       .join("")}
                   </table>`
                 : `
-                  <h4 style="margin: 0 0 3px 0; font-size: 9px; font-weight: 700; color: #111827;">Bank Transfer/Deposit Details:</h4>
+                  <h4 style="margin: 0 0 3px 0; font-size: 9px; font-weight: 700; color: #111827;">Bank Transfer/Wire/Deposit Details:</h4>
                   <div style="font-size: 8.5px; line-height: 1.3; color: #111827;">
                     <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Bank Name:</strong> ${bankDetails[0].bankName}</div>
                     <div style="margin-bottom: 2px;"><strong style="font-weight: 600;">Branch:</strong> ${bankDetails[0].branch}</div>
