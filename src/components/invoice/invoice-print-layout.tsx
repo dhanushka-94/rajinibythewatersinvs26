@@ -359,7 +359,7 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
 
       {/* Invoice Items Table */}
       <div className="mb-4" style={{ marginBottom: '24px', pageBreakInside: 'avoid' }}>
-        <Table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <Table style={{ width: '100%', borderCollapse: 'collapse', borderSpacing: 0 }}>
           <TableHeader>
             <TableRow style={{ pageBreakInside: 'avoid', backgroundColor: '#f3f4f6' }}>
               <TableHead className="font-semibold text-left" style={{ 
@@ -369,6 +369,7 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
                 textAlign: 'left',
                 borderBottom: '1px solid #111827',
                 borderRight: 'none',
+                borderLeft: 'none',
                 pageBreakInside: 'avoid',
                 color: '#111827',
                 backgroundColor: '#f3f4f6'
@@ -382,6 +383,7 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
                 textAlign: 'right',
                 borderBottom: '1px solid #111827',
                 borderRight: 'none',
+                borderLeft: 'none',
                 pageBreakInside: 'avoid',
                 color: '#111827',
                 backgroundColor: '#f3f4f6'
@@ -395,6 +397,7 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
                 textAlign: 'right',
                 borderBottom: '1px solid #111827',
                 borderRight: 'none',
+                borderLeft: 'none',
                 pageBreakInside: 'avoid',
                 color: '#111827',
                 backgroundColor: '#f3f4f6'
@@ -408,6 +411,7 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
                 textAlign: 'right',
                 borderBottom: '1px solid #111827',
                 borderRight: 'none',
+                borderLeft: 'none',
                 pageBreakInside: 'avoid',
                 color: '#111827',
                 backgroundColor: '#f3f4f6'
@@ -424,6 +428,7 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
                   fontSize: '9pt',
                   textAlign: 'left',
                   borderRight: 'none',
+                  borderLeft: 'none',
                   pageBreakInside: 'avoid',
                   color: '#111827'
                 }}>
@@ -434,6 +439,7 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
                   fontSize: '9pt',
                   textAlign: 'right',
                   borderRight: 'none',
+                  borderLeft: 'none',
                   pageBreakInside: 'avoid',
                   color: '#111827'
                 }}>
@@ -444,6 +450,7 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
                   fontSize: '9pt',
                   textAlign: 'right',
                   borderRight: 'none',
+                  borderLeft: 'none',
                   pageBreakInside: 'avoid',
                   color: '#111827'
                 }}>
@@ -455,6 +462,7 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
                   fontWeight: '500',
                   textAlign: 'right',
                   borderRight: 'none',
+                  borderLeft: 'none',
                   pageBreakInside: 'avoid',
                   color: '#111827'
                 }}>

@@ -336,28 +336,28 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
       <Separator className="mb-4 print:mb-3" />
 
       <div className="mb-4 print:mb-3 invoice-items">
-        <Table className="print:text-xs">
+        <Table className="print:text-xs border-separate border-spacing-0">
           <TableHeader>
-            <TableRow className="border-b border-gray-900 bg-gray-100">
-              <TableHead className="font-semibold text-gray-900 border-0 bg-gray-100">Description</TableHead>
-              <TableHead className="text-right font-semibold text-gray-900 border-0 bg-gray-100">Qty/Days</TableHead>
-              <TableHead className="text-right font-semibold text-gray-900 border-0 bg-gray-100">Unit Price</TableHead>
-              <TableHead className="text-right font-semibold text-gray-900 border-0 bg-gray-100">Total</TableHead>
+            <TableRow className="border-b border-gray-900 bg-gray-100 [&>th]:border-l-0 [&>th]:border-r-0">
+              <TableHead className="font-semibold text-gray-900 border-0 bg-gray-100 border-l-0 border-r-0">Description</TableHead>
+              <TableHead className="text-right font-semibold text-gray-900 border-0 bg-gray-100 border-l-0 border-r-0">Qty/Days</TableHead>
+              <TableHead className="text-right font-semibold text-gray-900 border-0 bg-gray-100 border-l-0 border-r-0">Unit Price</TableHead>
+              <TableHead className="text-right font-semibold text-gray-900 border-0 bg-gray-100 border-l-0 border-r-0">Total</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {invoice.items.map((item) => (
-              <TableRow key={item.id} className="break-inside-avoid">
-                <TableCell className="font-medium text-gray-900 border-0">
+              <TableRow key={item.id} className="break-inside-avoid border-b-0 [&>td]:border-l-0 [&>td]:border-r-0">
+                <TableCell className="font-medium text-gray-900 border-0 border-l-0 border-r-0">
                   {item.description}
                 </TableCell>
-                <TableCell className="text-right text-gray-900 border-0">
+                <TableCell className="text-right text-gray-900 border-0 border-l-0 border-r-0">
                   {item.quantity} {item.quantityType === "days" ? "Days" : "Qty"}
                 </TableCell>
-                <TableCell className="text-right text-gray-900 border-0">
+                <TableCell className="text-right text-gray-900 border-0 border-l-0 border-r-0">
                   {formatCurrency(item.unitPrice, invoice.currency)}
                 </TableCell>
-                <TableCell className="text-right font-medium text-gray-900 border-0">
+                <TableCell className="text-right font-medium text-gray-900 border-0 border-l-0 border-r-0">
                   {formatCurrency(item.total, invoice.currency)}
                 </TableCell>
               </TableRow>

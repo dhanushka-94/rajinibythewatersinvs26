@@ -182,21 +182,21 @@ export function generateInvoiceEmailHtml({
           <!-- Invoice Items -->
           <tr>
             <td style="padding: 0 20px 12px 20px;">
-              <table width="100%" cellpadding="6" cellspacing="0" style="border-collapse: collapse;">
+              <table width="100%" cellpadding="6" cellspacing="0" style="border-collapse: collapse; border-spacing: 0;">
                 <tr style="background-color: #f3f4f6;">
-                  <th style="text-align: left; font-size: 11px; font-weight: 600; color: #111827; padding: 6px; border-bottom: 1px solid #111827; background-color: #f3f4f6;">Description</th>
-                  <th style="text-align: right; font-size: 11px; font-weight: 600; color: #111827; padding: 6px; border-bottom: 1px solid #111827; background-color: #f3f4f6;">Qty/Days</th>
-                  <th style="text-align: right; font-size: 11px; font-weight: 600; color: #111827; padding: 6px; border-bottom: 1px solid #111827; background-color: #f3f4f6;">Unit Price</th>
-                  <th style="text-align: right; font-size: 11px; font-weight: 600; color: #111827; padding: 6px; border-bottom: 1px solid #111827; background-color: #f3f4f6;">Total</th>
+                  <th style="text-align: left; font-size: 11px; font-weight: 600; color: #111827; padding: 6px; border-bottom: 1px solid #111827; border-left: none; border-right: none; background-color: #f3f4f6;">Description</th>
+                  <th style="text-align: right; font-size: 11px; font-weight: 600; color: #111827; padding: 6px; border-bottom: 1px solid #111827; border-left: none; border-right: none; background-color: #f3f4f6;">Qty/Days</th>
+                  <th style="text-align: right; font-size: 11px; font-weight: 600; color: #111827; padding: 6px; border-bottom: 1px solid #111827; border-left: none; border-right: none; background-color: #f3f4f6;">Unit Price</th>
+                  <th style="text-align: right; font-size: 11px; font-weight: 600; color: #111827; padding: 6px; border-bottom: 1px solid #111827; border-left: none; border-right: none; background-color: #f3f4f6;">Total</th>
                 </tr>
                 ${invoice.items
                   .map(
                     (item) => `
                   <tr>
-                    <td style="font-size: 11px; color: #111827; padding: 6px;">${item.description}</td>
-                    <td style="text-align: right; font-size: 11px; color: #111827; padding: 6px;">${item.quantity} ${item.quantityType === "days" ? "Days" : "Qty"}</td>
-                    <td style="text-align: right; font-size: 11px; color: #111827; padding: 6px;">${formatCurrency(item.unitPrice, invoice.currency)}</td>
-                    <td style="text-align: right; font-size: 11px; font-weight: 500; color: #111827; padding: 6px;">${formatCurrency(item.total, invoice.currency)}</td>
+                    <td style="font-size: 11px; color: #111827; padding: 6px; border-left: none; border-right: none;">${item.description}</td>
+                    <td style="text-align: right; font-size: 11px; color: #111827; padding: 6px; border-left: none; border-right: none;">${item.quantity} ${item.quantityType === "days" ? "Days" : "Qty"}</td>
+                    <td style="text-align: right; font-size: 11px; color: #111827; padding: 6px; border-left: none; border-right: none;">${formatCurrency(item.unitPrice, invoice.currency)}</td>
+                    <td style="text-align: right; font-size: 11px; font-weight: 500; color: #111827; padding: 6px; border-left: none; border-right: none;">${formatCurrency(item.total, invoice.currency)}</td>
                   </tr>
                 `
                   )
