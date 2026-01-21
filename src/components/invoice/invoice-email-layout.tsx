@@ -184,19 +184,19 @@ export function generateInvoiceEmailHtml({
             <td style="padding: 0 20px 12px 20px;">
               <table width="100%" cellpadding="6" cellspacing="0" style="border-collapse: collapse; border-spacing: 0;">
                 <tr style="background-color: #f3f4f6;">
-                  <th style="text-align: left; font-size: 11px; font-weight: 600; color: #111827; padding: 6px; border-bottom: 1px solid #111827; border-left: none; border-right: none; background-color: #f3f4f6;">Description</th>
-                  <th style="text-align: right; font-size: 11px; font-weight: 600; color: #111827; padding: 6px; border-bottom: 1px solid #111827; border-left: none; border-right: none; background-color: #f3f4f6;">Qty/Days</th>
-                  <th style="text-align: right; font-size: 11px; font-weight: 600; color: #111827; padding: 6px; border-bottom: 1px solid #111827; border-left: none; border-right: none; background-color: #f3f4f6;">Unit Price</th>
-                  <th style="text-align: right; font-size: 11px; font-weight: 600; color: #111827; padding: 6px; border-bottom: 1px solid #111827; border-left: none; border-right: none; background-color: #f3f4f6;">Total</th>
+                  <th style="text-align: left; font-size: 11px; font-weight: 600; color: #111827; padding: 6px; border: none; background-color: #f3f4f6;">Description</th>
+                  <th style="text-align: right; font-size: 11px; font-weight: 600; color: #111827; padding: 6px; border: none; background-color: #f3f4f6;">Qty/Days</th>
+                  <th style="text-align: right; font-size: 11px; font-weight: 600; color: #111827; padding: 6px; border: none; background-color: #f3f4f6;">Unit Price</th>
+                  <th style="text-align: right; font-size: 11px; font-weight: 600; color: #111827; padding: 6px; border: none; background-color: #f3f4f6;">Total</th>
                 </tr>
                 ${invoice.items
                   .map(
                     (item) => `
                   <tr>
-                    <td style="font-size: 11px; color: #111827; padding: 6px; border-left: none; border-right: none;">${item.description}</td>
-                    <td style="text-align: right; font-size: 11px; color: #111827; padding: 6px; border-left: none; border-right: none;">${item.quantity} ${item.quantityType === "days" ? "Days" : "Qty"}</td>
-                    <td style="text-align: right; font-size: 11px; color: #111827; padding: 6px; border-left: none; border-right: none;">${formatCurrency(item.unitPrice, invoice.currency)}</td>
-                    <td style="text-align: right; font-size: 11px; font-weight: 500; color: #111827; padding: 6px; border-left: none; border-right: none;">${formatCurrency(item.total, invoice.currency)}</td>
+                    <td style="font-size: 11px; color: #111827; padding: 6px; border: none;">${item.description}</td>
+                    <td style="text-align: right; font-size: 11px; color: #111827; padding: 6px; border: none;">${item.quantity} ${item.quantityType === "days" ? "Days" : "Qty"}</td>
+                    <td style="text-align: right; font-size: 11px; color: #111827; padding: 6px; border: none;">${formatCurrency(item.unitPrice, invoice.currency)}</td>
+                    <td style="text-align: right; font-size: 11px; font-weight: 500; color: #111827; padding: 6px; border: none;">${formatCurrency(item.total, invoice.currency)}</td>
                   </tr>
                 `
                   )
@@ -282,8 +282,8 @@ export function generateInvoiceEmailHtml({
           ${invoice.paymentMethods.length > 0 || bankDetails.length > 0
             ? `
           <tr>
-            <td style="padding: 0 20px 10px 20px; border-top: 1px solid #111827; padding-top: 8px;">
-            <h3 style="margin: 0 0 6px 0; font-size: 11px; font-weight: 600; color: #111827;">Payment Information</h3>
+            <td style="padding: 0 20px 10px 20px;">
+            <h3 style="margin: 0 0 6px 0; font-size: 11px; font-weight: 600; color: #111827; background-color: #f3f4f6; padding: 6px 8px;">Payment Information</h3>
             
             <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
               ${invoice.paymentMethods.length > 0

@@ -333,16 +333,15 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
           </div>
         </div>
       </div>
-      <Separator className="mb-4 print:mb-3" />
 
       <div className="mb-4 print:mb-3 invoice-items">
         <Table className="print:text-xs border-separate border-spacing-0">
           <TableHeader>
-            <TableRow className="border-b border-gray-900 bg-gray-100 [&>th]:border-l-0 [&>th]:border-r-0">
-              <TableHead className="font-semibold text-gray-900 border-0 bg-gray-100 border-l-0 border-r-0">Description</TableHead>
-              <TableHead className="text-right font-semibold text-gray-900 border-0 bg-gray-100 border-l-0 border-r-0">Qty/Days</TableHead>
-              <TableHead className="text-right font-semibold text-gray-900 border-0 bg-gray-100 border-l-0 border-r-0">Unit Price</TableHead>
-              <TableHead className="text-right font-semibold text-gray-900 border-0 bg-gray-100 border-l-0 border-r-0">Total</TableHead>
+            <TableRow className="bg-gray-100 [&>th]:border-0">
+              <TableHead className="font-semibold text-gray-900 border-0 bg-gray-100">Description</TableHead>
+              <TableHead className="text-right font-semibold text-gray-900 border-0 bg-gray-100">Qty/Days</TableHead>
+              <TableHead className="text-right font-semibold text-gray-900 border-0 bg-gray-100">Unit Price</TableHead>
+              <TableHead className="text-right font-semibold text-gray-900 border-0 bg-gray-100">Total</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -424,8 +423,8 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
       )}
 
       {(invoice.paymentMethods.length > 0 || bankDetails.length > 0) && (
-        <div className="mt-3 pt-2 border-t border-gray-900 print:mt-2 print:pt-1.5">
-          <h3 className="font-semibold text-sm mb-1.5 text-gray-900 print:text-xs print:mb-1">Payment Information</h3>
+        <div className="mt-3 print:mt-2">
+          <h3 className="font-semibold text-sm mb-1.5 text-gray-900 print:text-xs print:mb-1 bg-gray-100 px-3 py-1.5 print:px-2 print:py-1">Payment Information</h3>
           
           <div className="space-y-1.5 print:space-y-1">
             {invoice.paymentMethods.length > 0 && (
