@@ -23,6 +23,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { getInvoices } from "@/lib/invoices";
 import { formatCurrency } from "@/lib/currency";
+import { formatDateSL } from "@/lib/date-sl";
 import { Invoice, Currency } from "@/types/invoice";
 import { FileText, DollarSign, Calendar, Download, Filter } from "lucide-react";
 import Link from "next/link";
@@ -169,7 +170,7 @@ export default function ReportsPage() {
       inv.paymentMethods
         .map((method) => formatPaymentMethod(method))
         .join(", "),
-      new Date(inv.createdAt).toLocaleDateString(),
+      formatDateSL(inv.createdAt),
     ]);
 
     const csvContent = [
@@ -499,10 +500,10 @@ export default function ReportsPage() {
                       </TableCell>
                       <TableCell>{invoice.guest.name || "-"}</TableCell>
                       <TableCell>
-                        {new Date(invoice.checkIn).toLocaleDateString()}
+                        {formatDateSL(invoice.checkIn)}
                       </TableCell>
                       <TableCell>
-                        {new Date(invoice.checkOut).toLocaleDateString()}
+                        {formatDateSL(invoice.checkOut)}
                       </TableCell>
                       <TableCell>{invoice.currency}</TableCell>
                       <TableCell>

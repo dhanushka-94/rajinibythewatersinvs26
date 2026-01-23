@@ -3,6 +3,7 @@
 import { supabase } from "./supabase";
 import { User, UserCreate, UserUpdate } from "@/types/user";
 import { hashPassword } from "./auth";
+import { nowISOStringSL } from "./date-sl";
 
 // Map database row to User interface
 function mapDbToUser(data: any): User {
@@ -155,7 +156,7 @@ export async function updateUser(id: string, userData: UserUpdate): Promise<void
     updateData.is_active = userData.isActive;
   }
 
-  updateData.updated_at = new Date().toISOString();
+  updateData.updated_at = nowISOStringSL();
 
   const { error } = await supabase
     .from("users")

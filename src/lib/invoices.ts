@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import { Invoice } from '@/types/invoice';
 import { createActivityLog } from './activity-logs';
+import { nowISOStringSL } from './date-sl';
 
 // In-memory fallback if Supabase is not configured
 let fallbackInvoices: Invoice[] = [];
@@ -206,8 +207,8 @@ export async function createInvoice(invoice: Omit<Invoice, "id" | "createdAt" | 
     const newInvoice: Invoice = {
       ...invoice,
       id: `inv-${Date.now()}`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: nowISOStringSL(),
+      updatedAt: nowISOStringSL(),
     };
     fallbackInvoices.push(newInvoice);
     return newInvoice;
@@ -218,14 +219,17 @@ export async function createInvoice(invoice: Omit<Invoice, "id" | "createdAt" | 
       const newInvoice: Invoice = {
         ...invoice,
         id: `inv-${Date.now()}`,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: nowISOStringSL(),
+        updatedAt: nowISOStringSL(),
       };
       fallbackInvoices.push(newInvoice);
       return newInvoice;
     }
 
     const dbData = mapInvoiceToDb(invoice as Invoice);
+    const now = nowISOStringSL();
+    dbData.created_at = now;
+    dbData.updated_at = now;
     const { data, error } = await supabase
       .from('invoices')
       .insert([dbData])
@@ -243,8 +247,8 @@ export async function createInvoice(invoice: Omit<Invoice, "id" | "createdAt" | 
       const newInvoice: Invoice = {
         ...invoice,
         id: `inv-${Date.now()}`,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: nowISOStringSL(),
+        updatedAt: nowISOStringSL(),
       };
       fallbackInvoices.push(newInvoice);
       return newInvoice;
@@ -275,8 +279,8 @@ export async function createInvoice(invoice: Omit<Invoice, "id" | "createdAt" | 
     const newInvoice: Invoice = {
       ...invoice,
       id: `inv-${Date.now()}`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: nowISOStringSL(),
+      updatedAt: nowISOStringSL(),
     };
     fallbackInvoices.push(newInvoice);
     return newInvoice;
@@ -378,7 +382,7 @@ export async function updateInvoice(id: string, invoice: Partial<Invoice>): Prom
         dbData.guests = null;
       }
     }
-    dbData.updated_at = new Date().toISOString();
+    dbData.updated_at = nowISOStringSL();
 
     // Try to update, but handle case where selected_bank_detail_ids column might not exist
     let { error } = await supabase

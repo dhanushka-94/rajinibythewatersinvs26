@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { nowISOStringSL } from './date-sl';
 
 export interface BankDetail {
   id: string;
@@ -203,7 +204,7 @@ export async function updateBankDetail(id: string, bank: Partial<BankDetail>): P
     if (bank.accountNumber !== undefined) dbData.account_number = bank.accountNumber;
     if (bank.bankAddress !== undefined) dbData.bank_address = bank.bankAddress;
     if (bank.swiftCode !== undefined) dbData.swift_code = bank.swiftCode;
-    dbData.updated_at = new Date().toISOString();
+    dbData.updated_at = nowISOStringSL();
 
     const { error } = await supabase
       .from('bank_details')

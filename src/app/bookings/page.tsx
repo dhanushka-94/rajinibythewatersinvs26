@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Booking, BookingStatus } from "@/types/booking";
+import { formatDateSL } from "@/lib/date-sl";
 import Link from "next/link";
 import { Eye, Plus, Filter, X, Pencil, Trash2, Calendar, User, LogIn, LogOut, CalendarDays } from "lucide-react";
 
@@ -308,13 +309,13 @@ export default function BookingsPage() {
                         <TableCell>
                           <div className="flex items-center gap-1">
                             <LogIn className="h-3 w-3 text-muted-foreground" />
-                            {new Date(booking.checkIn).toLocaleDateString()}
+                            {formatDateSL(booking.checkIn)}
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1">
                             <LogOut className="h-3 w-3 text-muted-foreground" />
-                            {new Date(booking.checkOut).toLocaleDateString()}
+                            {formatDateSL(booking.checkOut)}
                           </div>
                         </TableCell>
                         <TableCell>{booking.roomType || "-"}</TableCell>

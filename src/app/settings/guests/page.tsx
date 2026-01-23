@@ -22,6 +22,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { getGuests, addGuest, updateGuest, deleteGuest, type Guest } from "@/lib/guests";
+import { formatDateSL } from "@/lib/date-sl";
 import { Plus, Pencil, Trash2, Search } from "lucide-react";
 import { CountrySelector } from "@/components/country-selector";
 import { Title } from "@/types/invoice";
@@ -200,7 +201,7 @@ export default function GuestsPage() {
                     <TableCell>{guest.phone || "-"}</TableCell>
                     <TableCell>{guest.phone2 || "-"}</TableCell>
                     <TableCell>{guest.phone3 || "-"}</TableCell>
-                    <TableCell>{guest.birthday ? new Date(guest.birthday).toLocaleDateString() : "-"}</TableCell>
+                    <TableCell>{guest.birthday ? formatDateSL(guest.birthday) : "-"}</TableCell>
                     <TableCell>{guest.idNumber || "-"}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">

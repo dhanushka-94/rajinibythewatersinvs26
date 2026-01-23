@@ -3,6 +3,7 @@
 import { supabase } from './supabase';
 import { TravelCompany, TravelCompanyCreate, TravelCompanyUpdate } from '@/types/travel-company';
 import { createActivityLog } from './activity-logs';
+import { nowISOStringSL } from './date-sl';
 
 // Map database row to TravelCompany interface
 function mapDbToTravelCompany(data: any): TravelCompany {
@@ -95,8 +96,8 @@ export async function createTravelCompany(companyData: TravelCompanyCreate): Pro
   }
 
   const dbData = mapTravelCompanyToDb(companyData);
-  dbData.created_at = new Date().toISOString();
-  dbData.updated_at = new Date().toISOString();
+  dbData.created_at = nowISOStringSL();
+  dbData.updated_at = nowISOStringSL();
 
   const { data, error } = await supabase
     .from('travel_companies')
@@ -136,7 +137,7 @@ export async function updateTravelCompany(id: string, companyData: TravelCompany
   }
 
   const dbData = mapTravelCompanyToDb(companyData);
-  dbData.updated_at = new Date().toISOString();
+  dbData.updated_at = nowISOStringSL();
 
   const { error } = await supabase
     .from('travel_companies')

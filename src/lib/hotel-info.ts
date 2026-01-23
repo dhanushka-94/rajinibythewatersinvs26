@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { nowISOStringSL } from './date-sl';
 
 export interface HotelInfo {
   id: string;
@@ -147,7 +148,7 @@ export async function updateHotelInfo(info: Partial<Omit<HotelInfo, "id" | "crea
     if (info.email !== undefined) dbData.email = info.email || null;
     if (info.website !== undefined) dbData.website = info.website || null;
     if (info.logoPath !== undefined) dbData.logo_path = info.logoPath || null;
-    dbData.updated_at = new Date().toISOString();
+    dbData.updated_at = nowISOStringSL();
 
     let error;
     let operation = '';

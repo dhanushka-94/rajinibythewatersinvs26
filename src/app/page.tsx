@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, DollarSign, Clock, CheckCircle, AlertCircle, Send, Edit, XCircle, TrendingUp, Plus } from "lucide-react";
 import { getInvoices } from "@/lib/invoices";
 import { formatCurrency } from "@/lib/currency";
+import { formatDateSL } from "@/lib/date-sl";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -281,7 +282,7 @@ export default function Dashboard() {
                           {invoice.guest.name}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {new Date(invoice.checkIn).toLocaleDateString()} - {new Date(invoice.checkOut).toLocaleDateString()}
+                          {formatDateSL(invoice.checkIn)} - {formatDateSL(invoice.checkOut)}
                         </div>
                       </div>
                       <div className="text-right space-y-1 ml-4">

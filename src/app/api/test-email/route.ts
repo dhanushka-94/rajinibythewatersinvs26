@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { getSession } from "@/lib/auth";
+import { formatDateTimeSL } from "@/lib/date-sl";
 
 async function sendTestEmail({
   to,
@@ -116,7 +117,7 @@ export async function POST(request: NextRequest) {
       <p style="margin: 0; font-size: 12px; color: #6b7280;">
         <strong>From:</strong> ${fromName} &lt;${fromEmail}&gt;<br>
         <strong>To:</strong> ${recipientEmail}<br>
-        <strong>Time:</strong> ${new Date().toLocaleString()}
+        <strong>Time:</strong> ${formatDateTimeSL(new Date())} (Sri Lanka)
       </p>
     </div>
     <p style="color: #374151; margin-top: 20px;">

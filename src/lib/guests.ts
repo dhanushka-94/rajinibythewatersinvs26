@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import { Guest } from '@/types/invoice';
 import { createActivityLog } from './activity-logs';
+import { nowISOStringSL } from './date-sl';
 
 // Re-export Guest type for convenience
 export type { Guest };
@@ -259,7 +260,7 @@ export async function updateGuest(id: string, guest: Partial<Guest>): Promise<vo
     if (guest.city !== undefined) dbData.city = guest.city;
     if (guest.country !== undefined) dbData.country = guest.country;
     if (guest.idNumber !== undefined) dbData.id_number = guest.idNumber;
-    dbData.updated_at = new Date().toISOString();
+    dbData.updated_at = nowISOStringSL();
 
     const { error } = await supabase
       .from('guests')

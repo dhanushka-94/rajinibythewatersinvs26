@@ -5,6 +5,7 @@ import { formatCurrency } from "@/lib/currency";
 import { getBankDetailById } from "@/lib/bank-details";
 import { getTravelCompanyById } from "@/lib/travel-companies";
 import { type TravelCompany } from "@/types/travel-company";
+import { formatDateSL } from "@/lib/date-sl";
 
 interface InvoiceEmailLayoutProps {
   invoice: Invoice;
@@ -81,11 +82,7 @@ export function generateInvoiceEmailHtml({
                       <span style="display: inline-block; margin-left: 8px; padding: 2px 8px; background-color: #f3f4f6; border: 1px solid #d1d5db; border-radius: 3px; font-size: 10px; color: #374151;">${getStatusLabel(invoice.status)}</span>
                     </div>
                     <p style="margin: 0; font-size: 11px; color: #6b7280;">
-                      Date: ${new Date(invoice.createdAt).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
+                      Date: ${formatDateSL(invoice.createdAt, { month: "long" })}
                     </p>
                   </td>
                 </tr>
@@ -148,19 +145,11 @@ export function generateInvoiceEmailHtml({
                     <div style="font-size: 11px; line-height: 1.6; color: #374151;">
                       <div style="margin-bottom: 6px;">
                         <strong>🔑 Check-in:</strong><br>
-                        ${new Date(invoice.checkIn).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
+                        ${formatDateSL(invoice.checkIn, { month: "long" })}
                       </div>
                       <div style="margin-bottom: 6px;">
                         <strong>🚪 Check-out:</strong><br>
-                        ${new Date(invoice.checkOut).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
+                        ${formatDateSL(invoice.checkOut, { month: "long" })}
                       </div>
                       ${invoice.roomType ? `<div style="margin-bottom: 6px;"><strong>Room:</strong> ${invoice.roomType}</div>` : ""}
                       ${invoice.adults !== undefined || invoice.children !== undefined || invoice.babies !== undefined

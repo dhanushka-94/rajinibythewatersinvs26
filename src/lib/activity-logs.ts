@@ -3,6 +3,7 @@
 import { supabase } from "./supabase";
 import { ActivityLog, ActivityLogCreate, ActivityLogFilter } from "@/types/activity-log";
 import { getSession } from "./auth";
+import { nowISOStringSL } from "./date-sl";
 
 // Map database row to ActivityLog interface
 const mapDbToActivityLog = (data: any): ActivityLog => {
@@ -117,6 +118,7 @@ export async function createActivityLog(
     // Add username and full_name to the database record
     dbData.username = userInfo.username;
     dbData.user_full_name = userInfo.fullName || null;
+    dbData.created_at = nowISOStringSL();
 
     const { error } = await supabase
       .from("activity_logs")

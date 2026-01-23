@@ -1,6 +1,7 @@
 import { supabase } from './supabase';
 import { InvoiceItem } from '@/types/invoice';
 import { createActivityLog } from './activity-logs';
+import { nowISOStringSL } from './date-sl';
 
 // Default saved invoice items
 const defaultItems: InvoiceItem[] = [
@@ -251,7 +252,7 @@ export async function updateSavedItem(id: string, item: Partial<InvoiceItem>): P
     if (item.unitPrice !== undefined) dbData.unit_price = item.unitPrice;
     if (item.total !== undefined) dbData.total = item.total;
     if (item.currency !== undefined) dbData.currency = item.currency;
-    dbData.updated_at = new Date().toISOString();
+    dbData.updated_at = nowISOStringSL();
 
     const { error } = await supabase
       .from('invoice_items')

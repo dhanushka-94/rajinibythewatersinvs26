@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { getInvoices, deleteInvoice } from "@/lib/invoices";
 import { formatCurrency } from "@/lib/currency";
+import { formatDateSL } from "@/lib/date-sl";
 import Link from "next/link";
 import { Eye, Plus, Filter, X, Pencil, Trash2, AlertCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -338,10 +339,10 @@ export default function InvoicesPage() {
                       </TableCell>
                       <TableCell>{invoice.guest.name}</TableCell>
                       <TableCell>
-                        {new Date(invoice.checkIn).toLocaleDateString()}
+                        {formatDateSL(invoice.checkIn)}
                       </TableCell>
                       <TableCell>
-                        {new Date(invoice.checkOut).toLocaleDateString()}
+                        {formatDateSL(invoice.checkOut)}
                       </TableCell>
                       <TableCell>{formatCurrency(invoice.total, invoice.currency)}</TableCell>
                       <TableCell>

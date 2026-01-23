@@ -19,6 +19,7 @@ import { formatCurrency } from "@/lib/currency";
 import { getBankDetailById } from "@/lib/bank-details";
 import { getTravelCompanyById } from "@/lib/travel-companies";
 import { type TravelCompany } from "@/types/travel-company";
+import { formatDateSL } from "@/lib/date-sl";
 import { Building2, FileText, Wallet, Globe, Banknote, CreditCard, Calendar, User, Mail, Phone, MapPin, Building, IdCard, UserCircle, Hash, LogIn, LogOut, Users } from "lucide-react";
 
 interface InvoiceLayoutProps {
@@ -155,11 +156,7 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
                 {getStatusBadge(invoice.status)}
               </div>
               <p className="text-xs text-gray-900 print:text-[7pt]">
-                Date: {new Date(invoice.createdAt).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
+                Date: {formatDateSL(invoice.createdAt, { month: "long" })}
               </p>
             </div>
           </div>
@@ -287,22 +284,14 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
                 <LogIn className="h-3.5 w-3.5 text-gray-900 print:h-3 print:w-3 flex-shrink-0" />
                 <span className="font-medium text-gray-900">Check-in: </span>
                 <span className="text-gray-900">
-                  {new Date(invoice.checkIn).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  })}
+                  {formatDateSL(invoice.checkIn)}
                 </span>
               </div>
               <div className="flex items-center gap-1">
                 <LogOut className="h-3.5 w-3.5 text-gray-900 print:h-3 print:w-3 flex-shrink-0" />
                 <span className="font-medium text-gray-900">Check-out: </span>
                 <span className="text-gray-900">
-                  {new Date(invoice.checkOut).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "short",
-                    day: "numeric",
-                  })}
+                  {formatDateSL(invoice.checkOut)}
                 </span>
               </div>
             </div>

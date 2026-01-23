@@ -5,6 +5,7 @@ import { supabase } from "./supabase";
 import { User, UserCreate, UserUpdate, LoginCredentials, UserRole } from "@/types/user";
 import { cookies } from "next/headers";
 import { createActivityLog } from "./activity-logs";
+import { nowISOStringSL, toISOStringSL } from "./date-sl";
 
 const SESSION_COOKIE_NAME = "invoice-session";
 const SESSION_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -25,7 +26,7 @@ async function createSession(userId: string, username: string, role: UserRole) {
     userId,
     username,
     role,
-    expiresAt: new Date(Date.now() + SESSION_DURATION).toISOString(),
+    expiresAt: toISOStringSL(new Date(Date.now() + SESSION_DURATION)),
   };
   
   const cookieStore = await cookies();
@@ -101,7 +102,7 @@ export async function login(credentials: LoginCredentials): Promise<{ success: b
     // Update last login
     await supabase
       .from("users")
-      .update({ last_login: new Date().toISOString() })
+      .update({ last_login: nowISOStringSL() })
       .eq("id", userData.id);
 
     // Create session

@@ -9,10 +9,14 @@ import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Plus } from "lucid
 import Link from "next/link";
 import { getBookings } from "@/lib/bookings";
 import { getHolidayForDate, type Holiday } from "@/lib/sri-lankan-holidays";
+import { getTodaySLParts } from "@/lib/date-sl";
 
 export default function BookingCalendarPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(() => {
+    const t = getTodaySLParts();
+    return new Date(t.year, t.month, 1);
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -89,7 +93,8 @@ export default function BookingCalendarPage() {
   };
 
   const goToToday = () => {
-    setCurrentDate(new Date());
+    const { year: y, month: m } = getTodaySLParts();
+    setCurrentDate(new Date(y, m, 1));
   };
 
   // Generate calendar days
@@ -118,13 +123,13 @@ export default function BookingCalendarPage() {
 
   const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-  const today = new Date();
+  const todaySL = getTodaySLParts();
   const isToday = (date: Date | null): boolean => {
     if (!date) return false;
     return (
-      date.getDate() === today.getDate() &&
-      date.getMonth() === today.getMonth() &&
-      date.getFullYear() === today.getFullYear()
+      date.getDate() === todaySL.day &&
+      date.getMonth() === todaySL.month &&
+      date.getFullYear() === todaySL.year
     );
   };
 

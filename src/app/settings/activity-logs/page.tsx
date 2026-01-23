@@ -22,6 +22,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ActivityLog, ActivityType } from "@/types/activity-log";
 import { getActivityLogs, getActivityLogsCount } from "@/lib/activity-logs";
+import { formatDateTimeSL } from "@/lib/date-sl";
 // Format distance to now helper
 const formatDistanceToNow = (date: Date): string => {
   const now = new Date();
@@ -368,7 +369,7 @@ export default function ActivityLogsPage() {
                               <Calendar className="h-4 w-4 text-muted-foreground" />
                               <div>
                                 <div className="text-sm font-medium">
-                                  {new Date(log.createdAt).toLocaleString()}
+                                  {formatDateTimeSL(log.createdAt)}
                                 </div>
                                 <div className="text-xs text-muted-foreground">
                                   {formatDistanceToNow(new Date(log.createdAt))}

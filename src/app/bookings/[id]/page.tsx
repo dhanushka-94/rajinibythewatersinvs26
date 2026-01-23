@@ -18,6 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatCurrency } from "@/lib/currency";
+import { formatDateSL, formatDateTimeSL } from "@/lib/date-sl";
 
 export default function BookingDetailPage({
   params,
@@ -151,7 +152,7 @@ export default function BookingDetailPage({
                   Check-in
                 </p>
                 <p className="font-medium">
-                  {new Date(booking.checkIn).toLocaleDateString()}
+                  {formatDateSL(booking.checkIn)}
                 </p>
                 {booking.earlyCheckIn && (
                   <p className="text-xs text-orange-600 mt-1">
@@ -161,7 +162,7 @@ export default function BookingDetailPage({
                 )}
                 {booking.checkedInAt && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    Checked in: {new Date(booking.checkedInAt).toLocaleString()}
+                    Checked in: {formatDateTimeSL(booking.checkedInAt)}
                   </p>
                 )}
               </div>
@@ -171,7 +172,7 @@ export default function BookingDetailPage({
                   Check-out
                 </p>
                 <p className="font-medium">
-                  {new Date(booking.checkOut).toLocaleDateString()}
+                  {formatDateSL(booking.checkOut)}
                 </p>
                 {booking.lateCheckOut && (
                   <p className="text-xs text-orange-600 mt-1">
@@ -181,7 +182,7 @@ export default function BookingDetailPage({
                 )}
                 {booking.checkedOutAt && (
                   <p className="text-xs text-muted-foreground mt-1">
-                    Checked out: {new Date(booking.checkedOutAt).toLocaleString()}
+                    Checked out: {formatDateTimeSL(booking.checkedOutAt)}
                   </p>
                 )}
               </div>
@@ -194,7 +195,7 @@ export default function BookingDetailPage({
               <div>
                 <p className="text-sm text-muted-foreground">Created</p>
                 <p className="font-medium">
-                  {new Date(booking.createdAt).toLocaleDateString()}
+                  {formatDateSL(booking.createdAt)}
                 </p>
               </div>
             </div>
@@ -204,19 +205,19 @@ export default function BookingDetailPage({
                 <p className="text-sm font-semibold mb-2">Status History</p>
                 <div className="space-y-1 text-xs text-muted-foreground">
                   {booking.bookedAt && (
-                    <p>📅 Booked: {new Date(booking.bookedAt).toLocaleString()}</p>
+                    <p>📅 Booked: {formatDateTimeSL(booking.bookedAt)}</p>
                   )}
                   {booking.confirmedAt && (
-                    <p>✅ Confirmed: {new Date(booking.confirmedAt).toLocaleString()}</p>
+                    <p>✅ Confirmed: {formatDateTimeSL(booking.confirmedAt)}</p>
                   )}
                   {booking.checkedInAt && (
-                    <p>🔑 Checked In: {new Date(booking.checkedInAt).toLocaleString()}</p>
+                    <p>🔑 Checked In: {formatDateTimeSL(booking.checkedInAt)}</p>
                   )}
                   {booking.checkedOutAt && (
-                    <p>🚪 Checked Out: {new Date(booking.checkedOutAt).toLocaleString()}</p>
+                    <p>🚪 Checked Out: {formatDateTimeSL(booking.checkedOutAt)}</p>
                   )}
                   {booking.cancelledAt && (
-                    <p>❌ Cancelled: {new Date(booking.cancelledAt).toLocaleString()}</p>
+                    <p>❌ Cancelled: {formatDateTimeSL(booking.cancelledAt)}</p>
                   )}
                 </div>
               </div>

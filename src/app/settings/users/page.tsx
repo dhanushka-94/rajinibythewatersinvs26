@@ -30,6 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { formatDateTimeSL } from "@/lib/date-sl";
 import { Plus, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
 import { User, UserRole } from "@/types/user";
 
@@ -381,7 +382,7 @@ export default function UsersPage() {
                     </TableCell>
                     <TableCell>
                       {user.lastLogin
-                        ? new Date(user.lastLogin).toLocaleString()
+                        ? formatDateTimeSL(user.lastLogin)
                         : "Never"}
                     </TableCell>
                     <TableCell className="text-right">

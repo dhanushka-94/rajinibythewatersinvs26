@@ -30,6 +30,7 @@ import { InvoiceLayout } from "@/components/invoice/invoice-layout";
 import { InvoicePrintLayout } from "@/components/invoice/invoice-print-layout";
 import { Invoice, Payment } from "@/types/invoice";
 import { formatCurrency } from "@/lib/currency";
+import { formatDateSL, todaySL, nowISOStringSL } from "@/lib/date-sl";
 import { createRoot } from "react-dom/client";
 import React from "react";
 
@@ -44,7 +45,7 @@ export default function InvoiceDetailPage({
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
   const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
-  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0]);
+  const [paymentDate, setPaymentDate] = useState(todaySL());
   const [paymentAmount, setPaymentAmount] = useState<string>("");
   const [paymentNotes, setPaymentNotes] = useState("");
   const [paymentCardLast4Digits, setPaymentCardLast4Digits] = useState<string>("");
@@ -193,7 +194,7 @@ export default function InvoiceDetailPage({
         date: paymentDate,
         notes: paymentNotes || undefined,
         cardLast4Digits: invoice.paymentMethods.includes("card") && paymentCardLast4Digits ? paymentCardLast4Digits : undefined,
-        createdAt: new Date().toISOString(),
+        createdAt: nowISOStringSL(),
       };
 
       const existingPayments = invoice.payments || [];
@@ -222,7 +223,7 @@ export default function InvoiceDetailPage({
       setPaymentAmount("");
       setPaymentNotes("");
       setPaymentCardLast4Digits("");
-      setPaymentDate(new Date().toISOString().split('T')[0]);
+      setPaymentDate(todaySL());
     } catch (error) {
       console.error("Error recording payment:", error);
       alert("Failed to record payment. Please try again.");
@@ -414,7 +415,7 @@ export default function InvoiceDetailPage({
                     <div className="flex-1">
                       <p className="font-medium">{formatCurrency(payment.amount, invoice.currency)}</p>
                       <p className="text-sm text-muted-foreground">
-                        {new Date(payment.date).toLocaleDateString()}
+                        {formatDateSL(payment.date)}
                         {payment.cardLast4Digits && ` • Card: ****${payment.cardLast4Digits}`}
                         {payment.notes && ` • ${payment.notes}`}
                       </p>

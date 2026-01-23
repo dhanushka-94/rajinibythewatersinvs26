@@ -2,6 +2,7 @@ import { supabase } from './supabase';
 import { Booking, BookingStatus } from '@/types/booking';
 import { Guest } from '@/types/invoice';
 import { createActivityLog } from './activity-logs';
+import { nowISOStringSL } from './date-sl';
 
 // In-memory fallback if Supabase is not configured
 let fallbackBookings: Booking[] = [];
@@ -224,8 +225,8 @@ export async function createBooking(booking: Omit<Booking, "id" | "bookingNumber
       ...booking,
       id: `bk-${Date.now()}`,
       bookingNumber: generateBookingNumber(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: nowISOStringSL(),
+      updatedAt: nowISOStringSL(),
     };
     fallbackBookings.push(newBooking);
     return newBooking;
@@ -237,8 +238,8 @@ export async function createBooking(booking: Omit<Booking, "id" | "bookingNumber
         ...booking,
         id: `bk-${Date.now()}`,
         bookingNumber: generateBookingNumber(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: nowISOStringSL(),
+        updatedAt: nowISOStringSL(),
       };
       fallbackBookings.push(newBooking);
       return newBooking;
@@ -251,7 +252,7 @@ export async function createBooking(booking: Omit<Booking, "id" | "bookingNumber
     } as Booking);
     
     // Set initial status timestamp based on booking status
-    const now = new Date().toISOString();
+    const now = nowISOStringSL();
     if (booking.status === 'booked') {
       dbData.booked_at = now;
     } else if (booking.status === 'confirmed') {
@@ -296,8 +297,8 @@ export async function createBooking(booking: Omit<Booking, "id" | "bookingNumber
         ...booking,
         id: `bk-${Date.now()}`,
         bookingNumber,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: nowISOStringSL(),
+        updatedAt: nowISOStringSL(),
       };
       fallbackBookings.push(newBooking);
       return newBooking;
@@ -329,8 +330,8 @@ export async function createBooking(booking: Omit<Booking, "id" | "bookingNumber
       ...booking,
       id: `bk-${Date.now()}`,
       bookingNumber: generateBookingNumber(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: nowISOStringSL(),
+      updatedAt: nowISOStringSL(),
     };
     fallbackBookings.push(newBooking);
     return newBooking;
@@ -432,7 +433,7 @@ export async function updateBooking(id: string, booking: Partial<Booking>): Prom
         dbData.status = newStatus;
         
         // Track status change timestamps
-        const now = new Date().toISOString();
+        const now = nowISOStringSL();
         if (newStatus === 'booked') {
           dbData.booked_at = now;
         } else if (newStatus === 'confirmed') {
@@ -485,7 +486,7 @@ export async function updateBooking(id: string, booking: Partial<Booking>): Prom
       dbData.notes = booking.notes || null;
     }
     
-    dbData.updated_at = new Date().toISOString();
+    dbData.updated_at = nowISOStringSL();
 
     const { error } = await supabase
       .from('bookings')

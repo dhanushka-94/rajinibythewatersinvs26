@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { getInvoices } from "@/lib/invoices";
 import { formatCurrency } from "@/lib/currency";
+import { formatDateSL } from "@/lib/date-sl";
 import { Invoice, Payment } from "@/types/invoice";
 import { X, Download, DollarSign } from "lucide-react";
 import Link from "next/link";
@@ -147,7 +148,7 @@ export default function PaymentsPage() {
       t.payment.amount.toFixed(2),
       t.invoiceTotal.toFixed(2),
       t.payment.notes || "",
-      new Date(t.payment.createdAt).toLocaleDateString(),
+      formatDateSL(t.payment.createdAt),
     ]);
 
     const csvContent = [
@@ -352,7 +353,7 @@ export default function PaymentsPage() {
                   {filteredTransactions.map((transaction) => (
                     <TableRow key={transaction.id}>
                       <TableCell>
-                        {new Date(transaction.payment.date).toLocaleDateString()}
+                        {formatDateSL(transaction.payment.date)}
                       </TableCell>
                       <TableCell className="font-medium">
                         {transaction.invoiceNumber}
