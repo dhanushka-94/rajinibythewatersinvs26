@@ -24,6 +24,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getInvoiceById, updateInvoice } from "@/lib/invoices";
+import { getHotelInfo } from "@/lib/hotel-info";
+import { getTravelCompanyById } from "@/lib/travel-companies";
+import { getBankDetailById } from "@/lib/bank-details";
 import { Printer, ArrowLeft, DollarSign, Send, CheckCircle, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { InvoiceLayout } from "@/components/invoice/invoice-layout";
@@ -114,7 +117,18 @@ export default function InvoiceDetailPage({
     );
   };
 
-  const handlePrint = () => {
+  const handlePrint = async () => {
+    if (!invoice) return;
+    const bankIds = invoice.selectedBankDetailIds ?? (invoice.selectedBankDetailId ? [invoice.selectedBankDetailId] : []);
+    const [hotelInfo, travelCompany, ...banks] = await Promise.all([
+      getHotelInfo(),
+      invoice.billingType === "company" && invoice.travelCompanyId
+        ? getTravelCompanyById(invoice.travelCompanyId)
+        : Promise.resolve(null),
+      ...bankIds.map((id) => getBankDetailById(id)),
+    ]);
+    const bankDetails = banks.filter((b): b is NonNullable<typeof banks[0]> => b != null);
+
     // Hide all existing content
     const existingContent = document.querySelectorAll('body > *:not(#invoice-print-container)');
     const originalDisplays: (string | null)[] = [];
@@ -135,14 +149,21 @@ export default function InvoiceDetailPage({
     printContainer.style.display = 'block';
     document.body.appendChild(printContainer);
 
-    // Render the print template
+    // Render the print template with pre-fetched data so Bill To travel company is ready
     const root = createRoot(printContainer);
-    root.render(React.createElement(InvoicePrintLayout, { invoice }));
-    
+    root.render(
+      React.createElement(InvoicePrintLayout, {
+        invoice,
+        initialHotelInfo: hotelInfo ?? null,
+        initialTravelCompany: travelCompany ?? null,
+        initialBankDetails: bankDetails,
+      })
+    );
+
     // Wait for rendering then print
     setTimeout(() => {
       window.print();
-      
+
       // Cleanup after print
       setTimeout(() => {
         root.unmount();

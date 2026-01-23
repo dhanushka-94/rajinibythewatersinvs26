@@ -22,14 +22,30 @@ import { useState, useEffect } from "react";
 
 interface InvoicePrintLayoutProps {
   invoice: Invoice;
+  /** Pre-fetched data for print; when provided, used immediately so Bill To travel company is ready before print. */
+  initialHotelInfo?: HotelInfo | null;
+  initialTravelCompany?: TravelCompany | null;
+  initialBankDetails?: BankDetail[] | null;
 }
 
-export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
-  const [hotelInfo, setHotelInfo] = useState<HotelInfo | null>(null);
-  const [bankDetails, setBankDetails] = useState<BankDetail[]>([]);
-  const [travelCompany, setTravelCompany] = useState<TravelCompany | null>(null);
+export function InvoicePrintLayout({
+  invoice,
+  initialHotelInfo,
+  initialTravelCompany,
+  initialBankDetails,
+}: InvoicePrintLayoutProps) {
+  const [hotelInfo, setHotelInfo] = useState<HotelInfo | null>(initialHotelInfo ?? null);
+  const [bankDetails, setBankDetails] = useState<BankDetail[]>(initialBankDetails ?? []);
+  const [travelCompany, setTravelCompany] = useState<TravelCompany | null>(initialTravelCompany ?? null);
 
   useEffect(() => {
+    const hasPrefetched = initialHotelInfo !== undefined || initialTravelCompany !== undefined || initialBankDetails !== undefined;
+    if (hasPrefetched) {
+      if (initialHotelInfo !== undefined) setHotelInfo(initialHotelInfo);
+      if (initialTravelCompany !== undefined) setTravelCompany(initialTravelCompany);
+      if (initialBankDetails !== undefined) setBankDetails(initialBankDetails ?? []);
+      return;
+    }
     const loadHotelInfo = async () => {
       const info = await getHotelInfo();
       setHotelInfo(info);
@@ -57,7 +73,15 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
     loadHotelInfo();
     loadBankDetails();
     loadTravelCompany();
-  }, [invoice.selectedBankDetailIds, invoice.selectedBankDetailId, invoice.billingType, invoice.travelCompanyId]);
+  }, [
+    invoice.selectedBankDetailIds,
+    invoice.selectedBankDetailId,
+    invoice.billingType,
+    invoice.travelCompanyId,
+    initialHotelInfo,
+    initialTravelCompany,
+    initialBankDetails,
+  ]);
 
   return (
     <div className="invoice-print-template" style={{ 
