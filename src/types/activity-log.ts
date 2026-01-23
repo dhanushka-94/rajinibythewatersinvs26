@@ -23,6 +23,10 @@ export type ActivityType =
   | "settings_updated"
   | "report_generated"
   | "payment_recorded"
+  // Booking-related activities
+  | "booking_created"
+  | "booking_updated"
+  | "booking_deleted"
   | "other";
 
 export interface ActivityLog {

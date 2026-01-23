@@ -8,6 +8,7 @@ export interface TravelCompany {
   city?: string;
   country?: string;
   taxId?: string; // Tax ID or VAT number
+  contactPersonTitle?: string; // Title for contact person (Mr, Mrs, Dr, etc.)
   contactPerson?: string;
   notes?: string;
   createdAt: string;
@@ -23,6 +24,7 @@ export interface TravelCompanyCreate {
   city?: string;
   country?: string;
   taxId?: string;
+  contactPersonTitle?: string;
   contactPerson?: string;
   notes?: string;
 }
@@ -36,6 +38,7 @@ export interface TravelCompanyUpdate {
   city?: string;
   country?: string;
   taxId?: string;
+  contactPersonTitle?: string;
   contactPerson?: string;
   notes?: string;
 }

@@ -184,7 +184,7 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
               {travelCompany.contactPerson && (
                 <div className="flex items-start gap-1.5">
                   <Hash className="h-3.5 w-3.5 text-gray-900 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
-                  <p className="text-gray-900">{travelCompany.contactPerson}</p>
+                  <p className="text-gray-900">{travelCompany.contactPersonTitle ? `${travelCompany.contactPersonTitle} ` : ''}{travelCompany.contactPerson}</p>
                 </div>
               )}
               {travelCompany.phone && (
@@ -214,7 +214,7 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
             <div className="space-y-1 text-sm print:text-xs">
               <div className="flex items-start gap-1.5">
                 <User className="h-3.5 w-3.5 text-gray-900 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
-                <p className="font-medium text-gray-900">{invoice.guest.name}</p>
+                <p className="font-medium text-gray-900">{invoice.guest.title ? `${invoice.guest.title} ` : ''}{invoice.guest.name}</p>
               </div>
               {invoice.guest.email && (
                 <div className="flex items-start gap-1.5">
@@ -254,7 +254,7 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
               {(invoice.billingType === "company" || (invoice.guests && invoice.guests.length > 0)) && invoice.guest.name && (
                 <div className="flex items-start gap-1.5">
                   <User className="h-3.5 w-3.5 text-gray-900 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
-                  <p className="text-gray-900">{invoice.guest.name}</p>
+                  <p className="text-gray-900">{invoice.guest.title ? `${invoice.guest.title} ` : ''}{invoice.guest.name}</p>
                 </div>
               )}
               {/* Show additional guests (only names) */}
@@ -264,7 +264,7 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
                     guest.name && (
                       <div key={index} className="flex items-start gap-1.5">
                         <User className="h-3.5 w-3.5 text-gray-900 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
-                        <p className="text-gray-900">{guest.name}</p>
+                        <p className="text-gray-900">{guest.title ? `${guest.title} ` : ''}{guest.name}</p>
                       </div>
                     )
                   ))}
@@ -437,7 +437,7 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
                     invoice.paymentMethods.includes("online") && "Online",
                     invoice.paymentMethods.includes("cash") && "Cash",
                     invoice.paymentMethods.includes("card") && `Card${invoice.cardLast4Digits ? ` (****${invoice.cardLast4Digits})` : ''}`
-                  ].filter(Boolean).join(" • ")}
+                  ].filter(Boolean).join(", ")}
                 </span>
               </div>
             )}

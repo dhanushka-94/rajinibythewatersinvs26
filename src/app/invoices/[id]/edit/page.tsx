@@ -915,7 +915,7 @@ export default function EditInvoicePage({
                         <UserPlus className="h-4 w-4" />
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-md">
+                    <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                       <DialogHeader>
                         <DialogTitle>Quick Add Guest</DialogTitle>
                         <DialogDescription>
@@ -923,16 +923,54 @@ export default function EditInvoicePage({
                         </DialogDescription>
                       </DialogHeader>
                       <div className="space-y-4 py-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="quick-add-title">Title</Label>
+                            <Select
+                              value={quickAddGuest.title || "none"}
+                              onValueChange={(value) =>
+                                setQuickAddGuest({ ...quickAddGuest, title: value === "none" ? undefined : (value as Title) })
+                              }
+                            >
+                              <SelectTrigger id="quick-add-title">
+                                <SelectValue placeholder="Select title" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="none">None</SelectItem>
+                                <SelectItem value="Mr">Mr</SelectItem>
+                                <SelectItem value="Mrs">Mrs</SelectItem>
+                                <SelectItem value="Miss">Miss</SelectItem>
+                                <SelectItem value="Ms">Ms</SelectItem>
+                                <SelectItem value="Dr">Dr</SelectItem>
+                                <SelectItem value="Prof">Prof</SelectItem>
+                                <SelectItem value="Rev">Rev</SelectItem>
+                                <SelectItem value="Sir">Sir</SelectItem>
+                                <SelectItem value="Madam">Madam</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="quick-add-name">Full Name *</Label>
+                            <Input
+                              id="quick-add-name"
+                              value={quickAddGuest.name || ""}
+                              onChange={(e) =>
+                                setQuickAddGuest({ ...quickAddGuest, name: e.target.value })
+                              }
+                              placeholder="Enter full name"
+                              required
+                            />
+                          </div>
+                        </div>
                         <div className="space-y-2">
-                          <Label htmlFor="quick-add-name">Full Name *</Label>
+                          <Label htmlFor="quick-add-birthday">Birthday</Label>
                           <Input
-                            id="quick-add-name"
-                            value={quickAddGuest.name || ""}
+                            id="quick-add-birthday"
+                            type="date"
+                            value={quickAddGuest.birthday || ""}
                             onChange={(e) =>
-                              setQuickAddGuest({ ...quickAddGuest, name: e.target.value })
+                              setQuickAddGuest({ ...quickAddGuest, birthday: e.target.value })
                             }
-                            placeholder="Enter full name"
-                            required
                           />
                         </div>
                         <div className="space-y-2">
@@ -947,15 +985,84 @@ export default function EditInvoicePage({
                             placeholder="Enter email address"
                           />
                         </div>
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="quick-add-phone">Phone</Label>
+                            <Input
+                              id="quick-add-phone"
+                              value={quickAddGuest.phone || ""}
+                              onChange={(e) =>
+                                setQuickAddGuest({ ...quickAddGuest, phone: e.target.value })
+                              }
+                              placeholder="Enter phone number"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="quick-add-phone2">Phone 2</Label>
+                            <Input
+                              id="quick-add-phone2"
+                              value={quickAddGuest.phone2 || ""}
+                              onChange={(e) =>
+                                setQuickAddGuest({ ...quickAddGuest, phone2: e.target.value })
+                              }
+                              placeholder="Enter phone number"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="quick-add-phone3">Phone 3</Label>
+                            <Input
+                              id="quick-add-phone3"
+                              value={quickAddGuest.phone3 || ""}
+                              onChange={(e) =>
+                                setQuickAddGuest({ ...quickAddGuest, phone3: e.target.value })
+                              }
+                              placeholder="Enter phone number"
+                            />
+                          </div>
+                        </div>
                         <div className="space-y-2">
-                          <Label htmlFor="quick-add-phone">Phone</Label>
+                          <Label htmlFor="quick-add-address">Address</Label>
                           <Input
-                            id="quick-add-phone"
-                            value={quickAddGuest.phone || ""}
+                            id="quick-add-address"
+                            value={quickAddGuest.address || ""}
                             onChange={(e) =>
-                              setQuickAddGuest({ ...quickAddGuest, phone: e.target.value })
+                              setQuickAddGuest({ ...quickAddGuest, address: e.target.value })
                             }
-                            placeholder="Enter phone number"
+                            placeholder="Enter address"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label htmlFor="quick-add-city">City</Label>
+                            <Input
+                              id="quick-add-city"
+                              value={quickAddGuest.city || ""}
+                              onChange={(e) =>
+                                setQuickAddGuest({ ...quickAddGuest, city: e.target.value })
+                              }
+                              placeholder="Enter city"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="quick-add-country">Country</Label>
+                            <CountrySelector
+                              id="quick-add-country"
+                              value={quickAddGuest.country}
+                              onValueChange={(value) =>
+                                setQuickAddGuest({ ...quickAddGuest, country: value })
+                              }
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="quick-add-idNumber">ID or Passport Number</Label>
+                          <Input
+                            id="quick-add-idNumber"
+                            value={quickAddGuest.idNumber || ""}
+                            onChange={(e) =>
+                              setQuickAddGuest({ ...quickAddGuest, idNumber: e.target.value })
+                            }
+                            placeholder="Enter ID or Passport number"
                           />
                         </div>
                       </div>

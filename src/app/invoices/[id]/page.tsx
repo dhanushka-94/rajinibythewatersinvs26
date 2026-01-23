@@ -24,13 +24,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { getInvoiceById, updateInvoice } from "@/lib/invoices";
-import { Printer, ArrowLeft, DollarSign, Send, CheckCircle, FileDown, Pencil, Trash2 } from "lucide-react";
+import { Printer, ArrowLeft, DollarSign, Send, CheckCircle, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { InvoiceLayout } from "@/components/invoice/invoice-layout";
 import { InvoicePrintLayout } from "@/components/invoice/invoice-print-layout";
 import { Invoice, Payment } from "@/types/invoice";
 import { formatCurrency } from "@/lib/currency";
-import { generatePDF } from "@/lib/pdf";
 import { createRoot } from "react-dom/client";
 import React from "react";
 
@@ -53,7 +52,6 @@ export default function InvoiceDetailPage({
   const [emailRecipientName, setEmailRecipientName] = useState<string>("");
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [newStatus, setNewStatus] = useState<string>("");
-  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   useEffect(() => {
     const loadInvoice = async () => {
@@ -159,57 +157,6 @@ export default function InvoiceDetailPage({
     }, 500);
   };
 
-  const handleDownloadPDF = async () => {
-    if (!invoice) return;
-    
-    setIsGeneratingPDF(true);
-    try {
-      // Create a temporary container for the print template
-      const printContainer = document.createElement('div');
-      printContainer.id = 'invoice-print-container';
-      // Position off-screen but visible for html2canvas
-      printContainer.style.position = 'fixed';
-      printContainer.style.left = '0';
-      printContainer.style.top = '0';
-      printContainer.style.width = '210mm';
-      printContainer.style.minHeight = '297mm';
-      printContainer.style.backgroundColor = 'white';
-      printContainer.style.zIndex = '9999';
-      printContainer.style.visibility = 'hidden';
-      printContainer.style.opacity = '0';
-      printContainer.style.pointerEvents = 'none';
-      document.body.appendChild(printContainer);
-
-      // Render the print template
-      const root = createRoot(printContainer);
-      root.render(React.createElement(InvoicePrintLayout, { invoice }));
-      
-      // Wait for rendering and async data loading (bank details, travel company, hotel info)
-      // Increased timeout to ensure all async data is loaded and images are rendered
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Make visible for html2canvas (but still off-screen)
-      printContainer.style.visibility = 'visible';
-      printContainer.style.opacity = '1';
-      
-      // Additional wait for styles to apply
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      // Generate PDF from the print template
-      await generatePDF('invoice-print-container', `${invoice.invoiceNumber}.pdf`);
-      
-      // Cleanup
-      root.unmount();
-      if (document.body.contains(printContainer)) {
-        document.body.removeChild(printContainer);
-      }
-    } catch (error) {
-      console.error('Error generating PDF:', error);
-      alert('Failed to generate PDF. Please try again.');
-    } finally {
-      setIsGeneratingPDF(false);
-    }
-  };
 
   const handleRecordPayment = async () => {
     if (!invoice) return;
@@ -424,18 +371,16 @@ export default function InvoiceDetailPage({
             <Send className="mr-2 h-4 w-4" />
             Send Email
           </Button>
-          <Button 
-            variant="outline" 
-            onClick={handleDownloadPDF}
-            disabled={isGeneratingPDF}
-          >
-            <FileDown className="mr-2 h-4 w-4" />
-            {isGeneratingPDF ? "Generating PDF..." : "Download PDF"}
-          </Button>
           <Button onClick={handlePrint}>
             <Printer className="mr-2 h-4 w-4" />
             Print
           </Button>
+          <Link href={`/invoices/${id}/edit`}>
+            <Button variant="outline">
+              <Pencil className="mr-2 h-4 w-4" />
+              Edit
+            </Button>
+          </Link>
         </div>
       </div>
 

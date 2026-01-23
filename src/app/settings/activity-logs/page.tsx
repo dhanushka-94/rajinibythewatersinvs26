@@ -77,6 +77,9 @@ const activityTypeLabels: Record<ActivityType, string> = {
   settings_updated: "Settings Updated",
   report_generated: "Report Generated",
   payment_recorded: "Payment Recorded",
+  booking_created: "Booking Created",
+  booking_updated: "Booking Updated",
+  booking_deleted: "Booking Deleted",
   other: "Other",
 };
 
@@ -105,6 +108,9 @@ const activityTypeColors: Record<ActivityType, string> = {
   settings_updated: "bg-orange-100 text-orange-800 border-orange-200",
   report_generated: "bg-cyan-100 text-cyan-800 border-cyan-200",
   payment_recorded: "bg-lime-100 text-lime-800 border-lime-200",
+  booking_created: "bg-sky-100 text-sky-800 border-sky-200",
+  booking_updated: "bg-violet-100 text-violet-800 border-violet-200",
+  booking_deleted: "bg-rose-100 text-rose-800 border-rose-200",
   other: "bg-gray-100 text-gray-800 border-gray-200",
 };
 

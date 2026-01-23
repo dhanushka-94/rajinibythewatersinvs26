@@ -105,7 +105,7 @@ export function generateInvoiceEmailHtml({
                       ? `
                         <div style="font-size: 11px; line-height: 1.6; color: #374151;">
                           <div style="margin-bottom: 6px;"><strong>${travelCompany.name}</strong></div>
-                          ${travelCompany.contactPerson ? `<div style="margin-bottom: 4px;"># ${travelCompany.contactPerson}</div>` : ""}
+                          ${travelCompany.contactPerson ? `<div style="margin-bottom: 4px;"># ${travelCompany.contactPersonTitle ? `${travelCompany.contactPersonTitle} ` : ""}${travelCompany.contactPerson}</div>` : ""}
                           ${travelCompany.phone ? `<div style="margin-bottom: 4px;">📞 ${travelCompany.phone}</div>` : ""}
                           ${travelCompany.address || travelCompany.city || travelCompany.country
                             ? `<div style="margin-bottom: 4px;">📍 ${travelCompany.address || ""}${travelCompany.city ? `, ${travelCompany.city}` : ""}${travelCompany.country ? `, ${travelCompany.country}` : ""}</div>`
@@ -115,7 +115,7 @@ export function generateInvoiceEmailHtml({
                       `
                       : `
                         <div style="font-size: 11px; line-height: 1.6; color: #374151;">
-                          <div style="margin-bottom: 6px;"><strong>${invoice.guest.name}</strong></div>
+                          <div style="margin-bottom: 6px;"><strong>${invoice.guest.title ? `${invoice.guest.title} ` : ""}${invoice.guest.name}</strong></div>
                           ${invoice.guest.email ? `<div style="margin-bottom: 4px;">✉️ ${invoice.guest.email}</div>` : ""}
                           ${invoice.guest.phone ? `<div style="margin-bottom: 4px;">📞 ${invoice.guest.phone}</div>` : ""}
                           ${invoice.guest.address || invoice.guest.city || invoice.guest.country
@@ -132,10 +132,10 @@ export function generateInvoiceEmailHtml({
                     <h3 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #111827;">👤 Guest Information:</h3>
                     <div style="font-size: 11px; line-height: 1.6; color: #374151;">
                       ${(invoice.billingType === "company" || (invoice.guests && invoice.guests.length > 0)) && invoice.guest.name
-                        ? `<div style="margin-bottom: 4px;">${invoice.guest.name}</div>`
+                        ? `<div style="margin-bottom: 4px;">${invoice.guest.title ? `${invoice.guest.title} ` : ""}${invoice.guest.name}</div>`
                         : ""}
                       ${invoice.guests && invoice.guests.length > 0
-                        ? invoice.guests.map((guest) => guest.name ? `<div style="margin-bottom: 4px;">${guest.name}</div>` : "").join("")
+                        ? invoice.guests.map((guest) => guest.name ? `<div style="margin-bottom: 4px;">${guest.title ? `${guest.title} ` : ""}${guest.name}</div>` : "").join("")
                         : ""}
                     </div>
                   </td>
@@ -297,7 +297,7 @@ export function generateInvoiceEmailHtml({
                     invoice.paymentMethods.includes("online") && "Online",
                     invoice.paymentMethods.includes("cash") && "Cash",
                     invoice.paymentMethods.includes("card") && `Card${invoice.cardLast4Digits ? ` (****${invoice.cardLast4Digits})` : ""}`
-                  ].filter(Boolean).join(" • ")}
+                  ].filter(Boolean).join(", ")}
                 </td>
               </tr>
               `

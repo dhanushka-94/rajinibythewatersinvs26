@@ -17,12 +17,16 @@ import {
   Briefcase,
   History,
   Package,
+  Calendar,
+  CalendarDays,
 } from "lucide-react";
 import { getHotelInfo, type HotelInfo } from "@/lib/hotel-info";
 import { User as UserType } from "@/types/user";
 
 const allNavigation = [
   { name: "Dashboard", href: "/", icon: LayoutDashboard, roles: ["admin", "manager", "staff", "viewer"] },
+  { name: "Bookings", href: "/bookings", icon: Calendar, roles: ["admin", "manager", "staff", "viewer"] },
+  { name: "Booking Calendar", href: "/bookings/calendar", icon: CalendarDays, roles: ["admin", "manager", "staff", "viewer"] },
   { name: "Invoices", href: "/invoices", icon: FileText, roles: ["admin", "manager", "staff", "viewer"] },
   { name: "Create Invoice", href: "/invoices/new", icon: PlusCircle, roles: ["admin", "manager", "staff"] },
   { name: "Payments", href: "/payments", icon: CreditCard, roles: ["admin", "manager", "viewer"] },

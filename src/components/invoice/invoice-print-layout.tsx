@@ -11,7 +11,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { getHotelInfo, type HotelInfo } from "@/lib/hotel-info";
 import { formatCurrency } from "@/lib/currency";
 import { getBankDetailById } from "@/lib/bank-details";
@@ -58,31 +57,6 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
     loadBankDetails();
     loadTravelCompany();
   }, [invoice.selectedBankDetailIds, invoice.selectedBankDetailId, invoice.billingType, invoice.travelCompanyId]);
-
-  const getStatusBadge = (status: string) => {
-    const statusStyles: Record<string, string> = {
-      paid: "bg-green-100 text-green-800 border-green-200",
-      partially_paid: "bg-amber-100 text-amber-800 border-amber-200",
-      pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
-      sent: "bg-blue-100 text-blue-800 border-blue-200",
-      draft: "bg-gray-100 text-gray-800 border-gray-200",
-      cancelled: "bg-red-100 text-red-800 border-red-200",
-    };
-    
-    const statusLabels: Record<string, string> = {
-      partially_paid: "Partially Paid",
-    };
-
-    return (
-      <Badge 
-        variant="outline" 
-        className={`${statusStyles[status] || "bg-gray-100 text-gray-800 border-gray-200"} text-[7pt] px-1.5 py-0.5`}
-        style={{ fontSize: '7pt', padding: '2px 6px', lineHeight: '1.2' }}
-      >
-        {statusLabels[status] || status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ')}
-      </Badge>
-    );
-  };
 
   return (
     <div className="invoice-print-template" style={{ 
@@ -169,7 +143,6 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
               <p className="text-xs" style={{ fontSize: '7pt', color: '#111827' }}>
                 Currency: {invoice.currency}
               </p>
-              {getStatusBadge(invoice.status)}
             </div>
             <p className="text-xs" style={{ fontSize: '7pt', color: '#111827' }}>
               Date: {new Date(invoice.createdAt).toLocaleDateString("en-US", {
@@ -206,7 +179,7 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
               {travelCompany.contactPerson && (
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', marginBottom: '4px' }}>
                   <Hash style={{ width: '11px', height: '11px', color: '#111827', marginTop: '2px', flexShrink: 0 }} />
-                  <p style={{ color: '#111827' }}>{travelCompany.contactPerson}</p>
+                  <p style={{ color: '#111827' }}>{travelCompany.contactPersonTitle ? `${travelCompany.contactPersonTitle} ` : ''}{travelCompany.contactPerson}</p>
                 </div>
               )}
               {travelCompany.phone && (
@@ -236,7 +209,7 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
             <div className="space-y-1 text-xs" style={{ fontSize: '9pt', lineHeight: '1.5' }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', marginBottom: '4px' }}>
                 <User style={{ width: '11px', height: '11px', color: '#111827', marginTop: '2px', flexShrink: 0 }} />
-                <p className="font-medium" style={{ color: '#111827' }}>{invoice.guest.name}</p>
+                <p className="font-medium" style={{ color: '#111827' }}>{invoice.guest.title ? `${invoice.guest.title} ` : ''}{invoice.guest.name}</p>
               </div>
               {invoice.guest.email && (
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', marginBottom: '4px' }}>
@@ -276,7 +249,7 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
               {(invoice.billingType === "company" || (invoice.guests && invoice.guests.length > 0)) && invoice.guest.name && (
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', marginBottom: '4px' }}>
                   <User style={{ width: '11px', height: '11px', color: '#111827', marginTop: '2px', flexShrink: 0 }} />
-                  <p style={{ color: '#111827' }}>{invoice.guest.name}</p>
+                  <p style={{ color: '#111827' }}>{invoice.guest.title ? `${invoice.guest.title} ` : ''}{invoice.guest.name}</p>
                 </div>
               )}
               {/* Show additional guests (only names) */}
@@ -286,7 +259,7 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
                     guest.name && (
                       <div key={index} style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', marginBottom: '4px' }}>
                         <User style={{ width: '11px', height: '11px', color: '#111827', marginTop: '2px', flexShrink: 0 }} />
-                        <p style={{ color: '#111827' }}>{guest.name}</p>
+                        <p style={{ color: '#111827' }}>{guest.title ? `${guest.title} ` : ''}{guest.name}</p>
                       </div>
                     )
                   ))}
@@ -619,7 +592,7 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
                     invoice.paymentMethods.includes("online") && "Online",
                     invoice.paymentMethods.includes("cash") && "Cash",
                     invoice.paymentMethods.includes("card") && `Card${invoice.cardLast4Digits ? ` (****${invoice.cardLast4Digits})` : ''}`
-                  ].filter(Boolean).join(" • ")}
+                  ].filter(Boolean).join(", ")}
                 </span>
               </div>
             )}
@@ -675,7 +648,7 @@ export function InvoicePrintLayout({ invoice }: InvoicePrintLayoutProps) {
             )}
 
             {invoice.checksPayableTo && (
-              <div style={{ fontSize: '7pt', lineHeight: '1.4', color: '#111827' }}>
+              <div style={{ fontSize: '7pt', lineHeight: '1.4', color: '#111827', marginTop: '8px' }}>
                 <span style={{ fontWeight: '600' }}>Make Checks Payable To: </span>
                 <span style={{ fontWeight: '600' }}>{invoice.checksPayableTo}</span>
               </div>
