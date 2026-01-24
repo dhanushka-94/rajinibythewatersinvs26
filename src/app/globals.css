@@ -245,6 +245,16 @@
     padding: 8px 4px !important;
     font-size: 11pt !important;
   }
+
+  /* Invoice print template: smaller items table font (overrides general th, td above) */
+  .invoice-print-template table th,
+  .invoice-print-template table td {
+    font-size: 8pt !important;
+  }
+  .invoice-print-template table th:first-child,
+  .invoice-print-template table td:first-child {
+    font-size: 7pt !important;
+  }
   
   /* Ensure images print properly */
   img {
