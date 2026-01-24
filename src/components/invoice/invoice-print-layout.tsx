@@ -359,7 +359,7 @@ export function InvoicePrintLayout({
             }}>
               <TableHead className="font-semibold text-left border-0" style={{ 
                 padding: '10px 6px', 
-                fontSize: '8pt',
+                fontSize: '7pt',
                 fontWeight: '600',
                 textAlign: 'left',
                 borderRight: '1px solid #ffffff !important',
@@ -445,7 +445,7 @@ export function InvoicePrintLayout({
               }}>
                 <TableCell className="font-medium text-left border-0" style={{ 
                   padding: '10px 6px', 
-                  fontSize: '8pt',
+                  fontSize: '7pt',
                   textAlign: 'left',
                   borderRight: '1px solid #ffffff !important',
                   borderTop: 'none !important',
