@@ -1,34 +1,30 @@
 /**
- * SMTP email sending. Supports any provider (Zoho, Gmail, Brevo, etc.)
- * and your own domain email.
+ * Email sending: Resend API (recommended for Vercel) or SMTP fallback.
  *
- * Env vars (use SMTP_* for provider-agnostic; ZOHO_* kept for backward compatibility):
- * - SMTP_HOST / ZOHO_SMTP_HOST
- * - SMTP_PORT / ZOHO_SMTP_PORT (default 587)
- * - SMTP_SECURE / ZOHO_SMTP_SECURE ("true" for 465)
- * - SMTP_USER / ZOHO_SMTP_USER (login email, e.g. bookings@yourdomain.com)
- * - SMTP_PASSWORD / ZOHO_SMTP_PASSWORD (app password, not login password)
+ * Resend API (Vercel-friendly, no SMTP ports):
+ * - RESEND_API_KEY: your Resend API key (re_...)
+ * When set, we use Resend HTTP API instead of SMTP. Use this on Vercel.
  *
- * Own-domain "From" address (optional):
- * - SMTP_FROM_EMAIL: exact address to send as (e.g. invoices@yourdomain.com)
- * - SMTP_FROM_NAME: display name (defaults to hotel name)
- * If not set, we use hotel email when domain matches SMTP user, else SMTP user.
+ * SMTP fallback (Gmail, Brevo, Resend SMTP, etc.):
+ * - SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD
+ *
+ * From / Reply-To:
+ * - SMTP_FROM_EMAIL, SMTP_FROM_NAME, SMTP_REPLY_TO
  */
 
 import nodemailer from "nodemailer";
+import { Resend } from "resend";
+
+export function isResendConfigured(): boolean {
+  return Boolean(process.env.RESEND_API_KEY);
+}
 
 export function getSmtpConfig() {
-  const host = process.env.SMTP_HOST || process.env.ZOHO_SMTP_HOST || "smtp.zoho.com";
-  const port = parseInt(
-    process.env.SMTP_PORT || process.env.ZOHO_SMTP_PORT || "587",
-    10
-  );
-  const secure =
-    process.env.SMTP_SECURE === "true" ||
-    process.env.ZOHO_SMTP_SECURE === "true" ||
-    port === 465;
-  const user = process.env.SMTP_USER || process.env.ZOHO_SMTP_USER;
-  const password = process.env.SMTP_PASSWORD || process.env.ZOHO_SMTP_PASSWORD;
+  const host = process.env.SMTP_HOST || "smtp.resend.com";
+  const port = parseInt(process.env.SMTP_PORT || "587", 10);
+  const secure = process.env.SMTP_SECURE === "true" || port === 465;
+  const user = process.env.SMTP_USER;
+  const password = process.env.SMTP_PASSWORD;
 
   return { host, port, secure, user, password };
 }
@@ -40,14 +36,10 @@ export function isSmtpConfigured(): boolean {
 
 export type SenderAddress = { fromEmail: string; fromName: string };
 
-/**
- * Resolve "From" address for sending. Prefers SMTP_FROM_EMAIL / SMTP_FROM_NAME
- * (your own domain), then hotel email when domain matches SMTP user.
- */
 export function getSenderAddress(hotelEmail?: string, hotelName?: string): SenderAddress {
   const fromOverride = process.env.SMTP_FROM_EMAIL;
   const nameOverride = process.env.SMTP_FROM_NAME;
-  const smtpUser = process.env.SMTP_USER || process.env.ZOHO_SMTP_USER;
+  const smtpUser = process.env.SMTP_USER;
 
   if (fromOverride) {
     return {
@@ -85,13 +77,82 @@ export async function sendEmail({
   from: string;
   replyTo?: string;
 }): Promise<{ success: boolean; error?: string }> {
+  // Prefer Resend API when API key is set (works on Vercel; no SMTP ports)
+  if (isResendConfigured()) {
+    return sendViaResendApi({ to, subject, html, from, replyTo });
+  }
+
+  // Fallback: SMTP (can fail on Vercel due to blocked ports)
+  return sendViaSmtp({ to, subject, html, from, replyTo });
+}
+
+async function sendViaResendApi({
+  to,
+  subject,
+  html,
+  from,
+  replyTo,
+}: {
+  to: string;
+  subject: string;
+  html: string;
+  from: string;
+  replyTo?: string;
+}): Promise<{ success: boolean; error?: string }> {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    return { success: false, error: "RESEND_API_KEY is not set." };
+  }
+
+  const resend = new Resend(apiKey);
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from,
+      to: [to],
+      subject,
+      html,
+      ...(replyTo && { replyTo }),
+    });
+
+    if (error) {
+      console.error("Resend API error:", error);
+      return {
+        success: false,
+        error: typeof error === "object" && error !== null && "message" in error
+          ? String((error as { message?: string }).message)
+          : String(error),
+      };
+    }
+
+    return { success: true };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to send email via Resend";
+    console.error("Resend send error:", err);
+    return { success: false, error: message };
+  }
+}
+
+async function sendViaSmtp({
+  to,
+  subject,
+  html,
+  from,
+  replyTo,
+}: {
+  to: string;
+  subject: string;
+  html: string;
+  from: string;
+  replyTo?: string;
+}): Promise<{ success: boolean; error?: string }> {
   const { host, port, secure, user, password } = getSmtpConfig();
 
   if (!user || !password) {
     return {
       success: false,
       error:
-        "SMTP is not configured. Set SMTP_USER and SMTP_PASSWORD (or ZOHO_SMTP_USER / ZOHO_SMTP_PASSWORD) in .env.local.",
+        "SMTP is not configured. Set SMTP_USER and SMTP_PASSWORD, or use RESEND_API_KEY for Vercel.",
     };
   }
 

@@ -1,49 +1,54 @@
 # Resend email setup
 
-Invoice emails and test emails are sent via **Resend** SMTP.
+Invoice and test emails are sent via **Resend**. Use the **Resend API** (not SMTP) when deployed on **Vercel** — SMTP often fails there due to blocked outbound ports.
 
-## Configuration
+## Vercel (recommended): Resend API
 
-**`.env.local`**:
+**Vercel → Project → Settings → Environment Variables:**
+
+| Name | Value | Notes |
+|------|--------|------|
+| `RESEND_API_KEY` | `re_xxxx...` | Resend Dashboard → API Keys |
+| `SMTP_FROM_EMAIL` | `noreply@rajinihotels.com` | Verified domain email |
+| `SMTP_FROM_NAME` | `Rajini by The Waters Hotel` | Display name |
+| `SMTP_REPLY_TO` | `bookings@rajinihotels.com` | Reply-to address |
+
+When `RESEND_API_KEY` is set, the app uses Resend’s **HTTP API** (no SMTP). No ports, no connection timeouts — works on Vercel.
+
+## Local dev: API or SMTP
+
+**`.env.local`** (same vars as above for API):
 
 ```env
-SMTP_HOST=smtp.resend.com
-SMTP_PORT=465
-SMTP_SECURE=true
-SMTP_USER=resend
-SMTP_PASSWORD=re_xxxxxxxx   # Your Resend API key
+RESEND_API_KEY=re_xxxxxxxx
 SMTP_FROM_EMAIL=noreply@rajinihotels.com
 SMTP_FROM_NAME=Rajini by The Waters Hotel
 SMTP_REPLY_TO=bookings@rajinihotels.com
-EMAIL_IMAGE_BASE_URL=https://rajinihotels.com
 ```
 
-- **SMTP_FROM_EMAIL**: Sender address (e.g. `noreply@rajinihotels.com`).
-- **SMTP_REPLY_TO**: Where replies go (e.g. `bookings@rajinihotels.com`). Set this so recipients can reply to a monitored inbox.
-- **EMAIL_IMAGE_BASE_URL**: Your app’s **public URL** (e.g. `https://rajinihotels.com` or `https://app.rajinihotels.com`). The logo is loaded from `{EMAIL_IMAGE_BASE_URL}/api/email-assets/logo`.
+Optionally use **SMTP** locally (e.g. `SMTP_HOST=smtp.resend.com`, `SMTP_USER=resend`, `SMTP_PASSWORD=re_...`). If both are set, **Resend API is used first**; SMTP is only a fallback when `RESEND_API_KEY` is missing.
 
 ## Requirements
 
-1. **Resend account** – [resend.com](https://resend.com) → Sign up
-2. **API key** – Dashboard → **API Keys** → Create → copy the `re_...` key
-3. **Domain verification** – Dashboard → **Domains** → Add **rajinihotels.com**  
-   Add the DNS records (MX, TXT, etc.) at your DNS provider. Emails can only be sent from verified domains.
-4. **Logo** – The app serves the logo at `/api/email-assets/logo`. Deploy this app at the URL you set for `EMAIL_IMAGE_BASE_URL` (e.g. `https://rajinihotels.com` or `https://app.rajinihotels.com`) so the logo loads in emails.
+1. **Resend account** – [resend.com](https://resend.com) → Sign up  
+2. **API key** – Dashboard → **API Keys** → Create → copy the `re_...` key  
+3. **Domain verification** – Dashboard → **Domains** → Add your domain, add DNS records. Emails must be sent from a verified domain.
 
 ## Test
 
-1. Restart the dev server after changing `.env.local`.
-2. Go to **Test Email** (`/test-email`), enter a recipient, and send.
+1. Restart dev server or redeploy after changing env vars.  
+2. **Test Email** (`/test-email`) → enter recipient → Send.  
 3. Send an invoice email from an invoice detail page.
 
 ## Troubleshooting
 
-- **"Domain not verified"** – Complete domain verification in Resend for `rajinihotels.com`.
-- **"Invalid API key"** – Regenerate the key in Resend and update `SMTP_PASSWORD`.
-- **Connection errors** – Ensure port **465** and **SMTP_SECURE=true**. Some networks block 465; try **587** with **SMTP_SECURE=false** if needed.
-- **Images not loading / Gmail warnings** – Set `EMAIL_IMAGE_BASE_URL` to your app’s deployed URL. The logo is served at `{BASE}/api/email-assets/logo`.
+- **SMTP errors on Vercel** – Use **Resend API**: set `RESEND_API_KEY` in Vercel env vars. Do **not** rely on SMTP (port 465/587) on Vercel.  
+- **"Domain not verified"** – Finish domain verification in Resend.  
+- **"Invalid API key"** – Regenerate the key in Resend and update `RESEND_API_KEY`.  
+- **Images not loading** – Set `EMAIL_LOGO_URL` or ensure the logo is served from your app’s deployed URL.
 
 ## Security
 
-- Never commit `.env.local` or your API key.
-- Rotate your API key if it was ever exposed.
+- Never commit `.env.local` or your API key.  
+- Add env vars only in Vercel (or your host) UI, not in code.  
+- Rotate the API key if it was ever exposed.

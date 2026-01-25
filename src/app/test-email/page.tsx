@@ -136,7 +136,7 @@ export default function TestEmailPage() {
               Optionally SMTP_FROM_EMAIL and SMTP_FROM_NAME so emails send as your domain (e.g. bookings@yourdomain.com).
             </p>
             <p className="text-sm text-blue-800">
-              Works with Zoho, Gmail, Brevo, etc. Use an app password, not your normal login.
+              Works with Gmail, Brevo, Resend SMTP, etc. Use an app password, not your normal login.
             </p>
           </div>
         </CardContent>

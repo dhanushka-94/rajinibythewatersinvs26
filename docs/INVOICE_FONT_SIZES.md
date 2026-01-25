@@ -4,6 +4,63 @@ Reference for all font sizes used in invoice **web view** (`invoice-layout.tsx`)
 
 ---
 
+## Top-to-bottom: Web view & Print view
+
+### Web view (`invoice-layout.tsx`) – top to bottom **(professional)**
+
+| # | Section | Element | Font size | Other styling |
+|---|---------|---------|-----------|---------------|
+| 1 | **Header** | Logo | 140×56px; `print:w-24` | — |
+| 2 | | Hotel address, city, country | `text-[11px]` | `print:text-[8pt]`, `leading-snug`, icons `text-gray-600` |
+| 3 | | Hotline, Tel, USA, Email, Website | `text-[11px]` | `print:text-[8pt]`, icons `text-gray-600` |
+| 4 | | "INVOICE" | `text-2xl` (22px) | `font-bold`, `tracking-tight`, `print:text-[14pt]` |
+| 5 | | Invoice number | `text-base` (16px) | `font-bold`, `print:text-[12pt]` |
+| 6 | | Currency, Date | `text-[11px]` | `print:text-[8pt]` |
+| 7 | | Status badge | `text-[10px]` | `print:text-[7pt]`, status colors |
+| 8 | **Separator** | Line under header | — | `border-gray-900` |
+| 9 | **Bill To / Guest / Booking** | Section titles | `text-sm` (14px) | `font-semibold`, `print:text-[10pt]`, icons `text-gray-700` |
+| 10 | | Section body | `text-[13px]` | `print:text-[9pt]`, `leading-snug` |
+| 11 | **Items table** | Headers | `text-xs` (12px) | `print:text-[9pt]`, `font-semibold`, `bg-gray-100` |
+| 12 | | Cells | `text-[11px]` | `print:text-[9pt]`, `font-medium` on desc/total |
+| 13 | **Summary** | Subtotal, Tax, etc. | `text-[13px]` | `print:text-[9pt]`, `font-medium` on values |
+| 14 | | Total Amount | `text-base` (16px) | `print:text-[11pt]`, `font-bold` |
+| 15 | **Notes** | "Notes:" heading | `text-sm` (14px) | `font-semibold`, `print:text-[9pt]` |
+| 16 | | Notes body | `text-[13px]` | `print:text-[9pt]`, `leading-snug`, `whitespace-pre-wrap` |
+| 17 | **Payment Information** | Heading | `text-xs` (12px) | `font-semibold`, `print:text-[9pt]`, `bg-gray-100` |
+| 18 | | Payment Methods, Make Checks Payable, Bank | `text-[10px]` | `print:text-[8pt]`, `font-medium` / `font-semibold` |
+| 19 | **Footer** | Thank you, Powered by | `text-[11px]` | `print:text-[8pt]`, `text-center`, `leading-snug` |
+
+**Colors:** `text-gray-900` (#111827), `text-gray-600` / `text-gray-700` icons, `bg-gray-100` (#f3f4f6). Container: `antialiased`.
+
+---
+
+### Print view (`invoice-print-layout.tsx` + `globals.css`) – top to bottom **(professional)**
+
+| # | Section | Element | Font size | Other styling |
+|---|---------|---------|-----------|---------------|
+| 1 | **Container** | A4 template | — | `210mm × 297mm`, `padding: 10mm`, `antialiased`, `color: #111827` |
+| 2 | **Header** | Logo | 120px wide | `height: auto`, `object-fit: contain` |
+| 3 | | Hotel address, phone, email, website | **8pt** | `lineHeight: 1.4`, icons `#6b7280` |
+| 4 | | "INVOICE" | **14pt** | `fontWeight: bold`, `letterSpacing: -0.02em` |
+| 5 | | Invoice number | **12pt** | `fontWeight: bold` |
+| 6 | | Currency, Date | **8pt** | — |
+| 7 | **Separator** | Line under header | — | `borderTop: 1px solid #111827` |
+| 8 | **Bill To / Guest / Booking** | Section titles | **10pt** | `fontWeight: 600`, icons 13px `#6b7280` |
+| 9 | | Section body | **9pt** | `lineHeight: 1.5`, icons 11px |
+| 10 | **Items table** | Headers | **9pt** | `fontWeight: 600`, `backgroundColor: #f3f4f6`, white borders |
+| 11 | | Cells | **9pt** | `fontWeight: 500` on desc/total. *`globals.css` override: 9pt* |
+| 12 | **Summary** | Subtotal, Tax, etc. | **9pt** | `lineHeight: 1.4`, `fontWeight: 500` on values |
+| 13 | | Total Amount | **11pt** | `fontWeight: 700` |
+| 14 | **Notes** | "Notes:" heading + body | **9pt** | `fontWeight: 600` on heading, `lineHeight: 1.5` |
+| 15 | **Payment Information** | Heading | **9pt** | `fontWeight: 600`, `backgroundColor: #f3f4f6`, `padding: 6px 8px` |
+| 16 | | Payment Methods, Bank, Make Checks Payable | **8pt** | `fontWeight: 600` / `700` |
+| 17 | **Footer** | Thank you, Powered by | **8pt** | `lineHeight: 1.5`, `borderTop: 1px solid #111827` |
+| 18 | **@page** | Page number | **9pt** | `@bottom-center`, `color: #666`, Arial |
+
+**`globals.css` @media print:** `body` 12pt; `th, td` 11pt default; `.invoice-print-template table th, td` → **9pt** override.
+
+---
+
 ## Tailwind equivalents (web)
 
 | Class        | Size   | px (approx) |
