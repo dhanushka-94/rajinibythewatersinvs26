@@ -246,14 +246,10 @@
     font-size: 11pt !important;
   }
 
-  /* Invoice print template: smaller items table font (overrides general th, td above) */
+  /* Invoice print template: items table same as web (9pt ≈ 12px / text-xs) */
   .invoice-print-template table th,
   .invoice-print-template table td {
-    font-size: 8pt !important;
-  }
-  .invoice-print-template table th:first-child,
-  .invoice-print-template table td:first-child {
-    font-size: 7pt !important;
+    font-size: 9pt !important;
   }
   
   /* Ensure images print properly */

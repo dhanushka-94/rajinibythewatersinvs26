@@ -68,7 +68,7 @@ export default function TestEmailPage() {
         <CardHeader>
           <CardTitle>Test Email Configuration</CardTitle>
           <p className="text-sm text-muted-foreground mt-2">
-            Test your Zoho Mail SMTP configuration by sending a test email
+            Test your SMTP configuration (e.g. your own domain email) by sending a test email
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -130,13 +130,14 @@ export default function TestEmailPage() {
           )}
 
           <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h3 className="font-medium text-blue-900 mb-2">Configuration Check</h3>
-            <ul className="text-sm text-blue-800 space-y-1">
-              <li>✓ Zoho SMTP Host: smtp.zoho.com</li>
-              <li>✓ Zoho SMTP Port: 587</li>
-              <li>✓ Zoho SMTP User: bookings@rajinihotels.com</li>
-              <li>✓ Zoho SMTP Password: Configured</li>
-            </ul>
+            <h3 className="font-medium text-blue-900 mb-2">Using your own domain</h3>
+            <p className="text-sm text-blue-800 mb-2">
+              Set in <code className="bg-blue-100 px-1 rounded">.env.local</code>: SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD.
+              Optionally SMTP_FROM_EMAIL and SMTP_FROM_NAME so emails send as your domain (e.g. bookings@yourdomain.com).
+            </p>
+            <p className="text-sm text-blue-800">
+              Works with Zoho, Gmail, Brevo, etc. Use an app password, not your normal login.
+            </p>
           </div>
         </CardContent>
       </Card>

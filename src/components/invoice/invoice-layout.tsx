@@ -327,10 +327,10 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
         <Table className="text-xs print:text-[8pt] border border-white">
           <TableHeader>
             <TableRow className="bg-gray-100 border-b border-white">
-              <TableHead className="font-semibold text-gray-900 border-r border-white bg-gray-100 text-xs print:text-[8pt]">Description</TableHead>
-              <TableHead className="text-right font-semibold text-gray-900 border-r border-white bg-gray-100 text-xs print:text-[8pt]">Qty/Days</TableHead>
-              <TableHead className="text-right font-semibold text-gray-900 border-r border-white bg-gray-100 text-xs print:text-[8pt]">Unit Price</TableHead>
-              <TableHead className="text-right font-semibold text-gray-900 bg-gray-100 text-xs print:text-[8pt]">Total</TableHead>
+              <TableHead className="font-semibold text-gray-900 border-r border-white bg-gray-100 text-sm print:text-xs">Description</TableHead>
+              <TableHead className="text-right font-semibold text-gray-900 border-r border-white bg-gray-100 text-sm print:text-xs">Qty/Days</TableHead>
+              <TableHead className="text-right font-semibold text-gray-900 border-r border-white bg-gray-100 text-sm print:text-xs">Unit Price</TableHead>
+              <TableHead className="text-right font-semibold text-gray-900 bg-gray-100 text-sm print:text-xs">Total</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
