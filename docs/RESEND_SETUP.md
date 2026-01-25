@@ -42,6 +42,7 @@ Optionally use **SMTP** locally (e.g. `SMTP_HOST=smtp.resend.com`, `SMTP_USER=re
 
 ## Troubleshooting
 
+- **"Email is not configured" / "SMTP is not configured... use RESEND_API_KEY"** – Your **deployed** app (e.g. Vercel) does **not** use `.env.local`. Add `RESEND_API_KEY` in **Vercel → Project → Settings → Environment Variables** for Production (and Preview if you test there). Redeploy after adding.
 - **SMTP errors on Vercel** – Use **Resend API**: set `RESEND_API_KEY` in Vercel env vars. Do **not** rely on SMTP (port 465/587) on Vercel.  
 - **"Domain not verified"** – Finish domain verification in Resend.  
 - **"Invalid API key"** – Regenerate the key in Resend and update `RESEND_API_KEY`.  

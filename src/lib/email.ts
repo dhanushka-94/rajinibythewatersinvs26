@@ -64,6 +64,10 @@ export function getSenderAddress(hotelEmail?: string, hotelName?: string): Sende
   };
 }
 
+export function isEmailConfigured(): boolean {
+  return isResendConfigured() || isSmtpConfigured();
+}
+
 export async function sendEmail({
   to,
   subject,
@@ -82,8 +86,16 @@ export async function sendEmail({
     return sendViaResendApi({ to, subject, html, from, replyTo });
   }
 
-  // Fallback: SMTP (can fail on Vercel due to blocked ports)
-  return sendViaSmtp({ to, subject, html, from, replyTo });
+  if (isSmtpConfigured()) {
+    return sendViaSmtp({ to, subject, html, from, replyTo });
+  }
+
+  return {
+    success: false,
+    error:
+      "Email is not configured. On Vercel: add RESEND_API_KEY in Project Settings → Environment Variables. " +
+      "Locally: set RESEND_API_KEY in .env.local, or SMTP_USER + SMTP_PASSWORD for SMTP.",
+  };
 }
 
 async function sendViaResendApi({
@@ -152,7 +164,8 @@ async function sendViaSmtp({
     return {
       success: false,
       error:
-        "SMTP is not configured. Set SMTP_USER and SMTP_PASSWORD, or use RESEND_API_KEY for Vercel.",
+        "SMTP is not configured. Set SMTP_USER and SMTP_PASSWORD. " +
+        "On Vercel, prefer RESEND_API_KEY instead (no SMTP ports).",
     };
   }
 

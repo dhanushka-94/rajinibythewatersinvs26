@@ -32,3 +32,14 @@ The **live** layouts use professional font sizing and styling:
 **Print:** 8pt–14pt scale; hotel 8pt, INVOICE 14pt `letter-spacing: -0.02em`, section titles 10pt, body 9pt, table 9pt, summary 9pt / Total 11pt, payment 8–9pt, footer 8pt. Icons `#6b7280`.
 
 See `docs/INVOICE_FONT_SIZES.md` for the full reference.
+
+---
+
+## Many items / multi-page A4
+
+When an invoice has **too many items** to fit on one A4 page:
+
+- The **items table** is allowed to **break across pages** (no `page-break-inside: avoid` on the table wrapper).
+- The **table header** (Description, Qty/Days, Unit Price, Total) **repeats on each continued page** via `thead { display: table-header-group }` in print CSS.
+- **Individual rows** stay together (`page-break-inside: avoid` on `tr`); breaks occur *between* rows.
+- The table wrapper uses `overflow: visible` in print so content is not clipped.

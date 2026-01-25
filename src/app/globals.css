@@ -217,6 +217,18 @@
   .invoice-items {
     page-break-inside: avoid;
   }
+
+  /* Items table: allow multi-page when many items; header repeats on each page */
+  .invoice-items-table,
+  .invoice-print-template .invoice-items-table {
+    page-break-inside: auto !important;
+  }
+  .invoice-print-template thead {
+    display: table-header-group !important;
+  }
+  .invoice-print-template .invoice-items-table .overflow-auto {
+    overflow: visible !important;
+  }
   
   .invoice-summary {
     page-break-inside: avoid;

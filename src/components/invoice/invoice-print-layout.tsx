@@ -343,8 +343,8 @@ export function InvoicePrintLayout({
         </div>
       </div>
 
-      {/* Invoice Items Table */}
-      <div className="mb-4" style={{ marginBottom: '24px', pageBreakInside: 'avoid' }}>
+      {/* Invoice Items Table - allowed to break across pages when too many items */}
+      <div className="mb-4 invoice-items-table" style={{ marginBottom: '24px' }}>
         <Table style={{ width: '100%', borderCollapse: 'collapse', borderSpacing: 0, border: '1px solid #ffffff' }}>
           <TableHeader className="[&_tr]:border-0" style={{ border: 'none', borderWidth: 0 }}>
             <TableRow className="border-0" style={{ 
