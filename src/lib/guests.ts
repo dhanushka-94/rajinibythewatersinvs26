@@ -253,13 +253,17 @@ export async function updateGuest(id: string, guest: Partial<Guest>): Promise<vo
     }
 
     const dbData: any = {};
-    if (guest.name !== undefined) dbData.name = guest.name;
-    if (guest.email !== undefined) dbData.email = guest.email;
-    if (guest.phone !== undefined) dbData.phone = guest.phone;
-    if (guest.address !== undefined) dbData.address = guest.address;
-    if (guest.city !== undefined) dbData.city = guest.city;
-    if (guest.country !== undefined) dbData.country = guest.country;
-    if (guest.idNumber !== undefined) dbData.id_number = guest.idNumber;
+    if (guest.title !== undefined) dbData.title = guest.title || null;
+    if (guest.name !== undefined) dbData.name = guest.name || null;
+    if (guest.email !== undefined) dbData.email = guest.email || null;
+    if (guest.phone !== undefined) dbData.phone = guest.phone || null;
+    if (guest.phone2 !== undefined) dbData.phone2 = guest.phone2 || null;
+    if (guest.phone3 !== undefined) dbData.phone3 = guest.phone3 || null;
+    if (guest.address !== undefined) dbData.address = guest.address || null;
+    if (guest.city !== undefined) dbData.city = guest.city || null;
+    if (guest.country !== undefined) dbData.country = guest.country || null;
+    if (guest.idNumber !== undefined) dbData.id_number = guest.idNumber || null;
+    if (guest.birthday !== undefined) dbData.birthday = guest.birthday || null;
     dbData.updated_at = nowISOStringSL();
 
     const { error } = await supabase

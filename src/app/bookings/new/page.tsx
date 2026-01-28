@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,7 +26,7 @@ import Link from "next/link";
 import { addGuest, getGuestById, getGuests } from "@/lib/guests";
 import { Guest, Title, InvoiceItem } from "@/types/invoice";
 import { BookingStatus } from "@/types/booking";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { CountrySelector } from "@/components/country-selector";
 import {
   Table,
@@ -38,9 +38,11 @@ import {
 } from "@/components/ui/table";
 import { getSavedItems } from "@/lib/invoice-items";
 import { formatCurrency } from "@/lib/currency";
+import { toDateStrLocal } from "@/lib/date-sl";
 
-export default function NewBookingPage() {
+function NewBookingPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedGuestId, setSelectedGuestId] = useState<string>("");
   const [isAddGuestDialogOpen, setIsAddGuestDialogOpen] = useState(false);
   const [availableGuests, setAvailableGuests] = useState<Guest[]>([]);
@@ -103,18 +105,24 @@ export default function NewBookingPage() {
   const [savedItems, setSavedItems] = useState<InvoiceItem[]>([]);
 
   useEffect(() => {
-    // Load guests
+    const checkInParam = searchParams.get("checkIn");
+    if (checkInParam && /^\d{4}-\d{2}-\d{2}$/.test(checkInParam)) {
+      setCheckIn(checkInParam);
+      const [y, m, d] = checkInParam.split("-").map(Number);
+      const next = new Date(y, m - 1, d + 1);
+      setCheckOut(toDateStrLocal(next));
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
     const loadGuests = async () => {
       const guests = await getGuests();
       setAvailableGuests(guests);
     };
-    
-    // Load saved invoice items
     const loadSavedItems = async () => {
       const items = await getSavedItems();
       setSavedItems(items);
     };
-    
     loadGuests();
     loadSavedItems();
   }, []);
@@ -1187,5 +1195,19 @@ export default function NewBookingPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+export default function NewBookingPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-[40vh]">
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      }
+    >
+      <NewBookingPageContent />
+    </Suspense>
   );
 }

@@ -79,6 +79,17 @@ export function getTodaySLParts(): { year: number; month: number; day: number } 
 }
 
 /**
+ * Format a Date as local YYYY-MM-DD (no timezone shift).
+ * Use for calendar day keys and date comparisons when using local dates.
+ */
+export function toDateStrLocal(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+/**
  * Format a Date as ISO string in Sri Lanka time (e.g. "2025-01-24T14:30:00+05:30").
  * Use for persisting timestamps to the database.
  */
