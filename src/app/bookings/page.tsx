@@ -123,6 +123,22 @@ export default function BookingsPage() {
     loadBookings();
   }, [loadBookings]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.has("arrivals_today")) {
+      setDatePreset("arrivals_today");
+      setStartDate("");
+      setEndDate("");
+      setPage(1);
+    } else if (params.has("departures_today")) {
+      setDatePreset("departures_today");
+      setStartDate("");
+      setEndDate("");
+      setPage(1);
+    }
+  }, []);
+
   const today = todaySL();
 
   const filteredBookings = useMemo(() => {
