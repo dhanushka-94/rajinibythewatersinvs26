@@ -569,13 +569,22 @@ export default function NewBookingPage() {
                 </div>
               )}
 
-              {/* Additional Guests */}
+              {/* Additional Guests + Quick Add */}
               <div className="space-y-4 pt-4 border-t">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                   <Label className="text-base font-semibold">Additional Guests</Label>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-wrap">
+                    <Button
+                      type="button"
+                      variant="default"
+                      size="sm"
+                      onClick={() => setIsQuickAddGuestDialogOpen(true)}
+                    >
+                      <UserPlus className="h-4 w-4 mr-1" />
+                      Quick Add Guest
+                    </Button>
                     <Select 
-                      value={selectedAdditionalGuestId || undefined}
+                      value={selectedAdditionalGuestId === "quick-add" ? undefined : (selectedAdditionalGuestId || undefined)}
                       onValueChange={(value) => {
                         if (value === "quick-add") {
                           setIsQuickAddGuestDialogOpen(true);
@@ -585,7 +594,7 @@ export default function NewBookingPage() {
                       }}
                     >
                       <SelectTrigger className="w-[200px]">
-                        <SelectValue placeholder="Add guest" />
+                        <SelectValue placeholder="Or select existing guest" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="quick-add">Quick Add Guest</SelectItem>
@@ -884,13 +893,13 @@ export default function NewBookingPage() {
         </div>
       </form>
 
-      {/* Add Guest Dialog */}
+      {/* Add New Guest Dialog */}
       <Dialog open={isAddGuestDialogOpen} onOpenChange={setIsAddGuestDialogOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Add New Guest</DialogTitle>
             <DialogDescription>
-              Add a new guest to the system
+              Add a new guest to the system. Same fields as main guest form.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -898,11 +907,11 @@ export default function NewBookingPage() {
               <div className="space-y-2">
                 <Label htmlFor="new-guest-title">Title</Label>
                 <Select
-                  value={newGuest.title || "none"}
-                  onValueChange={(value) => setNewGuest({ ...newGuest, title: value === "none" ? undefined : (value as Title) })}
+                  value={newGuest.title ?? "none"}
+                  onValueChange={(v) => setNewGuest({ ...newGuest, title: v === "none" ? undefined : (v as Title) })}
                 >
                   <SelectTrigger id="new-guest-title">
-                    <SelectValue placeholder="Select title" />
+                    <SelectValue placeholder="Select title (optional)" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">None</SelectItem>
@@ -924,9 +933,12 @@ export default function NewBookingPage() {
                   id="new-guest-name"
                   value={newGuest.name || ""}
                   onChange={(e) => setNewGuest({ ...newGuest, name: e.target.value })}
+                  placeholder="Enter full name"
                   required
                 />
               </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="new-guest-email">Email</Label>
                 <Input
@@ -934,6 +946,7 @@ export default function NewBookingPage() {
                   type="email"
                   value={newGuest.email || ""}
                   onChange={(e) => setNewGuest({ ...newGuest, email: e.target.value })}
+                  placeholder="Email address"
                 />
               </div>
               <div className="space-y-2">
@@ -942,29 +955,72 @@ export default function NewBookingPage() {
                   id="new-guest-phone"
                   value={newGuest.phone || ""}
                   onChange={(e) => setNewGuest({ ...newGuest, phone: e.target.value })}
+                  placeholder="Phone"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="new-guest-phone2">Phone 2</Label>
+                <Input
+                  id="new-guest-phone2"
+                  value={newGuest.phone2 || ""}
+                  onChange={(e) => setNewGuest({ ...newGuest, phone2: e.target.value })}
+                  placeholder="Phone 2"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="new-guest-address">Address</Label>
+                <Label htmlFor="new-guest-phone3">Phone 3</Label>
                 <Input
-                  id="new-guest-address"
-                  value={newGuest.address || ""}
-                  onChange={(e) => setNewGuest({ ...newGuest, address: e.target.value })}
+                  id="new-guest-phone3"
+                  value={newGuest.phone3 || ""}
+                  onChange={(e) => setNewGuest({ ...newGuest, phone3: e.target.value })}
+                  placeholder="Phone 3"
                 />
               </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-guest-idNumber">ID / Passport</Label>
+                <Input
+                  id="new-guest-idNumber"
+                  value={newGuest.idNumber || ""}
+                  onChange={(e) => setNewGuest({ ...newGuest, idNumber: e.target.value })}
+                  placeholder="ID or Passport"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-guest-birthday">Birthday</Label>
+              <Input
+                id="new-guest-birthday"
+                type="date"
+                value={newGuest.birthday || ""}
+                onChange={(e) => setNewGuest({ ...newGuest, birthday: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-guest-address">Address</Label>
+              <Input
+                id="new-guest-address"
+                value={newGuest.address || ""}
+                onChange={(e) => setNewGuest({ ...newGuest, address: e.target.value })}
+                placeholder="Address"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="new-guest-city">City</Label>
                 <Input
                   id="new-guest-city"
                   value={newGuest.city || ""}
                   onChange={(e) => setNewGuest({ ...newGuest, city: e.target.value })}
+                  placeholder="City"
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="new-guest-country">Country</Label>
                 <CountrySelector
                   value={newGuest.country || ""}
-                  onValueChange={(value) => setNewGuest({ ...newGuest, country: value })}
+                  onValueChange={(v) => setNewGuest({ ...newGuest, country: v })}
                 />
               </div>
             </div>
@@ -990,7 +1046,7 @@ export default function NewBookingPage() {
           <DialogHeader>
             <DialogTitle>Quick Add Additional Guest</DialogTitle>
             <DialogDescription>
-              Add a guest directly to this booking
+              Add a guest directly to this booking. Same fields as main guest.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -998,11 +1054,11 @@ export default function NewBookingPage() {
               <div className="space-y-2">
                 <Label htmlFor="quick-guest-title">Title</Label>
                 <Select
-                  value={quickAddGuest.title || "none"}
-                  onValueChange={(value) => setQuickAddGuest({ ...quickAddGuest, title: value === "none" ? undefined : (value as Title) })}
+                  value={quickAddGuest.title ?? "none"}
+                  onValueChange={(v) => setQuickAddGuest({ ...quickAddGuest, title: v === "none" ? undefined : (v as Title) })}
                 >
                   <SelectTrigger id="quick-guest-title">
-                    <SelectValue placeholder="Select title" />
+                    <SelectValue placeholder="Select title (optional)" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">None</SelectItem>
@@ -1024,9 +1080,12 @@ export default function NewBookingPage() {
                   id="quick-guest-name"
                   value={quickAddGuest.name || ""}
                   onChange={(e) => setQuickAddGuest({ ...quickAddGuest, name: e.target.value })}
+                  placeholder="Full name"
                   required
                 />
               </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="quick-guest-email">Email</Label>
                 <Input
@@ -1034,6 +1093,7 @@ export default function NewBookingPage() {
                   type="email"
                   value={quickAddGuest.email || ""}
                   onChange={(e) => setQuickAddGuest({ ...quickAddGuest, email: e.target.value })}
+                  placeholder="Email"
                 />
               </div>
               <div className="space-y-2">
@@ -1042,6 +1102,72 @@ export default function NewBookingPage() {
                   id="quick-guest-phone"
                   value={quickAddGuest.phone || ""}
                   onChange={(e) => setQuickAddGuest({ ...quickAddGuest, phone: e.target.value })}
+                  placeholder="Phone"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="quick-guest-phone2">Phone 2</Label>
+                <Input
+                  id="quick-guest-phone2"
+                  value={quickAddGuest.phone2 || ""}
+                  onChange={(e) => setQuickAddGuest({ ...quickAddGuest, phone2: e.target.value })}
+                  placeholder="Phone 2"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="quick-guest-phone3">Phone 3</Label>
+                <Input
+                  id="quick-guest-phone3"
+                  value={quickAddGuest.phone3 || ""}
+                  onChange={(e) => setQuickAddGuest({ ...quickAddGuest, phone3: e.target.value })}
+                  placeholder="Phone 3"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="quick-guest-idNumber">ID / Passport</Label>
+                <Input
+                  id="quick-guest-idNumber"
+                  value={quickAddGuest.idNumber || ""}
+                  onChange={(e) => setQuickAddGuest({ ...quickAddGuest, idNumber: e.target.value })}
+                  placeholder="ID or Passport"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="quick-guest-birthday">Birthday</Label>
+              <Input
+                id="quick-guest-birthday"
+                type="date"
+                value={quickAddGuest.birthday || ""}
+                onChange={(e) => setQuickAddGuest({ ...quickAddGuest, birthday: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="quick-guest-address">Address</Label>
+              <Input
+                id="quick-guest-address"
+                value={quickAddGuest.address || ""}
+                onChange={(e) => setQuickAddGuest({ ...quickAddGuest, address: e.target.value })}
+                placeholder="Address"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="quick-guest-city">City</Label>
+                <Input
+                  id="quick-guest-city"
+                  value={quickAddGuest.city || ""}
+                  onChange={(e) => setQuickAddGuest({ ...quickAddGuest, city: e.target.value })}
+                  placeholder="City"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="quick-guest-country">Country</Label>
+                <CountrySelector
+                  value={quickAddGuest.country || ""}
+                  onValueChange={(v) => setQuickAddGuest({ ...quickAddGuest, country: v })}
                 />
               </div>
             </div>

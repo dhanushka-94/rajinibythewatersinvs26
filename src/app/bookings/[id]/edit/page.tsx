@@ -14,13 +14,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Calendar, Users, Plus, Trash2, Copy, FileText } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ArrowLeft, Calendar, Users, Plus, Trash2, Copy, FileText, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { Booking, BookingStatus } from "@/types/booking";
 import { getBookingById } from "@/lib/bookings";
 import { useRouter } from "next/navigation";
 import { InvoiceItem, Currency } from "@/types/invoice";
+import { Guest, Title } from "@/types/invoice";
 import { getSavedItems } from "@/lib/invoice-items";
+import { addGuest, getGuestById, getGuests } from "@/lib/guests";
+import { CountrySelector } from "@/components/country-selector";
 import {
   Table,
   TableBody,
@@ -59,6 +70,52 @@ export default function EditBookingPage({
   const [lateCheckOut, setLateCheckOut] = useState(false);
   const [lateCheckOutTime, setLateCheckOutTime] = useState("");
   const [lateCheckOutNotes, setLateCheckOutNotes] = useState("");
+  // Guest state
+  const [selectedGuestId, setSelectedGuestId] = useState<string>("");
+  const [guest, setGuest] = useState<Guest>({
+    title: undefined,
+    name: "",
+    email: "",
+    phone: "",
+    phone2: "",
+    phone3: "",
+    address: "",
+    city: "",
+    country: "",
+    idNumber: "",
+    birthday: "",
+  });
+  const [availableGuests, setAvailableGuests] = useState<Guest[]>([]);
+  const [newGuest, setNewGuest] = useState<Omit<Guest, "id">>({
+    title: undefined,
+    name: "",
+    email: "",
+    phone: "",
+    phone2: "",
+    phone3: "",
+    address: "",
+    city: "",
+    country: "",
+    idNumber: "",
+    birthday: "",
+  });
+  const [isAddGuestDialogOpen, setIsAddGuestDialogOpen] = useState(false);
+  const [additionalGuests, setAdditionalGuests] = useState<Guest[]>([]);
+  const [selectedAdditionalGuestId, setSelectedAdditionalGuestId] = useState<string>("");
+  const [isQuickAddGuestDialogOpen, setIsQuickAddGuestDialogOpen] = useState(false);
+  const [quickAddGuest, setQuickAddGuest] = useState<Omit<Guest, "id">>({
+    title: undefined,
+    name: "",
+    email: "",
+    phone: "",
+    phone2: "",
+    phone3: "",
+    address: "",
+    city: "",
+    country: "",
+    idNumber: "",
+    birthday: "",
+  });
 
   useEffect(() => {
     const loadBooking = async () => {
@@ -74,18 +131,32 @@ export default function EditBookingPage({
           setBabies(data.babies);
           setStatus(data.status);
           setNotes(data.notes || "");
-          // Ensure items have currency set (default to USD if not set)
           setItems((data.items || []).map(item => ({
             ...item,
             currency: item.currency || "USD",
           })));
-          // Early check-in and late checkout
           setEarlyCheckIn(data.earlyCheckIn || false);
           setEarlyCheckInTime(data.earlyCheckInTime || "");
           setEarlyCheckInNotes(data.earlyCheckInNotes || "");
           setLateCheckOut(data.lateCheckOut || false);
           setLateCheckOutTime(data.lateCheckOutTime || "");
           setLateCheckOutNotes(data.lateCheckOutNotes || "");
+          setGuest({
+            title: data.guest?.title,
+            name: data.guest?.name ?? "",
+            email: data.guest?.email ?? "",
+            phone: data.guest?.phone ?? "",
+            phone2: data.guest?.phone2 ?? "",
+            phone3: data.guest?.phone3 ?? "",
+            address: data.guest?.address ?? "",
+            city: data.guest?.city ?? "",
+            country: data.guest?.country ?? "",
+            idNumber: data.guest?.idNumber ?? "",
+            birthday: data.guest?.birthday ?? "",
+            id: data.guest?.id,
+          });
+          setSelectedGuestId(data.guestId ?? "");
+          setAdditionalGuests(data.guests ?? []);
         }
       } catch (error) {
         console.error("Error loading booking:", error);
@@ -93,7 +164,6 @@ export default function EditBookingPage({
         setLoading(false);
       }
     };
-    
     const loadSavedItems = async () => {
       try {
         const saved = await getSavedItems();
@@ -102,10 +172,33 @@ export default function EditBookingPage({
         console.error("Error loading saved items:", error);
       }
     };
-    
+    const loadGuests = async () => {
+      try {
+        const list = await getGuests();
+        setAvailableGuests(list);
+      } catch (error) {
+        console.error("Error loading guests:", error);
+      }
+    };
     loadBooking();
     loadSavedItems();
+    loadGuests();
   }, [id]);
+
+  useEffect(() => {
+    if (!selectedGuestId) {
+      return;
+    }
+    const loadSelectedGuest = async () => {
+      try {
+        const g = await getGuestById(selectedGuestId);
+        if (g) setGuest(g);
+      } catch (error) {
+        console.error("Error loading guest:", error);
+      }
+    };
+    loadSelectedGuest();
+  }, [selectedGuestId]);
 
   // Handle invoice items
   const handleItemChange = (
@@ -166,10 +259,84 @@ export default function EditBookingPage({
     setItems((prev) => prev.filter((item) => item.id !== id));
   };
 
+  const handleAddGuest = async () => {
+    if (!newGuest.name?.trim()) {
+      alert("Full Name is required");
+      return;
+    }
+    const added = await addGuest(newGuest);
+    setGuest(added);
+    setSelectedGuestId(added.id!);
+    setIsAddGuestDialogOpen(false);
+    setNewGuest({ title: undefined, name: "", email: "", phone: "", phone2: "", phone3: "", address: "", city: "", country: "", idNumber: "", birthday: "" });
+    const list = await getGuests();
+    setAvailableGuests(list);
+  };
+
+  const handleAddAdditionalGuest = async () => {
+    if (!selectedAdditionalGuestId || selectedAdditionalGuestId === "quick-add") return;
+    try {
+      const g = await getGuestById(selectedAdditionalGuestId);
+      if (!g) {
+        alert("Guest not found.");
+        return;
+      }
+      const isPrimary = guest.id && g.id && guest.id === g.id;
+      const already = additionalGuests.some((ag) => ag.id === g.id);
+      if (isPrimary) {
+        alert("This guest is already the primary guest.");
+        return;
+      }
+      if (already) {
+        alert("This guest is already added.");
+        return;
+      }
+      setAdditionalGuests((prev) => [...prev, g]);
+      setSelectedAdditionalGuestId("");
+    } catch (e) {
+      console.error(e);
+      alert("Error adding guest.");
+    }
+  };
+
+  const handleRemoveAdditionalGuest = (guestId: string) => {
+    setAdditionalGuests((prev) => prev.filter((g) => g.id !== guestId));
+  };
+
+  const handleQuickAddAdditionalGuest = async () => {
+    if (!quickAddGuest.name?.trim()) {
+      alert("Full Name is required");
+      return;
+    }
+    try {
+      const added = await addGuest(quickAddGuest);
+      const already = additionalGuests.some((ag) => ag.id === added.id);
+      if (already) {
+        alert("This guest is already added.");
+        setIsQuickAddGuestDialogOpen(false);
+        setQuickAddGuest({ title: undefined, name: "", email: "", phone: "", phone2: "", phone3: "", address: "", city: "", country: "", idNumber: "", birthday: "" });
+        return;
+      }
+      setAdditionalGuests((prev) => [...prev, added]);
+      setIsQuickAddGuestDialogOpen(false);
+      setQuickAddGuest({ title: undefined, name: "", email: "", phone: "", phone2: "", phone3: "", address: "", city: "", country: "", idNumber: "", birthday: "" });
+      const list = await getGuests();
+      setAvailableGuests(list);
+    } catch (e) {
+      console.error(e);
+      alert("Error adding guest.");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!booking) return;
+
+    if (!guest.name?.trim()) {
+      alert("Guest Name is required");
+      return;
+    }
 
     if (!checkIn || !checkOut) {
       alert("Check-in and Check-out dates are required");
@@ -184,16 +351,17 @@ export default function EditBookingPage({
     try {
       setSubmitting(true);
       
-      // Check if status is changing to checked_out
       const isChangingToCheckedOut = status === "checked_out" && booking.status !== "checked_out";
       
-      // Update booking via API
       const response = await fetch(`/api/bookings/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          guestId: guest.id || null,
+          guest,
+          guests: additionalGuests.length > 0 ? additionalGuests : undefined,
           checkIn,
           checkOut,
           roomType: roomType || undefined,
@@ -620,24 +788,202 @@ export default function EditBookingPage({
             </CardContent>
           </Card>
 
-          {/* Guest Information (Read-only) */}
+          {/* Guest Information */}
           <Card>
             <CardHeader>
-              <CardTitle>Guest Information</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <UserPlus className="h-5 w-5" />
+                Guest Information
+              </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <p className="font-medium">{booking.guest.name}</p>
-                {booking.guest.email && (
-                  <p className="text-sm text-muted-foreground">{booking.guest.email}</p>
-                )}
-                {booking.guest.phone && (
-                  <p className="text-sm text-muted-foreground">{booking.guest.phone}</p>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-guest">Select Guest</Label>
+                  <div className="flex gap-2">
+                    <Select
+                      value={selectedGuestId || undefined}
+                      onValueChange={(v) => {
+                        if (v === "new") {
+                          setSelectedGuestId("");
+                          setGuest({ title: undefined, name: "", email: "", phone: "", phone2: "", phone3: "", address: "", city: "", country: "", idNumber: "", birthday: "" });
+                        } else {
+                          setSelectedGuestId(v);
+                        }
+                      }}
+                    >
+                      <SelectTrigger id="edit-guest">
+                        <SelectValue placeholder="Select or add guest" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="new">New Guest</SelectItem>
+                        {availableGuests.map((g) => (
+                          <SelectItem key={g.id} value={g.id!}>
+                            {g.name} {g.email ? `(${g.email})` : ""}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button type="button" variant="outline" onClick={() => setIsAddGuestDialogOpen(true)}>
+                      <UserPlus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              {selectedGuestId && (
+                <div className="p-4 bg-muted rounded-lg">
+                  <p className="text-sm font-medium">Selected Guest: {guest.name}</p>
+                  {guest.email && <p className="text-sm text-muted-foreground">{guest.email}</p>}
+                </div>
+              )}
+              {!selectedGuestId && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-guest-title">Title</Label>
+                    <Select
+                      value={guest.title ?? "none"}
+                      onValueChange={(v) => setGuest({ ...guest, title: v === "none" ? undefined : (v as Title) })}
+                    >
+                      <SelectTrigger id="edit-guest-title">
+                        <SelectValue placeholder="Select title (optional)" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        <SelectItem value="Mr">Mr</SelectItem>
+                        <SelectItem value="Mrs">Mrs</SelectItem>
+                        <SelectItem value="Miss">Miss</SelectItem>
+                        <SelectItem value="Ms">Ms</SelectItem>
+                        <SelectItem value="Dr">Dr</SelectItem>
+                        <SelectItem value="Prof">Prof</SelectItem>
+                        <SelectItem value="Rev">Rev</SelectItem>
+                        <SelectItem value="Sir">Sir</SelectItem>
+                        <SelectItem value="Madam">Madam</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-guest-name">Full Name *</Label>
+                    <Input
+                      id="edit-guest-name"
+                      value={guest.name || ""}
+                      onChange={(e) => setGuest({ ...guest, name: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-guest-email">Email</Label>
+                    <Input
+                      id="edit-guest-email"
+                      type="email"
+                      value={guest.email || ""}
+                      onChange={(e) => setGuest({ ...guest, email: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-guest-phone">Phone</Label>
+                    <Input
+                      id="edit-guest-phone"
+                      value={guest.phone || ""}
+                      onChange={(e) => setGuest({ ...guest, phone: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-guest-address">Address</Label>
+                    <Input
+                      id="edit-guest-address"
+                      value={guest.address || ""}
+                      onChange={(e) => setGuest({ ...guest, address: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-guest-city">City</Label>
+                    <Input
+                      id="edit-guest-city"
+                      value={guest.city || ""}
+                      onChange={(e) => setGuest({ ...guest, city: e.target.value })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-guest-country">Country</Label>
+                    <CountrySelector
+                      value={guest.country || ""}
+                      onValueChange={(v) => setGuest({ ...guest, country: v })}
+                    />
+                  </div>
+                </div>
+              )}
+              {/* Additional Guests + Quick Add */}
+              <div className="space-y-4 pt-4 border-t">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <Label className="text-base font-semibold">Additional Guests</Label>
+                  <div className="flex gap-2 flex-wrap">
+                    <Button
+                      type="button"
+                      variant="default"
+                      size="sm"
+                      onClick={() => setIsQuickAddGuestDialogOpen(true)}
+                    >
+                      <UserPlus className="h-4 w-4 mr-1" />
+                      Quick Add Guest
+                    </Button>
+                    <Select
+                      value={selectedAdditionalGuestId === "quick-add" ? undefined : (selectedAdditionalGuestId || undefined)}
+                      onValueChange={(v) => {
+                        if (v === "quick-add") setIsQuickAddGuestDialogOpen(true);
+                        else setSelectedAdditionalGuestId(v);
+                      }}
+                    >
+                      <SelectTrigger className="w-[200px]">
+                        <SelectValue placeholder="Or select existing guest" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="quick-add">Quick Add Guest</SelectItem>
+                        {availableGuests
+                          .filter((g) => {
+                            const isPrimary = g.id === selectedGuestId;
+                            const isAlready = additionalGuests.some((ag) => ag.id === g.id);
+                            return !isPrimary && !isAlready;
+                          })
+                          .map((g) => (
+                            <SelectItem key={g.id} value={g.id!}>
+                              {g.name} {g.email ? `(${g.email})` : ""}
+                            </SelectItem>
+                          ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleAddAdditionalGuest}
+                      disabled={!selectedAdditionalGuestId || selectedAdditionalGuestId === "quick-add"}
+                    >
+                      <UserPlus className="h-4 w-4 mr-1" />
+                      Add
+                    </Button>
+                  </div>
+                </div>
+                {additionalGuests.length > 0 && (
+                  <div className="space-y-2">
+                    {additionalGuests.map((ag, idx) => (
+                      <div key={ag.id ?? idx} className="flex items-center justify-between p-2 bg-muted rounded">
+                        <div>
+                          <p className="text-sm font-medium">{ag.name}</p>
+                          {ag.email && <p className="text-xs text-muted-foreground">{ag.email}</p>}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemoveAdditionalGuest(ag.id!)}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-600" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground mt-4">
-                Guest information cannot be edited here. Please edit the guest profile in Settings.
-              </p>
             </CardContent>
           </Card>
 
@@ -654,6 +1000,207 @@ export default function EditBookingPage({
           </div>
         </div>
       </form>
+
+      {/* Add New Guest Dialog */}
+      <Dialog open={isAddGuestDialogOpen} onOpenChange={setIsAddGuestDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add New Guest</DialogTitle>
+            <DialogDescription>
+              Add a new guest to the system. Same fields as main guest form.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-new-guest-title">Title</Label>
+                <Select
+                  value={newGuest.title ?? "none"}
+                  onValueChange={(v) => setNewGuest({ ...newGuest, title: v === "none" ? undefined : (v as Title) })}
+                >
+                  <SelectTrigger id="edit-new-guest-title">
+                    <SelectValue placeholder="Select title (optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="Mr">Mr</SelectItem>
+                    <SelectItem value="Mrs">Mrs</SelectItem>
+                    <SelectItem value="Miss">Miss</SelectItem>
+                    <SelectItem value="Ms">Ms</SelectItem>
+                    <SelectItem value="Dr">Dr</SelectItem>
+                    <SelectItem value="Prof">Prof</SelectItem>
+                    <SelectItem value="Rev">Rev</SelectItem>
+                    <SelectItem value="Sir">Sir</SelectItem>
+                    <SelectItem value="Madam">Madam</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-new-guest-name">Full Name *</Label>
+                <Input
+                  id="edit-new-guest-name"
+                  value={newGuest.name || ""}
+                  onChange={(e) => setNewGuest({ ...newGuest, name: e.target.value })}
+                  placeholder="Full name"
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-new-guest-email">Email</Label>
+                <Input
+                  id="edit-new-guest-email"
+                  type="email"
+                  value={newGuest.email || ""}
+                  onChange={(e) => setNewGuest({ ...newGuest, email: e.target.value })}
+                  placeholder="Email"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-new-guest-phone">Phone</Label>
+                <Input
+                  id="edit-new-guest-phone"
+                  value={newGuest.phone || ""}
+                  onChange={(e) => setNewGuest({ ...newGuest, phone: e.target.value })}
+                  placeholder="Phone"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-new-guest-phone2">Phone 2</Label>
+                <Input id="edit-new-guest-phone2" value={newGuest.phone2 || ""} onChange={(e) => setNewGuest({ ...newGuest, phone2: e.target.value })} placeholder="Phone 2" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-new-guest-phone3">Phone 3</Label>
+                <Input id="edit-new-guest-phone3" value={newGuest.phone3 || ""} onChange={(e) => setNewGuest({ ...newGuest, phone3: e.target.value })} placeholder="Phone 3" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-new-guest-idNumber">ID / Passport</Label>
+                <Input id="edit-new-guest-idNumber" value={newGuest.idNumber || ""} onChange={(e) => setNewGuest({ ...newGuest, idNumber: e.target.value })} placeholder="ID or Passport" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-new-guest-birthday">Birthday</Label>
+              <Input id="edit-new-guest-birthday" type="date" value={newGuest.birthday || ""} onChange={(e) => setNewGuest({ ...newGuest, birthday: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-new-guest-address">Address</Label>
+              <Input id="edit-new-guest-address" value={newGuest.address || ""} onChange={(e) => setNewGuest({ ...newGuest, address: e.target.value })} placeholder="Address" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-new-guest-city">City</Label>
+                <Input id="edit-new-guest-city" value={newGuest.city || ""} onChange={(e) => setNewGuest({ ...newGuest, city: e.target.value })} placeholder="City" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-new-guest-country">Country</Label>
+                <CountrySelector value={newGuest.country || ""} onValueChange={(v) => setNewGuest({ ...newGuest, country: v })} />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setIsAddGuestDialogOpen(false)}>Cancel</Button>
+            <Button type="button" onClick={handleAddGuest}>Add Guest</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Quick Add Additional Guest Dialog */}
+      <Dialog open={isQuickAddGuestDialogOpen} onOpenChange={setIsQuickAddGuestDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Quick Add Additional Guest</DialogTitle>
+            <DialogDescription>
+              Add a guest directly to this booking. Same fields as main guest.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-quick-guest-title">Title</Label>
+                <Select
+                  value={quickAddGuest.title ?? "none"}
+                  onValueChange={(v) => setQuickAddGuest({ ...quickAddGuest, title: v === "none" ? undefined : (v as Title) })}
+                >
+                  <SelectTrigger id="edit-quick-guest-title">
+                    <SelectValue placeholder="Select title (optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="Mr">Mr</SelectItem>
+                    <SelectItem value="Mrs">Mrs</SelectItem>
+                    <SelectItem value="Miss">Miss</SelectItem>
+                    <SelectItem value="Ms">Ms</SelectItem>
+                    <SelectItem value="Dr">Dr</SelectItem>
+                    <SelectItem value="Prof">Prof</SelectItem>
+                    <SelectItem value="Rev">Rev</SelectItem>
+                    <SelectItem value="Sir">Sir</SelectItem>
+                    <SelectItem value="Madam">Madam</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-quick-guest-name">Full Name *</Label>
+                <Input
+                  id="edit-quick-guest-name"
+                  value={quickAddGuest.name || ""}
+                  onChange={(e) => setQuickAddGuest({ ...quickAddGuest, name: e.target.value })}
+                  placeholder="Full name"
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-quick-guest-email">Email</Label>
+                <Input id="edit-quick-guest-email" type="email" value={quickAddGuest.email || ""} onChange={(e) => setQuickAddGuest({ ...quickAddGuest, email: e.target.value })} placeholder="Email" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-quick-guest-phone">Phone</Label>
+                <Input id="edit-quick-guest-phone" value={quickAddGuest.phone || ""} onChange={(e) => setQuickAddGuest({ ...quickAddGuest, phone: e.target.value })} placeholder="Phone" />
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-quick-guest-phone2">Phone 2</Label>
+                <Input id="edit-quick-guest-phone2" value={quickAddGuest.phone2 || ""} onChange={(e) => setQuickAddGuest({ ...quickAddGuest, phone2: e.target.value })} placeholder="Phone 2" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-quick-guest-phone3">Phone 3</Label>
+                <Input id="edit-quick-guest-phone3" value={quickAddGuest.phone3 || ""} onChange={(e) => setQuickAddGuest({ ...quickAddGuest, phone3: e.target.value })} placeholder="Phone 3" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-quick-guest-idNumber">ID / Passport</Label>
+                <Input id="edit-quick-guest-idNumber" value={quickAddGuest.idNumber || ""} onChange={(e) => setQuickAddGuest({ ...quickAddGuest, idNumber: e.target.value })} placeholder="ID or Passport" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-quick-guest-birthday">Birthday</Label>
+              <Input id="edit-quick-guest-birthday" type="date" value={quickAddGuest.birthday || ""} onChange={(e) => setQuickAddGuest({ ...quickAddGuest, birthday: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-quick-guest-address">Address</Label>
+              <Input id="edit-quick-guest-address" value={quickAddGuest.address || ""} onChange={(e) => setQuickAddGuest({ ...quickAddGuest, address: e.target.value })} placeholder="Address" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-quick-guest-city">City</Label>
+                <Input id="edit-quick-guest-city" value={quickAddGuest.city || ""} onChange={(e) => setQuickAddGuest({ ...quickAddGuest, city: e.target.value })} placeholder="City" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-quick-guest-country">Country</Label>
+                <CountrySelector value={quickAddGuest.country || ""} onValueChange={(v) => setQuickAddGuest({ ...quickAddGuest, country: v })} />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setIsQuickAddGuestDialogOpen(false)}>Cancel</Button>
+            <Button type="button" onClick={handleQuickAddAdditionalGuest}>Add Guest</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
