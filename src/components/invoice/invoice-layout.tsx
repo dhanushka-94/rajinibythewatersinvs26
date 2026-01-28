@@ -354,8 +354,8 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
         </Table>
       </div>
 
-      <div className="flex justify-end mb-4 print:mb-3 invoice-summary">
-        <div className="w-80 space-y-0.5 print:w-64 print:space-y-0.5">
+      <div className="flex justify-end mb-4 print:mb-3 invoice-summary w-full">
+        <div className="w-80 space-y-0.5 print:w-64 print:space-y-0.5 pr-2 print:pr-[6px] min-w-0">
           <div className="flex justify-between text-[13px] print:text-[9pt]">
             <span className="text-gray-900">Subtotal:</span>
             <span className="font-medium text-gray-900">{formatCurrency(invoice.subtotal, invoice.currency)}</span>
@@ -418,8 +418,8 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
           <div className="space-y-1.5 print:space-y-1">
             {invoice.paymentMethods.length > 0 && (
               <div>
-                <span className="text-[10px] font-medium text-gray-900 print:text-[8pt]">Payment Methods: </span>
-                <span className="text-[10px] text-gray-900 print:text-[8pt]">
+                <span className="text-[11px] font-medium text-gray-900 print:text-[9pt]">Payment Methods: </span>
+                <span className="text-[11px] text-gray-900 print:text-[9pt]">
                   {[
                     invoice.paymentMethods.includes("bank_account") && "Bank Transfer/Wire/Deposit",
                     invoice.paymentMethods.includes("cheque") && "Cheque",
@@ -436,16 +436,16 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
                 {bankDetails.map((bankDetail, index) => (
                   <div key={bankDetail.id || index}>
                     {bankDetails.length > 1 && (
-                      <div className="text-[10px] font-bold text-gray-900 mb-0.5 print:text-[8pt] print:mb-0">
+                      <div className="text-[11px] font-bold text-gray-900 mb-0.5 print:text-[9pt] print:mb-0">
                         Bank #{index + 1}:
                       </div>
                     )}
                     {bankDetails.length === 1 && (
-                      <div className="text-[10px] font-bold text-gray-900 mb-0.5 print:text-[8pt] print:mb-0">
+                      <div className="text-[11px] font-bold text-gray-900 mb-0.5 print:text-[9pt] print:mb-0">
                         Bank Details:
                       </div>
                     )}
-                    <div className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-0 text-[10px] leading-tight print:text-[8pt] print:gap-x-1.5">
+                    <div className="grid grid-cols-[auto_1fr] gap-x-2 gap-y-0 text-[11px] leading-tight print:text-[9pt] print:gap-x-1.5">
                       <span className="font-semibold text-gray-900">Bank:</span>
                       <span className="text-gray-900">{bankDetail.bankName}</span>
                       <span className="font-semibold text-gray-900">Branch:</span>
@@ -466,8 +466,8 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
 
             {invoice.checksPayableTo && (
               <div>
-                <span className="text-[10px] font-medium text-gray-900 print:text-[8pt]">Make Checks Payable To: </span>
-                <span className="text-[10px] font-semibold text-gray-900 print:text-[8pt]">{invoice.checksPayableTo}</span>
+                <span className="text-[11px] font-medium text-gray-900 print:text-[9pt]">Make Checks Payable To: </span>
+                <span className="text-[11px] font-semibold text-gray-900 print:text-[9pt]">{invoice.checksPayableTo}</span>
               </div>
             )}
           </div>

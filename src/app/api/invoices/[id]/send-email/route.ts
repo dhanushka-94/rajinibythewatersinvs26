@@ -49,25 +49,38 @@ export async function POST(
     );
 
     const replyTo = process.env.SMTP_REPLY_TO || "bookings@rajinihotels.com";
+    const subject = `Invoice ${invoice.invoiceNumber} - ${hotelInfo.name}`;
     const emailResult = await sendEmail({
       to: recipientEmail,
-      subject: `Invoice ${invoice.invoiceNumber} - ${hotelInfo.name}`,
+      subject,
       html: emailHtml,
       from: `${fromName} <${fromEmail}>`,
       replyTo,
     });
 
+    const emailLogMeta = {
+      to: recipientEmail,
+      subject,
+      success: emailResult.success,
+      ...(emailResult.error && { error: emailResult.error }),
+    };
+
     if (!emailResult.success) {
+      await createActivityLog("invoice_sent", "invoice", `Failed to send invoice ${invoice.invoiceNumber} to ${recipientEmail}`, {
+        entityId: invoice.id,
+        entityName: invoice.invoiceNumber,
+        metadata: emailLogMeta,
+      });
       return NextResponse.json(
         { success: false, error: emailResult.error || "Failed to send email" },
         { status: 500 }
       );
     }
 
-    // Log activity
     await createActivityLog("invoice_sent", "invoice", `Invoice ${invoice.invoiceNumber} sent via email to ${recipientEmail}`, {
       entityId: invoice.id,
       entityName: invoice.invoiceNumber,
+      metadata: emailLogMeta,
     });
 
     return NextResponse.json({

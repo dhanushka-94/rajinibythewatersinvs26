@@ -50,7 +50,7 @@ const formatDistanceToNow = (date: Date): string => {
     return `${years} year${years !== 1 ? 's' : ''} ago`;
   }
 };
-import { Search, Filter, RefreshCw, FileText, User, Building2, CreditCard, Settings, Calendar } from "lucide-react";
+import { Search, Filter, RefreshCw, FileText, User, Building2, CreditCard, Settings, Calendar, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const activityTypeLabels: Record<ActivityType, string> = {
@@ -60,6 +60,7 @@ const activityTypeLabels: Record<ActivityType, string> = {
   invoice_viewed: "Invoice Viewed",
   invoice_printed: "Invoice Printed",
   invoice_sent: "Invoice Sent",
+  test_email_sent: "Test Email Sent",
   invoice_status_changed: "Invoice Status Changed",
   guest_created: "Guest Created",
   guest_updated: "Guest Updated",
@@ -91,6 +92,7 @@ const activityTypeColors: Record<ActivityType, string> = {
   invoice_viewed: "bg-gray-100 text-gray-800 border-gray-200",
   invoice_printed: "bg-purple-100 text-purple-800 border-purple-200",
   invoice_sent: "bg-teal-100 text-teal-800 border-teal-200",
+  test_email_sent: "bg-cyan-100 text-cyan-800 border-cyan-200",
   invoice_status_changed: "bg-indigo-100 text-indigo-800 border-indigo-200",
   guest_created: "bg-green-100 text-green-800 border-green-200",
   guest_updated: "bg-yellow-100 text-yellow-800 border-yellow-200",
@@ -117,6 +119,7 @@ const activityTypeColors: Record<ActivityType, string> = {
 
 const entityTypeIcons: Record<string, any> = {
   invoice: FileText,
+  email: Mail,
   guest: User,
   travel_company: Building2,
   bank_detail: CreditCard,

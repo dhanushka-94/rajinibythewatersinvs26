@@ -5,6 +5,7 @@ export type ActivityType =
   | "invoice_viewed"
   | "invoice_printed"
   | "invoice_sent"
+  | "test_email_sent"
   | "invoice_status_changed"
   | "guest_created"
   | "guest_updated"
@@ -60,6 +61,8 @@ export interface ActivityLogCreate {
 export interface ActivityLogFilter {
   userId?: string;
   activityType?: ActivityType;
+  /** Filter by any of these types (uses .in()). Ignored if activityType is set. */
+  activityTypes?: ActivityType[];
   entityType?: string;
   entityId?: string;
   startDate?: string;

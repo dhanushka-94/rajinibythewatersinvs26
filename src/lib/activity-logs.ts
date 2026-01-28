@@ -150,6 +150,8 @@ export async function getActivityLogs(filter?: ActivityLogFilter): Promise<Activ
 
     if (filter?.activityType) {
       query = query.eq("activity_type", filter.activityType);
+    } else if (filter?.activityTypes && filter.activityTypes.length > 0) {
+      query = query.in("activity_type", filter.activityTypes);
     }
 
     if (filter?.entityType) {
@@ -237,6 +239,8 @@ export async function getActivityLogsCount(filter?: ActivityLogFilter): Promise<
 
     if (filter?.activityType) {
       query = query.eq("activity_type", filter.activityType);
+    } else if (filter?.activityTypes && filter.activityTypes.length > 0) {
+      query = query.in("activity_type", filter.activityTypes);
     }
 
     if (filter?.entityType) {

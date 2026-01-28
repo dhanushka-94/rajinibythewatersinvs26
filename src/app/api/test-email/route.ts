@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { formatDateTimeSL } from "@/lib/date-sl";
 import { sendEmail, getSenderAddress } from "@/lib/email";
+import { createActivityLog } from "@/lib/activity-logs";
 
 export async function POST(request: NextRequest) {
   try {
@@ -62,20 +63,35 @@ export async function POST(request: NextRequest) {
     `;
 
     const replyTo = process.env.SMTP_REPLY_TO || "bookings@rajinihotels.com";
+    const subject = `Test Email - ${hotelInfo.name} Invoice System`;
     const emailResult = await sendEmail({
       to: recipientEmail,
-      subject: `Test Email - ${hotelInfo.name} Invoice System`,
+      subject,
       html: testEmailHtml,
       from: `${fromName} <${fromEmail}>`,
       replyTo,
     });
 
+    const emailLogMeta = {
+      to: recipientEmail,
+      subject,
+      success: emailResult.success,
+      ...(emailResult.error && { error: emailResult.error }),
+    };
+
     if (!emailResult.success) {
+      await createActivityLog("test_email_sent", "email", `Failed to send test email to ${recipientEmail}`, {
+        metadata: emailLogMeta,
+      });
       return NextResponse.json(
         { success: false, error: emailResult.error || "Failed to send test email" },
         { status: 500 }
       );
     }
+
+    await createActivityLog("test_email_sent", "email", `Test email sent to ${recipientEmail}`, {
+      metadata: emailLogMeta,
+    });
 
     return NextResponse.json({
       success: true,

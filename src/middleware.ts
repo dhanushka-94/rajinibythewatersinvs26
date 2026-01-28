@@ -8,7 +8,8 @@ const publicRoutes = ["/login"];
 const roleRoutes: Record<string, string[]> = {
   "/settings/users": ["admin"],
   "/settings/activity-logs": ["admin"],
-  "/settings": ["admin"], // Main settings page
+  "/settings/email-logs": ["admin"],
+  "/settings": ["admin"],
   "/reports": ["admin", "manager", "viewer"],
   "/payments": ["admin", "manager", "viewer"],
 };

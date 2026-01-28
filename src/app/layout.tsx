@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 import { ConditionalLayout } from "@/components/layout/conditional-layout";
 
@@ -38,6 +39,7 @@ export default function RootLayout({
         suppressHydrationWarning
       >
         <ConditionalLayout>{children}</ConditionalLayout>
+        <Toaster richColors position="top-center" closeButton />
       </body>
     </html>
   );

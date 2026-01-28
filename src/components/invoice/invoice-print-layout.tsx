@@ -515,9 +515,9 @@ export function InvoicePrintLayout({
         </Table>
       </div>
 
-      {/* Summary Section */}
-      <div className="flex justify-end mb-3" style={{ marginBottom: '20px', justifyContent: 'flex-end', pageBreakInside: 'avoid', pageBreakBefore: 'avoid' }}>
-        <div className="w-64" style={{ width: '256px' }}>
+      {/* Summary Section - right edge of amounts aligns with Total column */}
+      <div className="flex justify-end mb-3 w-full" style={{ marginBottom: '20px', justifyContent: 'flex-end', pageBreakInside: 'avoid', pageBreakBefore: 'avoid', width: '100%' }}>
+        <div className="w-64" style={{ width: '256px', paddingRight: '6px', boxSizing: 'border-box' }}>
           <div className="flex justify-between" style={{ fontSize: '9pt', marginBottom: '4px', lineHeight: '1.4', color: '#111827' }}>
             <span>Subtotal:</span>
             <span className="font-medium">{formatCurrency(invoice.subtotal, invoice.currency)}</span>
@@ -589,7 +589,7 @@ export function InvoicePrintLayout({
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             {invoice.paymentMethods.length > 0 && (
-              <div style={{ fontSize: '8pt', lineHeight: '1.4', color: '#111827' }}>
+              <div style={{ fontSize: '9pt', lineHeight: '1.4', color: '#111827' }}>
                 <span style={{ fontWeight: '600' }}>Payment Methods: </span>
                 <span>
                   {[
@@ -615,16 +615,16 @@ export function InvoicePrintLayout({
                   <div key={bankDetail.id || index} style={{
                     pageBreakInside: 'avoid',
                     breakInside: 'avoid',
-                    fontSize: '8pt',
+                    fontSize: '9pt',
                     lineHeight: '1.3'
                   }}>
                     {bankDetails.length > 1 && (
-                      <div style={{ fontSize: '8pt', fontWeight: '700', marginBottom: '4px', color: '#111827' }}>
+                      <div style={{ fontSize: '9pt', fontWeight: '700', marginBottom: '4px', color: '#111827' }}>
                         Bank #{index + 1}:
                       </div>
                     )}
                     {bankDetails.length === 1 && (
-                      <div style={{ fontSize: '8pt', fontWeight: '700', marginBottom: '4px', color: '#111827' }}>
+                      <div style={{ fontSize: '9pt', fontWeight: '700', marginBottom: '4px', color: '#111827' }}>
                         Bank Details:
                       </div>
                     )}
@@ -632,7 +632,7 @@ export function InvoicePrintLayout({
                       display: 'grid',
                       gridTemplateColumns: 'auto 1fr',
                       gap: '4px 8px',
-                      fontSize: '8pt',
+                      fontSize: '9pt',
                       lineHeight: '1.3'
                     }}>
                       <span style={{ fontWeight: '600', color: '#111827' }}>Bank:</span>
@@ -654,7 +654,7 @@ export function InvoicePrintLayout({
             )}
 
             {invoice.checksPayableTo && (
-              <div style={{ fontSize: '8pt', lineHeight: '1.4', color: '#111827', marginTop: '8px' }}>
+              <div style={{ fontSize: '9pt', lineHeight: '1.4', color: '#111827', marginTop: '8px' }}>
                 <span style={{ fontWeight: '600' }}>Make Checks Payable To: </span>
                 <span style={{ fontWeight: '600' }}>{invoice.checksPayableTo}</span>
               </div>

@@ -36,6 +36,7 @@ import { formatCurrency } from "@/lib/currency";
 import { formatDateSL, todaySL, nowISOStringSL } from "@/lib/date-sl";
 import { createRoot } from "react-dom/client";
 import React from "react";
+import { toast } from "sonner";
 
 export default function InvoiceDetailPage({
   params,
@@ -272,14 +273,13 @@ export default function InvoiceDetailPage({
 
   const handleSendEmail = async () => {
     if (!emailRecipient) {
-      alert("Please enter recipient email address.");
+      toast.error("Please enter recipient email address.");
       return;
     }
 
-    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(emailRecipient)) {
-      alert("Please enter a valid email address.");
+      toast.error("Please enter a valid email address.");
       return;
     }
 
@@ -303,13 +303,14 @@ export default function InvoiceDetailPage({
         throw new Error(data.error || "Failed to send email");
       }
 
-      alert(`Invoice sent successfully to ${emailRecipient}`);
+      toast.success(`Invoice sent successfully to ${emailRecipient}`);
       setIsEmailDialogOpen(false);
       setEmailRecipient("");
       setEmailRecipientName("");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error sending email:", error);
-      alert(error.message || "Failed to send email. Please check your email service configuration.");
+      const msg = error instanceof Error ? error.message : "Failed to send email. Please check your email service configuration.";
+      toast.error(msg);
     } finally {
       setIsSendingEmail(false);
     }
