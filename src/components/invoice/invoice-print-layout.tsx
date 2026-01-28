@@ -357,10 +357,11 @@ export function InvoicePrintLayout({
               borderColor: 'transparent transparent #ffffff transparent',
               borderStyle: 'none none solid none'
             }}>
-              <TableHead className="font-semibold text-left border-0" style={{ 
+              <TableHead className="font-bold text-left border-0" style={{ 
                 padding: '10px 6px', 
                 fontSize: '9pt',
-                fontWeight: '600',
+                fontWeight: 700,
+                opacity: 1,
                 textAlign: 'left',
                 borderRight: '1px solid #ffffff !important',
                 borderBottom: '1px solid #ffffff !important',
@@ -370,15 +371,16 @@ export function InvoicePrintLayout({
                 borderColor: 'transparent #ffffff #ffffff transparent',
                 borderStyle: 'none solid solid none',
                 pageBreakInside: 'avoid',
-                color: '#111827',
+                color: '#000000',
                 backgroundColor: '#f3f4f6'
               }}>
                 Description
               </TableHead>
-              <TableHead className="text-right font-semibold border-0" style={{ 
+              <TableHead className="text-right font-bold border-0" style={{ 
                 padding: '10px 6px', 
                 fontSize: '9pt',
-                fontWeight: '600',
+                fontWeight: 700,
+                opacity: 1,
                 textAlign: 'right',
                 borderRight: '1px solid #ffffff !important',
                 borderBottom: '1px solid #ffffff !important',
@@ -388,15 +390,16 @@ export function InvoicePrintLayout({
                 borderColor: 'transparent #ffffff #ffffff transparent',
                 borderStyle: 'none solid solid none',
                 pageBreakInside: 'avoid',
-                color: '#111827',
+                color: '#000000',
                 backgroundColor: '#f3f4f6'
               }}>
                 Qty/Days
               </TableHead>
-              <TableHead className="text-right font-semibold border-0" style={{ 
+              <TableHead className="text-right font-bold border-0" style={{ 
                 padding: '10px 6px', 
                 fontSize: '9pt',
-                fontWeight: '600',
+                fontWeight: 700,
+                opacity: 1,
                 textAlign: 'right',
                 borderRight: '1px solid #ffffff !important',
                 borderBottom: '1px solid #ffffff !important',
@@ -406,15 +409,16 @@ export function InvoicePrintLayout({
                 borderColor: 'transparent #ffffff #ffffff transparent',
                 borderStyle: 'none solid solid none',
                 pageBreakInside: 'avoid',
-                color: '#111827',
+                color: '#000000',
                 backgroundColor: '#f3f4f6'
               }}>
                 Unit Price
               </TableHead>
-              <TableHead className="text-right font-semibold border-0" style={{ 
+              <TableHead className="text-right font-bold border-0" style={{ 
                 padding: '10px 6px', 
                 fontSize: '9pt',
-                fontWeight: '600',
+                fontWeight: 700,
+                opacity: 1,
                 textAlign: 'right',
                 borderBottom: '1px solid #ffffff !important',
                 borderTop: 'none !important',
@@ -424,7 +428,7 @@ export function InvoicePrintLayout({
                 borderColor: 'transparent transparent #ffffff transparent',
                 borderStyle: 'none none solid none',
                 pageBreakInside: 'avoid',
-                color: '#111827',
+                color: '#000000',
                 backgroundColor: '#f3f4f6'
               }}>
                 Total
@@ -443,9 +447,10 @@ export function InvoicePrintLayout({
                 borderColor: index < invoice.items.length - 1 ? 'transparent transparent #ffffff transparent' : 'transparent',
                 borderStyle: index < invoice.items.length - 1 ? 'none none solid none' : 'none'
               }}>
-                <TableCell className="font-medium text-left border-0" style={{ 
+                <TableCell className="text-left border-0 font-normal" style={{ 
                   padding: '10px 6px', 
                   fontSize: '9pt',
+                  fontWeight: 400,
                   textAlign: 'left',
                   borderRight: '1px solid #ffffff !important',
                   borderTop: 'none !important',
@@ -459,9 +464,10 @@ export function InvoicePrintLayout({
                 }}>
                   {item.description}
                 </TableCell>
-                <TableCell className="text-right border-0" style={{ 
+                <TableCell className="text-right border-0 font-normal" style={{ 
                   padding: '10px 6px', 
                   fontSize: '9pt',
+                  fontWeight: 400,
                   textAlign: 'right',
                   borderRight: '1px solid #ffffff !important',
                   borderTop: 'none !important',
@@ -475,9 +481,10 @@ export function InvoicePrintLayout({
                 }}>
                   {item.quantity} {item.quantityType === "days" ? "Days" : "Qty"}
                 </TableCell>
-                <TableCell className="text-right border-0" style={{ 
+                <TableCell className="text-right border-0 font-normal" style={{ 
                   padding: '10px 6px', 
                   fontSize: '9pt',
+                  fontWeight: 400,
                   textAlign: 'right',
                   borderRight: '1px solid #ffffff !important',
                   borderTop: 'none !important',
@@ -491,10 +498,10 @@ export function InvoicePrintLayout({
                 }}>
                   {formatCurrency(item.unitPrice, invoice.currency)}
                 </TableCell>
-                <TableCell className="text-right font-medium border-0" style={{ 
+                <TableCell className="text-right border-0 font-normal" style={{ 
                   padding: '10px 6px', 
                   fontSize: '9pt',
-                  fontWeight: '500',
+                  fontWeight: 400,
                   textAlign: 'right',
                   borderTop: 'none !important',
                   borderLeft: 'none !important',
@@ -576,10 +583,11 @@ export function InvoicePrintLayout({
         }}>
           <h3 style={{ 
             fontSize: '9pt', 
-            fontWeight: '600',
+            fontWeight: 700,
+            opacity: 1,
             marginBottom: '8px',
             pageBreakAfter: 'avoid',
-            color: '#111827',
+            color: '#000000',
             backgroundColor: '#f3f4f6',
             padding: '6px 8px'
           }}>
