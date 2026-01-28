@@ -20,7 +20,7 @@ import { getBankDetailById } from "@/lib/bank-details";
 import { getTravelCompanyById } from "@/lib/travel-companies";
 import { type TravelCompany } from "@/types/travel-company";
 import { formatDateSL } from "@/lib/date-sl";
-import { Building2, FileText, Wallet, Globe, Banknote, CreditCard, Calendar, User, Mail, Phone, MapPin, Building, IdCard, UserCircle, Hash, LogIn, LogOut, Users } from "lucide-react";
+import { Building2, FileText, Wallet, Globe, Banknote, CreditCard, Calendar, User, Mail, Phone, MapPin, Building, IdCard, UserCircle, LogIn, LogOut, Users } from "lucide-react";
 
 interface InvoiceLayoutProps {
   invoice: Invoice;
@@ -180,7 +180,7 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
               </div>
               {travelCompany.contactPerson && (
                 <div className="flex items-start gap-1.5">
-                  <Hash className="h-3.5 w-3.5 text-gray-900 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
+                  <User className="h-3.5 w-3.5 text-gray-900 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
                   <p className="text-gray-900">{travelCompany.contactPersonTitle ? `${travelCompany.contactPersonTitle} ` : ''}{travelCompany.contactPerson}</p>
                 </div>
               )}
@@ -202,7 +202,6 @@ export function InvoiceLayout({ invoice, showHeader = true }: InvoiceLayoutProps
               )}
               {invoice.referenceNumber && (
                 <div className="flex items-start gap-1.5">
-                  <Hash className="h-3.5 w-3.5 text-gray-900 mt-0.5 print:h-3 print:w-3 flex-shrink-0" />
                   <p className="text-gray-900"><span className="font-medium">Ref:</span> {invoice.referenceNumber}</p>
                 </div>
               )}

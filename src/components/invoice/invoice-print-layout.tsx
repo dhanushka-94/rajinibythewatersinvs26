@@ -17,7 +17,7 @@ import { getBankDetailById } from "@/lib/bank-details";
 import { getTravelCompanyById } from "@/lib/travel-companies";
 import { type TravelCompany } from "@/types/travel-company";
 import { formatDateSL } from "@/lib/date-sl";
-import { Building2, FileText, Wallet, Globe, Banknote, CreditCard, Calendar, User, Mail, Phone, MapPin, Building, IdCard, UserCircle, Hash, LogIn, LogOut, Users } from "lucide-react";
+import { Building2, FileText, Wallet, Globe, Banknote, CreditCard, Calendar, User, Mail, Phone, MapPin, Building, IdCard, UserCircle, LogIn, LogOut, Users } from "lucide-react";
 import { useState, useEffect } from "react";
 
 interface InvoicePrintLayoutProps {
@@ -200,7 +200,7 @@ export function InvoicePrintLayout({
               </div>
               {travelCompany.contactPerson && (
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', marginBottom: '4px' }}>
-                  <Hash style={{ width: '11px', height: '11px', color: '#111827', marginTop: '2px', flexShrink: 0 }} />
+                  <User style={{ width: '11px', height: '11px', color: '#111827', marginTop: '2px', flexShrink: 0 }} />
                   <p style={{ color: '#111827' }}>{travelCompany.contactPersonTitle ? `${travelCompany.contactPersonTitle} ` : ''}{travelCompany.contactPerson}</p>
                 </div>
               )}
@@ -222,7 +222,6 @@ export function InvoicePrintLayout({
               )}
               {invoice.referenceNumber && (
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px', marginBottom: '4px' }}>
-                  <Hash style={{ width: '11px', height: '11px', color: '#111827', marginTop: '2px', flexShrink: 0 }} />
                   <p style={{ color: '#111827' }}><span style={{ fontWeight: '500' }}>Ref:</span> {invoice.referenceNumber}</p>
                 </div>
               )}
