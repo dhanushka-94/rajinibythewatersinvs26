@@ -22,6 +22,8 @@ const C = {
   bgHeader: "#f3f4f6",
   border: "#e5e7eb",
   white: "#ffffff",
+  /** Bold black 100% opacity for items header & Payment Information */
+  headerText: "#000000",
 } as const;
 
 export function generateInvoiceEmailHtml({
@@ -155,10 +157,10 @@ export function generateInvoiceEmailHtml({
               <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse: collapse; font-size: 12px; color: ${C.text};">
                 <thead>
                   <tr style="background-color: ${C.bgHeader};">
-                    <th style="text-align: left; padding: 10px 8px; font-weight: 600; font-size: 14px; border: 1px solid ${C.border};">Description</th>
-                    <th style="text-align: right; padding: 10px 8px; font-weight: 600; font-size: 14px; border: 1px solid ${C.border};">Qty/Days</th>
-                    <th style="text-align: right; padding: 10px 8px; font-weight: 600; font-size: 14px; border: 1px solid ${C.border};">Unit Price</th>
-                    <th style="text-align: right; padding: 10px 8px; font-weight: 600; font-size: 14px; border: 1px solid ${C.border};">Total</th>
+                    <th style="text-align: left; padding: 10px 8px; font-weight: 700; font-size: 14px; color: ${C.headerText}; opacity: 1; border: 1px solid ${C.border};">Description</th>
+                    <th style="text-align: right; padding: 10px 8px; font-weight: 700; font-size: 14px; color: ${C.headerText}; opacity: 1; border: 1px solid ${C.border};">Qty/Days</th>
+                    <th style="text-align: right; padding: 10px 8px; font-weight: 700; font-size: 14px; color: ${C.headerText}; opacity: 1; border: 1px solid ${C.border};">Unit Price</th>
+                    <th style="text-align: right; padding: 10px 8px; font-weight: 700; font-size: 14px; color: ${C.headerText}; opacity: 1; border: 1px solid ${C.border};">Total</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -207,7 +209,7 @@ export function generateInvoiceEmailHtml({
           ${invoice.paymentMethods.length > 0 || bankDetails.length > 0 ? `
           <tr>
             <td style="padding: 12px 24px 16px 24px;">
-              <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: ${C.text}; background-color: ${C.bgHeader}; padding: 6px 8px;">Payment Information</p>
+              <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 700; color: ${C.headerText}; opacity: 1; background-color: ${C.bgHeader}; padding: 6px 8px;">Payment Information</p>
               ${invoice.paymentMethods.length > 0 ? `<p style="margin: 0 0 8px 0; font-size: 10px; line-height: 1.4; color: ${C.text};"><strong>Payment Methods:</strong> ${[invoice.paymentMethods.includes("bank_account") && "Bank Transfer/Wire/Deposit", invoice.paymentMethods.includes("cheque") && "Cheque", invoice.paymentMethods.includes("online") && "Online", invoice.paymentMethods.includes("cash") && "Cash", invoice.paymentMethods.includes("card") && `Card${invoice.cardLast4Digits ? ` (****${invoice.cardLast4Digits})` : ""}`].filter(Boolean).join(", ")}</p>` : ""}
               ${bankTable}
               ${invoice.checksPayableTo ? `<p style="margin: 8px 0 0 0; font-size: 10px; color: ${C.text};"><strong>Make Checks Payable To:</strong> ${invoice.checksPayableTo}</p>` : ""}
