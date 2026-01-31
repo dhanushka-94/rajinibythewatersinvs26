@@ -10,7 +10,6 @@ import {
   FileText,
   PlusCircle,
   Settings,
-  Building2,
   Users,
   BarChart3,
   CreditCard,
@@ -20,65 +19,72 @@ import {
   Package,
   Calendar,
   CalendarDays,
-  ChevronDown,
-  ChevronRight,
   BedDouble,
   Tag,
+  Wallet,
 } from "lucide-react";
 import { getHotelInfo, type HotelInfo } from "@/lib/hotel-info";
 import { User as UserType } from "@/types/user";
 
-type NavItem = {
+type NavLinkItem = {
+  type: "link";
   name: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
   roles: string[];
-  children?: { name: string; href: string }[];
-  /** Show a separator line before this item to visually group the menu */
-  separatorBefore?: boolean;
 };
 
-const allNavigation: NavItem[] = [
-  // Group 1: Dashboard, Bookings, Guests
-  { name: "Dashboard", href: "/", icon: LayoutDashboard, roles: ["admin", "super_admin", "manager", "staff", "viewer"] },
-  { name: "Room Status", href: "/rooms", icon: BedDouble, roles: ["admin", "super_admin", "manager", "staff", "viewer"] },
-  { name: "Bookings", href: "/bookings", icon: Calendar, roles: ["admin", "super_admin", "manager", "staff", "viewer"] },
-  { name: "Booking Calendar", href: "/bookings/calendar", icon: CalendarDays, roles: ["admin", "super_admin", "manager", "staff", "viewer"] },
-  { name: "Guests", href: "/settings/guests", icon: Users, roles: ["admin", "super_admin", "manager", "staff", "viewer"] },
-  { name: "Travel Companies", href: "/settings/travel-companies", icon: Briefcase, roles: ["admin", "super_admin", "manager", "staff", "viewer"] },
-  // Group 2: Invoices, Payments
-  { name: "Invoices", href: "/invoices", icon: FileText, roles: ["admin", "super_admin", "manager", "staff", "viewer"], separatorBefore: true },
-  { name: "Create Invoice", href: "/invoices/new", icon: PlusCircle, roles: ["admin", "super_admin", "manager", "staff"] },
-  { name: "Payments", href: "/payments", icon: CreditCard, roles: ["admin", "super_admin", "manager", "viewer"] },
-  { name: "Invoice Items", href: "/settings/invoice-items", icon: Package, roles: ["admin", "super_admin", "manager", "staff", "viewer"] },
-  // Group 3: Reports, Offers & Promotions, Activity Logs
-  { name: "Reports", href: "/reports", icon: BarChart3, roles: ["admin", "super_admin", "manager", "viewer"], separatorBefore: true },
+type NavItem = NavLinkItem;
+
+type NavGroup = {
+  label: string;
+  items: NavItem[];
+};
+
+const allNavigation: NavGroup[] = [
   {
-    name: "Offers & Promotions",
-    href: "/promotions",
-    icon: Tag,
-    roles: ["admin", "super_admin", "manager"],
-    children: [
-      { name: "Offers", href: "/promotions/offers" },
-      { name: "Discounts", href: "/promotions/discounts" },
-      { name: "Coupon Codes", href: "/promotions/coupon-codes" },
+    label: "Front Desk & Operations",
+    items: [
+      { type: "link", name: "Room Status", href: "/rooms", icon: BedDouble, roles: ["admin", "super_admin", "manager", "staff", "viewer"] },
+      { type: "link", name: "Booking Calendar", href: "/bookings/calendar", icon: CalendarDays, roles: ["admin", "super_admin", "manager", "staff", "viewer"] },
+      { type: "link", name: "Bookings", href: "/bookings", icon: Calendar, roles: ["admin", "super_admin", "manager", "staff", "viewer"] },
+      { type: "link", name: "Guests", href: "/settings/guests", icon: Users, roles: ["admin", "super_admin", "manager", "staff", "viewer"] },
+      { type: "link", name: "Travel Companies", href: "/settings/travel-companies", icon: Briefcase, roles: ["admin", "super_admin", "manager", "staff", "viewer"] },
     ],
   },
-  { name: "Activity Logs", href: "/settings/activity-logs", icon: History, roles: ["admin", "super_admin"] },
-  // Group 4: Settings (Hotel Info, Bank Accounts, Users, Email Log)
   {
-    name: "Settings",
-    href: "/settings",
-    icon: Settings,
-    roles: ["admin", "super_admin"],
-    separatorBefore: true,
-    children: [
-      { name: "Hotel Info", href: "/settings" },
-      { name: "Hotel Rooms", href: "/settings/hotel-rooms" },
-      { name: "Bank Accounts", href: "/settings/bank-accounts" },
-      { name: "Users", href: "/settings/users" },
-      { name: "Secure Edit PINs", href: "/settings/secure-edit-pins" },
-      { name: "Email Log", href: "/settings/email-logs" },
+    label: "Billing & Finance",
+    items: [
+      { type: "link", name: "Invoices", href: "/invoices", icon: FileText, roles: ["admin", "super_admin", "manager", "staff", "viewer"] },
+      { type: "link", name: "Create Invoice", href: "/invoices/new", icon: PlusCircle, roles: ["admin", "super_admin", "manager", "staff"] },
+      { type: "link", name: "Payments", href: "/payments", icon: CreditCard, roles: ["admin", "super_admin", "manager", "viewer"] },
+      { type: "link", name: "Invoice Items", href: "/settings/invoice-items", icon: Package, roles: ["admin", "super_admin", "manager", "staff", "viewer"] },
+      { type: "link", name: "Bank Accounts", href: "/settings/bank-accounts", icon: Wallet, roles: ["admin", "super_admin"] },
+    ],
+  },
+  {
+    label: "Offers & Promotions",
+    items: [
+      { type: "link", name: "Offers", href: "/promotions/offers", icon: Tag, roles: ["admin", "super_admin", "manager"] },
+      { type: "link", name: "Discounts", href: "/promotions/discounts", icon: Tag, roles: ["admin", "super_admin", "manager"] },
+      { type: "link", name: "Coupon Codes", href: "/promotions/coupon-codes", icon: Tag, roles: ["admin", "super_admin", "manager"] },
+    ],
+  },
+  {
+    label: "Reports & Logs",
+    items: [
+      { type: "link", name: "Reports", href: "/reports", icon: BarChart3, roles: ["admin", "super_admin", "manager", "viewer"] },
+      { type: "link", name: "Activity Logs", href: "/settings/activity-logs", icon: History, roles: ["admin", "super_admin"] },
+      { type: "link", name: "Email Log", href: "/settings/email-logs", icon: Mail, roles: ["admin", "super_admin"] },
+    ],
+  },
+  {
+    label: "Hotel Setup & System",
+    items: [
+      { type: "link", name: "Hotel Info", href: "/settings", icon: Settings, roles: ["admin", "super_admin"] },
+      { type: "link", name: "Hotel Rooms", href: "/settings/hotel-rooms", icon: Settings, roles: ["admin", "super_admin"] },
+      { type: "link", name: "Users", href: "/settings/users", icon: Users, roles: ["admin", "super_admin"] },
+      { type: "link", name: "Secure Edit PINs", href: "/settings/secure-edit-pins", icon: Settings, roles: ["admin", "super_admin"] },
     ],
   },
 ];
@@ -113,25 +119,10 @@ export function Sidebar() {
     }
   };
 
-  // Filter navigation based on user role
-  const navigation = allNavigation.filter((item) => {
-    if (!currentUser) return false;
-    return item.roles.includes(currentUser.role);
-  });
-
-  const settingsChildPaths = ["/settings", "/settings/hotel-rooms", "/settings/bank-accounts", "/settings/users", "/settings/secure-edit-pins", "/settings/email-logs"];
-  const promotionsChildPaths = ["/promotions", "/promotions/offers", "/promotions/discounts", "/promotions/coupon-codes"];
-  const isSettingsPath = settingsChildPaths.includes(pathname);
-  const isPromotionsPath = promotionsChildPaths.includes(pathname);
-  const [settingsOpen, setSettingsOpen] = useState(isSettingsPath);
-
-  const [promotionsOpen, setPromotionsOpen] = useState(isPromotionsPath);
-  useEffect(() => {
-    if (isSettingsPath) setSettingsOpen(true);
-  }, [isSettingsPath]);
-  useEffect(() => {
-    if (isPromotionsPath) setPromotionsOpen(true);
-  }, [isPromotionsPath]);
+  const visibleGroups = allNavigation.map((group) => ({
+    ...group,
+    items: group.items.filter((item) => currentUser && item.roles.includes(currentUser.role)),
+  })).filter((group) => group.items.length > 0);
 
   return (
     <div className="flex h-full w-64 flex-col border-r bg-card">
@@ -155,78 +146,47 @@ export function Sidebar() {
         </p>
       </div>
       <nav className="flex-1 space-y-1 p-4 overflow-y-auto">
-        {navigation.map((item) => {
-          const sep = item.separatorBefore ? (
-            <div key={`sep-${item.name}`} className="my-2 border-t border-border" aria-hidden />
-          ) : null;
-          if (item.children) {
-            const isOpen = item.name === "Settings" ? settingsOpen : promotionsOpen;
-            const setOpen = item.name === "Settings" ? setSettingsOpen : setPromotionsOpen;
-            const isParentActive = item.name === "Settings" ? isSettingsPath : isPromotionsPath;
-            return (
-              <div key={item.name} className="space-y-0.5">
-                {sep}
-                <button
-                  type="button"
-                  onClick={() => setOpen((o) => !o)}
-                  className={cn(
-                    "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                    isParentActive
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                  )}
-                >
-                  <item.icon className="h-5 w-5 flex-shrink-0" />
-                  <span className="flex-1 text-left">{item.name}</span>
-                  {isOpen ? (
-                    <ChevronDown className="h-4 w-4 flex-shrink-0" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4 flex-shrink-0" />
-                  )}
-                </button>
-                {isOpen && (
-                  <div className="ml-4 mt-0.5 space-y-0.5 border-l border-border pl-2">
-                    {item.children.map((child) => {
-                      const isChildActive = pathname === child.href;
-                      return (
-                        <Link
-                          key={child.href}
-                          href={child.href}
-                          className={cn(
-                            "flex items-center rounded-md px-2 py-1.5 text-sm transition-colors",
-                            isChildActive
-                              ? "font-medium text-primary bg-primary/10"
-                              : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                          )}
-                        >
-                          {child.name}
-                        </Link>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          }
-          const isActive = pathname === item.href;
-          return (
-            <div key={item.name}>
-              {sep}
-              <Link
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                )}
-              >
-                <item.icon className="h-5 w-5" />
-                {item.name}
-              </Link>
+        {currentUser && (
+          <Link
+            href="/"
+            className={cn(
+              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+              pathname === "/"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+            )}
+          >
+            <LayoutDashboard className="h-5 w-5" />
+            Dashboard
+          </Link>
+        )}
+        {visibleGroups.map((group) => (
+          <div key={group.label} className="mt-5 first:mt-0 pt-4 first:pt-0 border-t border-border/60 first:border-t-0">
+            <div className="mb-2 px-3 py-2 rounded-md bg-muted/60 border-l-2 border-[#D4AF37] text-xs font-bold uppercase tracking-wider text-foreground/90">
+              {group.label}
             </div>
-          );
-        })}
+            <div className="space-y-0.5">
+              {group.items.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                      isActive
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                    )}
+                  >
+                    <item.icon className="h-5 w-5" />
+                    {item.name}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
     </div>
   );
