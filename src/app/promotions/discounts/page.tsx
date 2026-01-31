@@ -30,7 +30,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, Search, Percent } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Plus, Pencil, Trash2, Search, Percent, ChevronDown, ChevronRight } from "lucide-react";
 import { ConfirmDeleteDialog } from "@/components/ui/confirm-delete-dialog";
 import { formatDateSL } from "@/lib/date-sl";
 import { formatCurrency } from "@/lib/currency";
@@ -70,6 +71,7 @@ export default function DiscountsPage() {
   const [form, setForm] = useState(defaultDiscountForm);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
   const [includeInactive, setIncludeInactive] = useState(false);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   useEffect(() => {
     loadDiscounts();
@@ -220,131 +222,157 @@ export default function DiscountsPage() {
     }
   };
 
-  const FormFields = () => (
-    <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-      <div>
-        <Label>Offer (optional)</Label>
-        <Select value={form.offerId || "__none__"} onValueChange={(v) => setForm((p) => ({ ...p, offerId: v === "__none__" ? "" : v }))}>
-          <SelectTrigger><SelectValue placeholder="None" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__none__">None</SelectItem>
-            {offers.map((o) => (
-              <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      <div>
-        <Label>Name</Label>
-        <Input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="e.g. Early Bird 20%" />
-      </div>
-      <div>
-        <Label>Description</Label>
-        <Textarea value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} rows={2} />
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label>Discount Type</Label>
-          <Select value={form.discountType} onValueChange={(v: "percentage" | "fixed") => setForm((p) => ({ ...p, discountType: v }))}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="percentage">Percentage</SelectItem>
-              <SelectItem value="fixed">Fixed Amount</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label>{form.discountType === "percentage" ? "Percentage (%)" : "Amount"}</Label>
-          <Input type="number" step="0.01" value={form.amount || ""} onChange={(e) => setForm((p) => ({ ...p, amount: Number(e.target.value) || 0 }))} />
-        </div>
-      </div>
-      {form.discountType === "fixed" && (
-        <div>
-          <Label>Currency</Label>
-          <Select value={form.currency} onValueChange={(v) => setForm((p) => ({ ...p, currency: v }))}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="USD">USD</SelectItem>
-              <SelectItem value="LKR">LKR</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      )}
-      <div>
-        <Label>Min Stay (nights)</Label>
-        <Input type="number" min="0" value={form.minStayNights} onChange={(e) => setForm((p) => ({ ...p, minStayNights: Number(e.target.value) || 0 }))} />
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label>Valid From</Label>
-          <Input type="date" value={form.validFrom} onChange={(e) => setForm((p) => ({ ...p, validFrom: e.target.value }))} />
-        </div>
-        <div>
-          <Label>Valid Until</Label>
-          <Input type="date" value={form.validUntil} onChange={(e) => setForm((p) => ({ ...p, validUntil: e.target.value }))} />
+  const formFieldsContent = (
+    <div className="max-h-[75vh] overflow-y-auto pr-2 space-y-6">
+      {/* Basic Info */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-semibold text-foreground border-b pb-2">Basic Information</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="sm:col-span-2">
+            <Label htmlFor="disc-name">Name *</Label>
+            <Input id="disc-name" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} placeholder="e.g. Early Bird 20%" className="mt-1.5" />
+          </div>
+          <div>
+            <Label>Offer (optional)</Label>
+            <Select value={form.offerId || "__none__"} onValueChange={(v) => setForm((p) => ({ ...p, offerId: v === "__none__" ? "" : v }))}>
+              <SelectTrigger className="mt-1.5"><SelectValue placeholder="None" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">None</SelectItem>
+                {offers.map((o) => (
+                  <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {isEditDialogOpen && (
+            <div>
+              <Label>Status</Label>
+              <Select value={form.status} onValueChange={(v: "active" | "inactive") => setForm((p) => ({ ...p, status: v }))}>
+                <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+          <div className="sm:col-span-2">
+            <Label>Description (optional)</Label>
+            <Textarea value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} rows={2} placeholder="Brief description of this discount" className="mt-1.5" />
+          </div>
         </div>
       </div>
-      <div>
-        <Label>Blackout Dates (comma-separated YYYY-MM-DD)</Label>
-        <Input value={form.blackoutDates.join(", ")} onChange={(e) => setForm((p) => ({ ...p, blackoutDates: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) }))} placeholder="2025-12-25, 2025-12-31" />
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <Label>Max Total Usage</Label>
-          <Input type="number" placeholder="Unlimited" value={form.maxTotalUsage} onChange={(e) => setForm((p) => ({ ...p, maxTotalUsage: e.target.value === "" ? "" : Number(e.target.value) }))} />
-        </div>
-        <div>
-          <Label>Max Per Guest</Label>
-          <Input type="number" placeholder="Unlimited" value={form.maxUsagePerGuest} onChange={(e) => setForm((p) => ({ ...p, maxUsagePerGuest: e.target.value === "" ? "" : Number(e.target.value) }))} />
-        </div>
-      </div>
-      <div className="flex gap-4">
-        <label className="flex items-center gap-2">
-          <input type="checkbox" checked={form.oneTimePerBooking} onChange={(e) => setForm((p) => ({ ...p, oneTimePerBooking: e.target.checked }))} />
-          <span className="text-sm">One-time per booking</span>
-        </label>
-        <label className="flex items-center gap-2">
-          <input type="checkbox" checked={form.oneTimePerGuest} onChange={(e) => setForm((p) => ({ ...p, oneTimePerGuest: e.target.checked }))} />
-          <span className="text-sm">One-time per guest</span>
-        </label>
-      </div>
-      <div>
-        <Label>Applicable Room Types (comma-separated, empty = all)</Label>
-        <Input value={form.applicableRoomTypes.join(", ")} onChange={(e) => setForm((p) => ({ ...p, applicableRoomTypes: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) }))} placeholder="Standard, Deluxe" />
-      </div>
-      <div>
-        <Label>Applicable Rate Types (select from list, empty = all)</Label>
-        <p className="text-xs text-muted-foreground mb-2">Leave empty for all rate types</p>
-        <div className="flex flex-wrap gap-2">
-          {rateTypes.map((rt) => (
-            <label key={rt.id} className="flex items-center gap-1 text-sm">
-              <input
-                type="checkbox"
-                checked={form.applicableRateTypeIds.includes(rt.id)}
-                onChange={(e) =>
-                  setForm((p) => ({
-                    ...p,
-                    applicableRateTypeIds: e.target.checked ? [...p.applicableRateTypeIds, rt.id] : p.applicableRateTypeIds.filter((id) => id !== rt.id),
-                  }))
-                }
-              />
-              {rt.name}
-            </label>
-          ))}
+
+      <Separator />
+
+      {/* Discount Value */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-semibold text-foreground border-b pb-2">Discount Value</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <Label>Type</Label>
+            <Select value={form.discountType} onValueChange={(v: "percentage" | "fixed") => setForm((p) => ({ ...p, discountType: v }))}>
+              <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="percentage">Percentage (%)</SelectItem>
+                <SelectItem value="fixed">Fixed Amount</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>{form.discountType === "percentage" ? "Percentage (%)" : "Amount"}</Label>
+            <Input type="number" step="0.01" min="0" value={form.amount || ""} onChange={(e) => setForm((p) => ({ ...p, amount: Number(e.target.value) || 0 }))} className="mt-1.5" placeholder={form.discountType === "percentage" ? "e.g. 20" : "e.g. 50"} />
+          </div>
+          {form.discountType === "fixed" && (
+            <div>
+              <Label>Currency</Label>
+              <Select value={form.currency} onValueChange={(v) => setForm((p) => ({ ...p, currency: v }))}>
+                <SelectTrigger className="mt-1.5"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="USD">USD</SelectItem>
+                  <SelectItem value="LKR">LKR</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
       </div>
-      {isEditDialogOpen && (
-        <div>
-          <Label>Status</Label>
-          <Select value={form.status} onValueChange={(v: "active" | "inactive") => setForm((p) => ({ ...p, status: v }))}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="inactive">Inactive</SelectItem>
-            </SelectContent>
-          </Select>
+
+      <Separator />
+
+      {/* Validity Period */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-semibold text-foreground border-b pb-2">Validity Period</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <Label>Valid From *</Label>
+            <Input type="date" value={form.validFrom} onChange={(e) => setForm((p) => ({ ...p, validFrom: e.target.value }))} className="mt-1.5" />
+          </div>
+          <div>
+            <Label>Valid Until *</Label>
+            <Input type="date" value={form.validUntil} onChange={(e) => setForm((p) => ({ ...p, validUntil: e.target.value }))} className="mt-1.5" />
+          </div>
         </div>
-      )}
+      </div>
+
+      {/* Advanced Restrictions */}
+      <div className="space-y-3">
+        <button
+          type="button"
+          onClick={() => setAdvancedOpen(!advancedOpen)}
+          className="flex items-center gap-2 text-sm font-semibold text-foreground hover:text-primary transition-colors"
+        >
+          {advancedOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+          Advanced restrictions (optional)
+        </button>
+        {advancedOpen && (
+          <div className="pl-6 space-y-4 rounded-lg border bg-muted/30 p-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-muted-foreground">Min Stay (nights)</Label>
+                <Input type="number" min="0" value={form.minStayNights} onChange={(e) => setForm((p) => ({ ...p, minStayNights: Number(e.target.value) || 0 }))} className="mt-1.5" placeholder="0 = no minimum" />
+              </div>
+              <div>
+                <Label className="text-muted-foreground">Max Total Usage</Label>
+                <Input type="number" placeholder="Unlimited" value={form.maxTotalUsage} onChange={(e) => setForm((p) => ({ ...p, maxTotalUsage: e.target.value === "" ? "" : Number(e.target.value) }))} className="mt-1.5" />
+              </div>
+              <div>
+                <Label className="text-muted-foreground">Max Usage Per Guest</Label>
+                <Input type="number" placeholder="Unlimited" value={form.maxUsagePerGuest} onChange={(e) => setForm((p) => ({ ...p, maxUsagePerGuest: e.target.value === "" ? "" : Number(e.target.value) }))} className="mt-1.5" />
+              </div>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Blackout Dates (comma-separated YYYY-MM-DD)</Label>
+              <Input value={form.blackoutDates.join(", ")} onChange={(e) => setForm((p) => ({ ...p, blackoutDates: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) }))} placeholder="2025-12-25, 2025-12-31" className="mt-1.5" />
+            </div>
+            <div className="flex flex-wrap gap-6">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={form.oneTimePerBooking} onChange={(e) => setForm((p) => ({ ...p, oneTimePerBooking: e.target.checked }))} className="rounded" />
+                <span className="text-sm text-muted-foreground">One-time per booking</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={form.oneTimePerGuest} onChange={(e) => setForm((p) => ({ ...p, oneTimePerGuest: e.target.checked }))} className="rounded" />
+                <span className="text-sm text-muted-foreground">One-time per guest</span>
+              </label>
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Applicable Room Types (empty = all)</Label>
+              <Input value={form.applicableRoomTypes.join(", ")} onChange={(e) => setForm((p) => ({ ...p, applicableRoomTypes: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) }))} placeholder="e.g. Standard, Deluxe" className="mt-1.5" />
+            </div>
+            <div>
+              <Label className="text-muted-foreground">Applicable Rate Types (leave empty for all)</Label>
+              <div className="flex flex-wrap gap-3 mt-2 p-3 rounded-md border bg-background max-h-32 overflow-y-auto">
+                {rateTypes.map((rt) => (
+                  <label key={rt.id} className="flex items-center gap-2 text-sm cursor-pointer">
+                    <input type="checkbox" checked={form.applicableRateTypeIds.includes(rt.id)} onChange={(e) => setForm((p) => ({ ...p, applicableRateTypeIds: e.target.checked ? [...p.applicableRateTypeIds, rt.id] : p.applicableRateTypeIds.filter((id) => id !== rt.id) }))} className="rounded" />
+                    {rt.name}
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 
@@ -417,29 +445,30 @@ export default function DiscountsPage() {
         </CardContent>
       </Card>
 
-      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="max-w-lg">
+      <Dialog open={isAddDialogOpen} onOpenChange={(open) => { if (!open) setAdvancedOpen(false); setIsAddDialogOpen(open); }}>
+        <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Add Discount</DialogTitle>
-            <DialogDescription>Create a new discount with pricing logic and restrictions.</DialogDescription>
+            <DialogDescription>Create a new discount. Fill in the essentials; advanced options are optional.</DialogDescription>
           </DialogHeader>
-          <FormFields />
-          <DialogFooter>
+          {formFieldsContent}
+          <DialogFooter className="pt-4">
             <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleAdd}>Add</Button>
+            <Button onClick={handleAdd}>Add Discount</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-lg">
+      <Dialog open={isEditDialogOpen} onOpenChange={(open) => { if (!open) setAdvancedOpen(false); setIsEditDialogOpen(open); }}>
+        <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Edit Discount</DialogTitle>
+            <DialogDescription>Update discount details.</DialogDescription>
           </DialogHeader>
-          <FormFields />
-          <DialogFooter>
+          {formFieldsContent}
+          <DialogFooter className="pt-4">
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleEdit}>Save</Button>
+            <Button onClick={handleEdit}>Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
