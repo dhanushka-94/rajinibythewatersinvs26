@@ -16,7 +16,17 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Rajini by The Waters - Invoice Management System",
-  description: "Professional invoice management system for Rajini by The Waters",
+  description: "Private backend system - not for public access",
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+    googleBot: {
+      index: false,
+      follow: false,
+      noimageindex: true,
+    },
+  },
   icons: {
     icon: [
       { url: "/images/rajini-logo-flat-color.png", type: "image/png" },
