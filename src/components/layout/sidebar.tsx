@@ -38,30 +38,31 @@ type NavItem = {
 
 const allNavigation: NavItem[] = [
   // Group 1: Dashboard, Bookings, Guests
-  { name: "Dashboard", href: "/", icon: LayoutDashboard, roles: ["admin", "manager", "staff", "viewer"] },
-  { name: "Bookings", href: "/bookings", icon: Calendar, roles: ["admin", "manager", "staff", "viewer"] },
-  { name: "Booking Calendar", href: "/bookings/calendar", icon: CalendarDays, roles: ["admin", "manager", "staff", "viewer"] },
-  { name: "Guests", href: "/settings/guests", icon: Users, roles: ["admin", "manager", "staff", "viewer"] },
-  { name: "Travel Companies", href: "/settings/travel-companies", icon: Briefcase, roles: ["admin", "manager", "staff", "viewer"] },
+  { name: "Dashboard", href: "/", icon: LayoutDashboard, roles: ["admin", "super_admin", "manager", "staff", "viewer"] },
+  { name: "Bookings", href: "/bookings", icon: Calendar, roles: ["admin", "super_admin", "manager", "staff", "viewer"] },
+  { name: "Booking Calendar", href: "/bookings/calendar", icon: CalendarDays, roles: ["admin", "super_admin", "manager", "staff", "viewer"] },
+  { name: "Guests", href: "/settings/guests", icon: Users, roles: ["admin", "super_admin", "manager", "staff", "viewer"] },
+  { name: "Travel Companies", href: "/settings/travel-companies", icon: Briefcase, roles: ["admin", "super_admin", "manager", "staff", "viewer"] },
   // Group 2: Invoices, Payments
-  { name: "Invoices", href: "/invoices", icon: FileText, roles: ["admin", "manager", "staff", "viewer"], separatorBefore: true },
-  { name: "Create Invoice", href: "/invoices/new", icon: PlusCircle, roles: ["admin", "manager", "staff"] },
-  { name: "Payments", href: "/payments", icon: CreditCard, roles: ["admin", "manager", "viewer"] },
-  { name: "Invoice Items", href: "/settings/invoice-items", icon: Package, roles: ["admin", "manager", "staff", "viewer"] },
+  { name: "Invoices", href: "/invoices", icon: FileText, roles: ["admin", "super_admin", "manager", "staff", "viewer"], separatorBefore: true },
+  { name: "Create Invoice", href: "/invoices/new", icon: PlusCircle, roles: ["admin", "super_admin", "manager", "staff"] },
+  { name: "Payments", href: "/payments", icon: CreditCard, roles: ["admin", "super_admin", "manager", "viewer"] },
+  { name: "Invoice Items", href: "/settings/invoice-items", icon: Package, roles: ["admin", "super_admin", "manager", "staff", "viewer"] },
   // Group 3: Reports, Activity Logs
-  { name: "Reports", href: "/reports", icon: BarChart3, roles: ["admin", "manager", "viewer"], separatorBefore: true },
-  { name: "Activity Logs", href: "/settings/activity-logs", icon: History, roles: ["admin"] },
+  { name: "Reports", href: "/reports", icon: BarChart3, roles: ["admin", "super_admin", "manager", "viewer"], separatorBefore: true },
+  { name: "Activity Logs", href: "/settings/activity-logs", icon: History, roles: ["admin", "super_admin"] },
   // Group 4: Settings (Hotel Info, Bank Accounts, Users, Email Log)
   {
     name: "Settings",
     href: "/settings",
     icon: Settings,
-    roles: ["admin"],
+    roles: ["admin", "super_admin"],
     separatorBefore: true,
     children: [
       { name: "Hotel Info", href: "/settings" },
       { name: "Bank Accounts", href: "/settings/bank-accounts" },
       { name: "Users", href: "/settings/users" },
+      { name: "Secure Edit PINs", href: "/settings/secure-edit-pins" },
       { name: "Email Log", href: "/settings/email-logs" },
     ],
   },
@@ -103,7 +104,7 @@ export function Sidebar() {
     return item.roles.includes(currentUser.role);
   });
 
-  const settingsChildPaths = ["/settings", "/settings/bank-accounts", "/settings/users", "/settings/email-logs"];
+  const settingsChildPaths = ["/settings", "/settings/bank-accounts", "/settings/users", "/settings/secure-edit-pins", "/settings/email-logs"];
   const isSettingsPath = settingsChildPaths.includes(pathname);
   const [settingsOpen, setSettingsOpen] = useState(isSettingsPath);
 

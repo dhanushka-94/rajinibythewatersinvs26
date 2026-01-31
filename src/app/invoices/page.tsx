@@ -44,6 +44,8 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Invoice } from "@/types/invoice";
+import { User } from "@/types/user";
+import { ConfirmDeleteDialog } from "@/components/ui/confirm-delete-dialog";
 
 const PAGE_SIZE = 20;
 const DEBOUNCE_MS = 300;
@@ -123,6 +125,14 @@ export default function InvoicesPage() {
   const [page, setPage] = useState(1);
   const [deletingInvoiceId, setDeletingInvoiceId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d) => d.success && d.user && setCurrentUser(d.user))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(searchTerm), DEBOUNCE_MS);
@@ -274,17 +284,24 @@ export default function InvoicesPage() {
     [dueInvoices]
   );
 
-  const handleDelete = async (id: string, num: string) => {
-    if (!confirm(`Delete invoice ${num}? This cannot be undone.`)) return;
-    setDeletingInvoiceId(id);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; num: string } | null>(null);
+
+  const handleDeleteClick = (id: string, num: string) => {
+    setDeleteConfirm({ id, num });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteConfirm) return;
+    setDeletingInvoiceId(deleteConfirm.id);
     try {
-      await deleteInvoice(id);
+      await deleteInvoice(deleteConfirm.id);
       await loadInvoices();
     } catch (e) {
       console.error(e);
       alert("Failed to delete invoice. Please try again.");
     } finally {
       setDeletingInvoiceId(null);
+      setDeleteConfirm(null);
     }
   };
 
@@ -861,7 +878,7 @@ export default function InvoicesPage() {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => handleDelete(inv.id, inv.invoiceNumber)}
+                                    onClick={() => handleDeleteClick(inv.id, inv.invoiceNumber)}
                                     disabled={deletingInvoiceId === inv.id}
                                     title="Delete"
                                   >
@@ -870,10 +887,22 @@ export default function InvoicesPage() {
                                 </>
                               )}
                               {inv.status === "paid" && (
-                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                  <AlertCircle className="h-4 w-4" />
-                                  <span>Protected</span>
-                                </div>
+                                currentUser?.role === "super_admin" ? (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDeleteClick(inv.id, inv.invoiceNumber)}
+                                    disabled={deletingInvoiceId === inv.id}
+                                    title="Delete (Super Admin)"
+                                  >
+                                    <Trash2 className="h-4 w-4 text-red-600" />
+                                  </Button>
+                                ) : (
+                                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                    <AlertCircle className="h-4 w-4" />
+                                    <span>Protected</span>
+                                  </div>
+                                )
                               )}
                             </div>
                           </TableCell>
@@ -904,6 +933,19 @@ export default function InvoicesPage() {
         </CardContent>
       </Card>
       <p className="text-xs text-muted-foreground">Shortcuts: N = New invoice, R = Refresh, / = Focus search</p>
+
+      <ConfirmDeleteDialog
+        open={!!deleteConfirm}
+        onOpenChange={(open) => !open && setDeleteConfirm(null)}
+        title="Delete Invoice"
+        description={
+          deleteConfirm
+            ? `Are you sure you want to delete invoice ${deleteConfirm.num}? This cannot be undone.`
+            : ""
+        }
+        onConfirm={handleDeleteConfirm}
+        loading={!!deletingInvoiceId}
+      />
     </div>
   );
 }

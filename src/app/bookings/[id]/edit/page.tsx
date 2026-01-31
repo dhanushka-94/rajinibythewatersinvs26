@@ -22,7 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ArrowLeft, Calendar, Users, Plus, Trash2, Copy, FileText, UserPlus } from "lucide-react";
+import { ArrowLeft, Calendar, Users, Plus, Trash2, Copy, FileText, UserPlus, KeyRound, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { Booking, BookingStatus } from "@/types/booking";
 import { getBookingById } from "@/lib/bookings";
@@ -51,6 +51,12 @@ export default function EditBookingPage({
   const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  // Secure edit (checked-out bookings): PIN + reason to unlock
+  const [isUnlockDialogOpen, setIsUnlockDialogOpen] = useState(false);
+  const [secureEditPin, setSecureEditPin] = useState("");
+  const [editReason, setEditReason] = useState("");
+  const [isUnlockedForEdit, setIsUnlockedForEdit] = useState(false);
+  const [unlockVerifying, setUnlockVerifying] = useState(false);
 
   // Form state
   const [checkIn, setCheckIn] = useState("");
@@ -328,10 +334,43 @@ export default function EditBookingPage({
     }
   };
 
+  const handleUnlock = async () => {
+    const pin = secureEditPin.trim();
+    const reason = editReason.trim();
+    if (!pin || !reason) {
+      alert("Please enter PIN and edit reason.");
+      return;
+    }
+    setUnlockVerifying(true);
+    try {
+      const verifyRes = await fetch("/api/verify-secure-edit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin }),
+      });
+      const data = await verifyRes.json();
+      if (!verifyRes.ok || !data.valid) {
+        alert(data.error || data.valid === false ? "Invalid PIN." : "Verification failed.");
+        return;
+      }
+      setIsUnlockedForEdit(true);
+      setIsUnlockDialogOpen(false);
+    } catch (err) {
+      alert("Verification failed. Please try again.");
+    } finally {
+      setUnlockVerifying(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!booking) return;
+
+    if (booking.status === "checked_out" && !isUnlockedForEdit) {
+      setIsUnlockDialogOpen(true);
+      return;
+    }
 
     if (!guest.name?.trim()) {
       alert("Guest Name is required");
@@ -377,6 +416,9 @@ export default function EditBookingPage({
           lateCheckOut,
           lateCheckOutTime: lateCheckOut && lateCheckOutTime ? lateCheckOutTime : undefined,
           lateCheckOutNotes: lateCheckOut && lateCheckOutNotes ? lateCheckOutNotes : undefined,
+          ...(booking.status === "checked_out" && isUnlockedForEdit
+            ? { secureEditPin, editReason }
+            : {}),
         }),
       });
 
@@ -422,6 +464,8 @@ export default function EditBookingPage({
     );
   }
 
+  const isCheckedOut = booking.status === "checked_out";
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -439,7 +483,87 @@ export default function EditBookingPage({
         </div>
       </div>
 
-      <form onSubmit={handleSubmit}>
+      {isCheckedOut && !isUnlockedForEdit && (
+        <Card className="border-amber-200 bg-amber-50">
+          <CardContent className="pt-6">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5" />
+                <div>
+                  <h3 className="font-semibold text-amber-900 mb-1">Booking is Checked Out</h3>
+                  <p className="text-sm text-amber-800">
+                    Checked-out bookings are protected. Enter your PIN and a reason to unlock editing.
+                  </p>
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsUnlockDialogOpen(true)}
+                className="shrink-0"
+              >
+                <KeyRound className="h-4 w-4 mr-2" />
+                Unlock to Edit
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {isCheckedOut && isUnlockedForEdit && (
+        <Card className="border-green-200 bg-green-50">
+          <CardContent className="pt-4 pb-4">
+            <p className="text-sm text-green-800">
+              Unlocked for editing. Your edit reason will be logged.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      <Dialog open={isUnlockDialogOpen} onOpenChange={setIsUnlockDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Unlock Checked-Out Booking for Editing</DialogTitle>
+            <DialogDescription>
+              Enter your secure PIN and explain why this booking is being edited.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="secure-edit-pin-booking">PIN</Label>
+              <Input
+                id="secure-edit-pin-booking"
+                type="password"
+                inputMode="numeric"
+                autoComplete="off"
+                placeholder="Enter PIN"
+                value={secureEditPin}
+                onChange={(e) => setSecureEditPin(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-reason-booking">Reason for editing *</Label>
+              <Textarea
+                id="edit-reason-booking"
+                placeholder="Why is this booking being edited?"
+                value={editReason}
+                onChange={(e) => setEditReason(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsUnlockDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleUnlock} disabled={unlockVerifying}>
+              {unlockVerifying ? "Verifying..." : "Unlock"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <form onSubmit={handleSubmit} className={isCheckedOut && !isUnlockedForEdit ? "pointer-events-none opacity-60" : ""}>
         <div className="grid gap-6">
           {/* Booking Details */}
           <Card>

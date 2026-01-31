@@ -29,6 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Plus, Pencil, Trash2, Search } from "lucide-react";
+import { ConfirmDeleteDialog } from "@/components/ui/confirm-delete-dialog";
 import {
   getSavedItems,
   addSavedItem,
@@ -146,14 +147,18 @@ export default function InvoiceItemsPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this invoice item?")) {
-      return;
-    }
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; description: string } | null>(null);
 
+  const handleDeleteClick = (id: string, description: string) => {
+    setDeleteConfirm({ id, description });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteConfirm) return;
     try {
-      await deleteSavedItem(id);
+      await deleteSavedItem(deleteConfirm.id);
       await loadItems();
+      setDeleteConfirm(null);
     } catch (error) {
       console.error("Error deleting invoice item:", error);
       alert("Error deleting invoice item. Please try again.");
@@ -241,7 +246,7 @@ export default function InvoiceItemsPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleDelete(item.id!)}
+                          onClick={() => handleDeleteClick(item.id!, item.description)}
                         >
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
@@ -366,6 +371,18 @@ export default function InvoiceItemsPage() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDeleteDialog
+        open={!!deleteConfirm}
+        onOpenChange={(open) => !open && setDeleteConfirm(null)}
+        title="Delete Invoice Item"
+        description={
+          deleteConfirm
+            ? `Are you sure you want to delete "${deleteConfirm.description}"? This cannot be undone.`
+            : ""
+        }
+        onConfirm={handleDeleteConfirm}
+      />
     </div>
   );
 }

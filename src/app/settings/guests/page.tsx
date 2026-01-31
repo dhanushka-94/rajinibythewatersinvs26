@@ -25,6 +25,7 @@ import { getGuests, addGuest, updateGuest, deleteGuest, type Guest } from "@/lib
 import { formatDateSL } from "@/lib/date-sl";
 import { Plus, Pencil, Trash2, Search } from "lucide-react";
 import { CountrySelector } from "@/components/country-selector";
+import { ConfirmDeleteDialog } from "@/components/ui/confirm-delete-dialog";
 import { Title } from "@/types/invoice";
 import {
   Select,
@@ -120,14 +121,18 @@ export default function GuestsPage() {
     }
   };
 
-  const handleDeleteGuest = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this guest?")) {
-      return;
-    }
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
 
+  const handleDeleteGuestClick = (id: string, name: string) => {
+    setDeleteConfirm({ id, name });
+  };
+
+  const handleDeleteGuestConfirm = async () => {
+    if (!deleteConfirm) return;
     try {
-      await deleteGuest(id);
+      await deleteGuest(deleteConfirm.id);
       await loadGuests();
+      setDeleteConfirm(null);
     } catch (error) {
       console.error("Error deleting guest:", error);
       alert("Error deleting guest. Please try again.");
@@ -215,7 +220,7 @@ export default function GuestsPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleDeleteGuest(guest.id!)}
+                          onClick={() => handleDeleteGuestClick(guest.id!, guest.name || "this guest")}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -521,6 +526,18 @@ export default function GuestsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDeleteDialog
+        open={!!deleteConfirm}
+        onOpenChange={(open) => !open && setDeleteConfirm(null)}
+        title="Delete Guest"
+        description={
+          deleteConfirm
+            ? `Are you sure you want to delete ${deleteConfirm.name}? This cannot be undone.`
+            : ""
+        }
+        onConfirm={handleDeleteGuestConfirm}
+      />
     </div>
   );
 }

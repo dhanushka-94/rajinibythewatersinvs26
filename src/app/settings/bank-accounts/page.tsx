@@ -23,6 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Plus, Trash2, Pencil } from "lucide-react";
+import { ConfirmDeleteDialog } from "@/components/ui/confirm-delete-dialog";
 import { getBankDetails, addBankDetail, updateBankDetail, deleteBankDetail, type BankDetail } from "@/lib/bank-details";
 
 export default function BankAccountsPage() {
@@ -101,10 +102,21 @@ export default function BankAccountsPage() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm("Are you sure you want to delete this bank account?")) {
-      await deleteBankDetail(id);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
+
+  const handleDeleteClick = (id: string, name: string) => {
+    setDeleteConfirm({ id, name });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteConfirm) return;
+    try {
+      await deleteBankDetail(deleteConfirm.id);
       await loadBankAccounts();
+      setDeleteConfirm(null);
+    } catch (error) {
+      console.error("Error deleting bank account:", error);
+      alert("Error deleting bank account. Please try again.");
     }
   };
 
@@ -254,7 +266,7 @@ export default function BankAccountsPage() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => handleDelete(bank.id)}
+                        onClick={() => handleDeleteClick(bank.id, bank.accountName)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -361,6 +373,18 @@ export default function BankAccountsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDeleteDialog
+        open={!!deleteConfirm}
+        onOpenChange={(open) => !open && setDeleteConfirm(null)}
+        title="Delete Bank Account"
+        description={
+          deleteConfirm
+            ? `Are you sure you want to delete bank account "${deleteConfirm.name}"? This cannot be undone.`
+            : ""
+        }
+        onConfirm={handleDeleteConfirm}
+      />
     </div>
   );
 }

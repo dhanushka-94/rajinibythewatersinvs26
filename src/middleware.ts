@@ -2,14 +2,15 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 // Public routes that don't require authentication
-const publicRoutes = ["/login"];
+const publicRoutes = ["/login", "/forgot-password"];
 
 // Routes that require specific roles
 const roleRoutes: Record<string, string[]> = {
-  "/settings/users": ["admin"],
-  "/settings/activity-logs": ["admin"],
-  "/settings/email-logs": ["admin"],
-  "/settings": ["admin"],
+  "/settings/users": ["admin", "super_admin"],
+  "/settings/secure-edit-pins": ["admin", "super_admin"],
+  "/settings/activity-logs": ["admin", "super_admin"],
+  "/settings/email-logs": ["admin", "super_admin"],
+  "/settings": ["admin", "super_admin"],
   "/reports": ["admin", "manager", "viewer"],
   "/payments": ["admin", "manager", "viewer"],
 };
@@ -32,24 +33,29 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Check role-based access
   try {
     const session = JSON.parse(sessionCookie.value);
+    if (session.expiresAt && new Date(session.expiresAt) < new Date()) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("expired", "1");
+      const res = NextResponse.redirect(loginUrl);
+      res.cookies.set("invoice-session", "", { maxAge: 0, path: "/" });
+      return res;
+    }
     const userRole = session.role;
-
-    // Check if route requires specific role
     for (const [route, allowedRoles] of Object.entries(roleRoutes)) {
       if (pathname.startsWith(route)) {
         if (!allowedRoles.includes(userRole)) {
-          // Redirect to unauthorized page or home
           return NextResponse.redirect(new URL("/", request.url));
         }
       }
     }
   } catch (error) {
-    // Invalid session, redirect to login
     const loginUrl = new URL("/login", request.url);
-    return NextResponse.redirect(loginUrl);
+    loginUrl.searchParams.set("expired", "1");
+    const res = NextResponse.redirect(loginUrl);
+    res.cookies.set("invoice-session", "", { maxAge: 0, path: "/" });
+    return res;
   }
 
   return NextResponse.next();

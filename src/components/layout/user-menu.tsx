@@ -53,6 +53,7 @@ export function UserMenu() {
 
   const getRoleLabel = (role: string) => {
     const labels: Record<string, string> = {
+      super_admin: "Super Admin",
       admin: "Administrator",
       manager: "Manager",
       staff: "Staff",

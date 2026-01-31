@@ -2,6 +2,8 @@ import { supabase } from './supabase';
 import { Invoice } from '@/types/invoice';
 import { createActivityLog } from './activity-logs';
 import { nowISOStringSL } from './date-sl';
+import { getSession } from './auth';
+import { verifySecureEditPin, isSecureEditConfigured } from './verify-secure-edit';
 
 // In-memory fallback if Supabase is not configured
 let fallbackInvoices: Invoice[] = [];
@@ -287,7 +289,16 @@ export async function createInvoice(invoice: Omit<Invoice, "id" | "createdAt" | 
   }
 }
 
-export async function updateInvoice(id: string, invoice: Partial<Invoice>): Promise<void> {
+export interface UpdateInvoiceOptions {
+  secureEditPin?: string;
+  editReason?: string;
+}
+
+export async function updateInvoice(
+  id: string,
+  invoice: Partial<Invoice>,
+  options?: UpdateInvoiceOptions
+): Promise<void> {
   // Get invoice details first to check status
   const existingInvoice = await getInvoiceById(id);
   
@@ -295,15 +306,56 @@ export async function updateInvoice(id: string, invoice: Partial<Invoice>): Prom
     throw new Error("Invoice not found");
   }
 
-  // Prevent editing of paid invoices (except status changes to cancelled if needed)
+  // Marking as paid without full payment: require PIN + reason
+  const isChangingToPaid = invoice.status === "paid";
+  const totalPaid = (existingInvoice.payments || []).reduce((s, p) => s + p.amount, 0);
+  const hasNoPayment = (existingInvoice.payments || []).length === 0;
+  const isUnderpaid = totalPaid < existingInvoice.total;
+  if (isChangingToPaid && (hasNoPayment || isUnderpaid)) {
+    const session = await getSession();
+    if (!session) {
+      throw new Error("You must be logged in to mark this invoice as paid without full payment.");
+    }
+    const configured = await isSecureEditConfigured(session.userId);
+    if (!configured) {
+      throw new Error("You do not have a secure edit PIN. Ask an admin to assign one.");
+    }
+    const pin = options?.secureEditPin?.trim();
+    const reason = options?.editReason?.trim();
+    if (!pin || !reason) {
+      throw new Error("PIN and reason are required to mark as paid when there is no payment or partial payment.");
+    }
+    const valid = await verifySecureEditPin(session.userId, pin);
+    if (!valid) {
+      throw new Error("Invalid PIN.");
+    }
+  }
+
+  // Paid invoices: require PIN + note to edit (secure edit). Only PIN owner can edit.
   if (existingInvoice.status === "paid") {
-    // Only allow status change to cancelled, nothing else
     const isOnlyStatusChangeToCancelled = 
       Object.keys(invoice).length === 1 && 
       invoice.status === "cancelled";
     
     if (!isOnlyStatusChangeToCancelled) {
-      throw new Error("Cannot edit a paid invoice. Paid invoices are protected from modification.");
+      const session = await getSession();
+      if (!session) {
+        throw new Error("You must be logged in to edit a paid invoice.");
+      }
+      const configured = await isSecureEditConfigured(session.userId);
+      if (!configured) {
+        throw new Error("You do not have a secure edit PIN. Ask an admin to assign one.");
+      }
+      const pin = options?.secureEditPin?.trim();
+      const reason = options?.editReason?.trim();
+      if (!pin || !reason) {
+        throw new Error("PIN and edit reason are required to edit a paid invoice.");
+      }
+      const valid = await verifySecureEditPin(session.userId, pin);
+      if (!valid) {
+        throw new Error("Invalid PIN. Cannot edit paid invoice.");
+      }
+      // PIN and reason valid – allow edit; we'll log the reason below
     }
   }
 
@@ -418,18 +470,30 @@ export async function updateInvoice(id: string, invoice: Partial<Invoice>): Prom
       // Get invoice details for logging
       const updatedInvoice = await getInvoiceById(id);
       if (updatedInvoice) {
-        // Log activity
+        const metadata: Record<string, unknown> = {
+          changes: Object.keys(dbData),
+          status: updatedInvoice.status,
+        };
+        if (options?.editReason) {
+          metadata.secureEdit = true;
+          metadata.editReason = options.editReason;
+          if (isChangingToPaid && (hasNoPayment || isUnderpaid)) {
+            metadata.markedPaidWithoutFullPayment = true;
+          }
+        }
+        const logDesc = options?.editReason
+          ? isChangingToPaid && (hasNoPayment || isUnderpaid)
+            ? `Marked invoice ${updatedInvoice.invoiceNumber} as paid without full payment (reason: ${options.editReason})`
+            : `Updated paid invoice ${updatedInvoice.invoiceNumber} (reason: ${options.editReason})`
+          : `Updated invoice ${updatedInvoice.invoiceNumber}`;
         await createActivityLog(
           "invoice_updated",
           "invoice",
-          `Updated invoice ${updatedInvoice.invoiceNumber}`,
+          logDesc,
           {
             entityId: id,
             entityName: updatedInvoice.invoiceNumber,
-            metadata: {
-              changes: Object.keys(dbData),
-              status: updatedInvoice.status,
-            },
+            metadata,
           }
         );
       }
@@ -447,9 +511,12 @@ export async function deleteInvoice(id: string): Promise<void> {
     throw new Error("Invoice not found");
   }
 
-  // Prevent deletion of paid invoices
+  // Prevent deletion of paid invoices (super_admin can override)
   if (invoiceToDelete.status === "paid") {
-    throw new Error("Cannot delete a paid invoice. Paid invoices are protected from deletion.");
+    const session = await getSession();
+    if (!session || session.role !== "super_admin") {
+      throw new Error("Cannot delete a paid invoice. Paid invoices are protected from deletion.");
+    }
   }
 
   if (!isSupabaseConfigured()) {

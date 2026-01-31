@@ -104,7 +104,7 @@ export default function BookingDetailPage({
           </div>
         </div>
         <div className="flex gap-2">
-          {(booking.status === "checked_in" || (booking.status !== "checked_out" && booking.status !== "cancelled")) && (
+          {booking.status !== "cancelled" && (
             <Link href={`/bookings/${booking.id}/edit`}>
               <Button variant="outline">
                 <Pencil className="mr-2 h-4 w-4" />

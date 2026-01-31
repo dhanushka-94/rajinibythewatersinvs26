@@ -214,6 +214,7 @@ export async function hasPermission(requiredRole: UserRole): Promise<boolean> {
     staff: 2,
     manager: 3,
     admin: 4,
+    super_admin: 5,
   };
 
   return roleHierarchy[session.role] >= roleHierarchy[requiredRole];

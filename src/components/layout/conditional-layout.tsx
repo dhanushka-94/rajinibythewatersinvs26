@@ -5,9 +5,9 @@ import { MainLayout } from "./main-layout";
 
 export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isLoginPage = pathname === "/login";
+  const isAuthPage = pathname === "/login" || pathname === "/forgot-password";
 
-  if (isLoginPage) {
+  if (isAuthPage) {
     return <>{children}</>;
   }
 

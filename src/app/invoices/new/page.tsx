@@ -46,6 +46,7 @@ import { getBankDetails, getBankDetailById, addBankDetail, deleteBankDetail, typ
 import { PaymentMethod, BillingType } from "@/types/invoice";
 import { getTravelCompanies } from "@/lib/travel-companies";
 import { type TravelCompany } from "@/types/travel-company";
+import { ConfirmDeleteDialog } from "@/components/ui/confirm-delete-dialog";
 
 export default function NewInvoicePage() {
   const router = useRouter();
@@ -158,6 +159,7 @@ export default function NewInvoicePage() {
   const [selectedBankDetailIds, setSelectedBankDetailIds] = useState<string[]>([]);
   const [checksPayableTo, setChecksPayableTo] = useState<string>("PHOENIX GLOBAL SOLUTIONS");
   const [bankDetails, setBankDetails] = useState<BankDetail[]>([]);
+  const [deleteBankConfirm, setDeleteBankConfirm] = useState<BankDetail | null>(null);
   const [isAddBankDialogOpen, setIsAddBankDialogOpen] = useState(false);
   const [newBankDetail, setNewBankDetail] = useState<Omit<BankDetail, "id" | "createdAt" | "updatedAt">>({
     accountName: "",
@@ -276,6 +278,20 @@ export default function NewInvoicePage() {
   // Handle removing additional guest
   const handleRemoveAdditionalGuest = (guestId: string) => {
     setAdditionalGuests(additionalGuests.filter(g => g.id !== guestId));
+  };
+
+  const handleDeleteBankConfirm = async () => {
+    if (!deleteBankConfirm) return;
+    try {
+      await deleteBankDetail(deleteBankConfirm.id);
+      const banks = await getBankDetails();
+      setBankDetails(banks);
+      setSelectedBankDetailIds(selectedBankDetailIds.filter((id) => id !== deleteBankConfirm.id));
+      setDeleteBankConfirm(null);
+    } catch (error) {
+      console.error("Error deleting bank account:", error);
+      alert("Failed to delete bank account.");
+    }
   };
 
   // Handle quick add additional guest
@@ -1753,14 +1769,7 @@ export default function NewInvoicePage() {
                         type="button"
                         variant="ghost"
                         size="icon"
-                        onClick={async () => {
-                          if (confirm("Are you sure you want to delete this bank transfer/deposit account?")) {
-                            await deleteBankDetail(bank.id);
-                            const banks = await getBankDetails();
-                            setBankDetails(banks);
-                            setSelectedBankDetailIds(selectedBankDetailIds.filter((id) => id !== bank.id));
-                          }
-                        }}
+                        onClick={() => setDeleteBankConfirm(bank)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -1843,6 +1852,14 @@ export default function NewInvoicePage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDeleteDialog
+        open={!!deleteBankConfirm}
+        onOpenChange={(open) => !open && setDeleteBankConfirm(null)}
+        title="Delete Bank Account"
+        description="Are you sure you want to delete this bank transfer/deposit account? This cannot be undone."
+        onConfirm={handleDeleteBankConfirm}
+      />
     </div>
   );
 }

@@ -57,6 +57,8 @@ export default function InvoiceDetailPage({
   const [emailRecipientName, setEmailRecipientName] = useState<string>("");
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [newStatus, setNewStatus] = useState<string>("");
+  const [statusChangePin, setStatusChangePin] = useState("");
+  const [statusChangeReason, setStatusChangeReason] = useState("");
 
   useEffect(() => {
     const loadInvoice = async () => {
@@ -255,19 +257,32 @@ export default function InvoiceDetailPage({
   const handleStatusChange = async () => {
     if (!invoice || !newStatus) return;
 
-    try {
-      await updateInvoice(id, {
-        status: newStatus as Invoice["status"],
-      });
+    const totalPaid = (invoice.payments || []).reduce((s, p) => s + p.amount, 0);
+    const needsPin = newStatus === "paid" && totalPaid < invoice.total;
+    if (needsPin && (!statusChangePin.trim() || !statusChangeReason.trim())) {
+      alert("PIN and reason are required to mark as paid when there is no full payment.");
+      return;
+    }
 
-      // Reload invoice
+    try {
+      const options = needsPin
+        ? { secureEditPin: statusChangePin, editReason: statusChangeReason }
+        : undefined;
+      await updateInvoice(
+        id,
+        { status: newStatus as Invoice["status"] },
+        options
+      );
+
       const updatedInvoice = await getInvoiceById(id);
       setInvoice(updatedInvoice || null);
       setIsStatusDialogOpen(false);
       setNewStatus("");
+      setStatusChangePin("");
+      setStatusChangeReason("");
     } catch (error) {
       console.error("Error updating status:", error);
-      alert("Failed to update status. Please try again.");
+      alert(error instanceof Error ? error.message : "Failed to update status. Please try again.");
     }
   };
 
@@ -564,7 +579,13 @@ export default function InvoiceDetailPage({
       </Dialog>
 
       {/* Status Change Dialog */}
-      <Dialog open={isStatusDialogOpen} onOpenChange={setIsStatusDialogOpen}>
+      <Dialog open={isStatusDialogOpen} onOpenChange={(open) => {
+        setIsStatusDialogOpen(open);
+        if (!open) {
+          setStatusChangePin("");
+          setStatusChangeReason("");
+        }
+      }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Change Invoice Status</DialogTitle>
@@ -588,12 +609,47 @@ export default function InvoiceDetailPage({
                 </SelectContent>
               </Select>
             </div>
+            {newStatus === "paid" && invoice && totalPaid < invoice.total && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 space-y-4">
+                <p className="text-sm text-amber-800 font-medium">
+                  Marking as paid without full payment requires your PIN and a reason.
+                </p>
+                <div className="space-y-2">
+                  <Label htmlFor="status-pin">PIN</Label>
+                  <Input
+                    id="status-pin"
+                    type="password"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    placeholder="Enter your PIN"
+                    value={statusChangePin}
+                    onChange={(e) => setStatusChangePin(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="status-reason">Reason *</Label>
+                  <Textarea
+                    id="status-reason"
+                    placeholder="Why is this invoice being marked as paid without full payment?"
+                    value={statusChangeReason}
+                    onChange={(e) => setStatusChangeReason(e.target.value)}
+                    rows={2}
+                  />
+                </div>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsStatusDialogOpen(false)}>
               Cancel
             </Button>
-            <Button onClick={handleStatusChange} disabled={!newStatus}>
+            <Button
+              onClick={handleStatusChange}
+              disabled={
+                !newStatus ||
+                (newStatus === "paid" && invoice && totalPaid < invoice.total && (!statusChangePin.trim() || !statusChangeReason.trim()))
+              }
+            >
               Update Status
             </Button>
           </DialogFooter>

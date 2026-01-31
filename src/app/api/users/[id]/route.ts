@@ -8,7 +8,7 @@ export async function GET(
 ) {
   try {
     const session = await getSession();
-    if (!session || session.role !== "admin") {
+    if (!session || !["admin", "super_admin"].includes(session.role)) {
       return NextResponse.json(
         { success: false, error: "Unauthorized" },
         { status: 403 }
@@ -41,7 +41,7 @@ export async function PUT(
 ) {
   try {
     const session = await getSession();
-    if (!session || session.role !== "admin") {
+    if (!session || !["admin", "super_admin"].includes(session.role)) {
       return NextResponse.json(
         { success: false, error: "Unauthorized" },
         { status: 403 }
@@ -50,6 +50,15 @@ export async function PUT(
 
     const { id } = await params;
     const body = await request.json();
+    const targetUser = await getUserById(id);
+    if (targetUser?.role === "super_admin" || body?.role === "super_admin") {
+      if (session.role !== "super_admin") {
+        return NextResponse.json(
+          { success: false, error: "Only Super Admins can edit Super Admin users." },
+          { status: 403 }
+        );
+      }
+    }
     await updateUser(id, body);
     return NextResponse.json({ success: true });
   } catch (error: any) {
@@ -67,7 +76,7 @@ export async function DELETE(
 ) {
   try {
     const session = await getSession();
-    if (!session || session.role !== "admin") {
+    if (!session || !["admin", "super_admin"].includes(session.role)) {
       return NextResponse.json(
         { success: false, error: "Unauthorized" },
         { status: 403 }
@@ -75,6 +84,15 @@ export async function DELETE(
     }
 
     const { id } = await params;
+    const targetUser = await getUserById(id);
+    if (targetUser?.role === "super_admin") {
+      if (session.role !== "super_admin") {
+        return NextResponse.json(
+          { success: false, error: "Only Super Admins can delete Super Admin users." },
+          { status: 403 }
+        );
+      }
+    }
     await deleteUser(id);
     return NextResponse.json({ success: true });
   } catch (error: any) {

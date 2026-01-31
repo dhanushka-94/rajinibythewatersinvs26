@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Booking, BookingStatus } from "@/types/booking";
+import { User } from "@/types/user";
+import { ConfirmDeleteDialog } from "@/components/ui/confirm-delete-dialog";
 import { formatDateSL, todaySL } from "@/lib/date-sl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -100,6 +102,14 @@ export default function BookingsPage() {
   const [page, setPage] = useState(1);
   const [deletingBookingId, setDeletingBookingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => r.json())
+      .then((d) => d.success && d.user && setCurrentUser(d.user))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(searchTerm), DEBOUNCE_MS);
@@ -248,11 +258,17 @@ export default function BookingsPage() {
     [bookings, today]
   );
 
-  const handleDelete = async (id: string, num: string) => {
-    if (!confirm(`Delete booking ${num}? This cannot be undone.`)) return;
-    setDeletingBookingId(id);
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; num: string } | null>(null);
+
+  const handleDeleteClick = (id: string, num: string) => {
+    setDeleteConfirm({ id, num });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteConfirm) return;
+    setDeletingBookingId(deleteConfirm.id);
     try {
-      const res = await fetch(`/api/bookings/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/bookings/${deleteConfirm.id}`, { method: "DELETE" });
       const data = await res.json();
       if (data.success) await loadBookings();
       else alert(data.error || "Failed to delete");
@@ -261,6 +277,7 @@ export default function BookingsPage() {
       alert("Error deleting booking.");
     } finally {
       setDeletingBookingId(null);
+      setDeleteConfirm(null);
     }
   };
 
@@ -800,13 +817,24 @@ export default function BookingsPage() {
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => handleDelete(booking.id, booking.bookingNumber)}
+                                    onClick={() => handleDeleteClick(booking.id, booking.bookingNumber)}
                                     disabled={deletingBookingId === booking.id}
                                     title="Delete"
                                   >
                                     <Trash2 className="h-4 w-4 text-red-600" />
                                   </Button>
                                 </>
+                              )}
+                              {booking.status === "checked_out" && currentUser?.role === "super_admin" && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDeleteClick(booking.id, booking.bookingNumber)}
+                                    disabled={deletingBookingId === booking.id}
+                                    title="Delete (Super Admin)"
+                                >
+                                  <Trash2 className="h-4 w-4 text-red-600" />
+                                </Button>
                               )}
                               {booking.invoiceId ? (
                                 <Link href={`/invoices/${booking.invoiceId}`}>
@@ -865,6 +893,19 @@ export default function BookingsPage() {
       <p className="text-xs text-muted-foreground">
         Shortcuts: N = New booking, R = Refresh, / = Focus search
       </p>
+
+      <ConfirmDeleteDialog
+        open={!!deleteConfirm}
+        onOpenChange={(open) => !open && setDeleteConfirm(null)}
+        title="Delete Booking"
+        description={
+          deleteConfirm
+            ? `Are you sure you want to delete booking ${deleteConfirm.num}? This cannot be undone.`
+            : ""
+        }
+        onConfirm={handleDeleteConfirm}
+        loading={!!deletingBookingId}
+      />
     </div>
   );
 }

@@ -31,7 +31,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Plus, Trash2, UserPlus, AlertCircle, Copy, User } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, UserPlus, AlertCircle, Copy, User, KeyRound } from "lucide-react";
 import Link from "next/link";
 import { calculateInvoiceTotal } from "@/lib/data";
 import { addGuest, getGuestById, getGuests } from "@/lib/guests";
@@ -48,6 +48,7 @@ import { getInvoiceById, updateInvoice } from "@/lib/invoices";
 import { Invoice } from "@/types/invoice";
 import { getTravelCompanies } from "@/lib/travel-companies";
 import { type TravelCompany } from "@/types/travel-company";
+import { ConfirmDeleteDialog } from "@/components/ui/confirm-delete-dialog";
 
 export default function EditInvoicePage({
   params,
@@ -145,6 +146,13 @@ export default function EditInvoicePage({
   const [savedItems, setSavedItems] = useState<InvoiceItem[]>([]);
   const [savedItemsSearchTerm, setSavedItemsSearchTerm] = useState("");
   const [selectedSavedItemId, setSelectedSavedItemId] = useState<string>("");
+  // Secure edit (paid invoices): PIN + reason to unlock
+  const [isUnlockDialogOpen, setIsUnlockDialogOpen] = useState(false);
+  const [secureEditPin, setSecureEditPin] = useState("");
+  const [editReason, setEditReason] = useState("");
+  const [isUnlockedForEdit, setIsUnlockedForEdit] = useState(false);
+  const [unlockVerifying, setUnlockVerifying] = useState(false);
+  const [deleteBankConfirm, setDeleteBankConfirm] = useState<BankDetail | null>(null);
 
   // Load invoice data
   useEffect(() => {
@@ -483,12 +491,55 @@ export default function EditInvoicePage({
     setItems((prev) => prev.filter((item) => item.id !== id));
   };
 
+  const handleDeleteBankConfirm = async () => {
+    if (!deleteBankConfirm) return;
+    try {
+      await deleteBankDetail(deleteBankConfirm.id);
+      const banks = await getBankDetails();
+      setBankDetails(banks);
+      setSelectedBankDetailIds(selectedBankDetailIds.filter((id) => id !== deleteBankConfirm.id));
+      setDeleteBankConfirm(null);
+    } catch (error) {
+      console.error("Error deleting bank account:", error);
+      alert("Failed to delete bank account.");
+    }
+  };
+
+  const handleUnlock = async () => {
+    const pin = secureEditPin.trim();
+    const reason = editReason.trim();
+    if (!pin || !reason) {
+      alert("Please enter PIN and edit reason.");
+      return;
+    }
+    setUnlockVerifying(true);
+    try {
+      const verifyRes = await fetch("/api/verify-secure-edit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pin }),
+      });
+      const data = await verifyRes.json();
+      if (!verifyRes.ok || !data.valid) {
+        alert(data.error || data.valid === false ? "Invalid PIN." : "Verification failed.");
+        return;
+      }
+      setIsUnlockedForEdit(true);
+      setIsUnlockDialogOpen(false);
+      // Keep secureEditPin and editReason for submit
+    } catch (err) {
+      alert("Verification failed. Please try again.");
+    } finally {
+      setUnlockVerifying(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Check if invoice is paid
-    if (invoice?.status === "paid") {
-      alert("Cannot edit a paid invoice. Paid invoices are protected from modification.");
+    // Paid invoices: must be unlocked (PIN + reason already verified)
+    if (invoice?.status === "paid" && !isUnlockedForEdit) {
+      setIsUnlockDialogOpen(true);
       return;
     }
     
@@ -505,9 +556,15 @@ export default function EditInvoicePage({
     if (!invoice) return;
     
     try {
-      await updateInvoice(id, {
-        guest,
-        guests: additionalGuests.length > 0 ? additionalGuests : undefined, // Multiple guests
+      const options =
+        invoice?.status === "paid" && isUnlockedForEdit
+          ? { secureEditPin, editReason }
+          : undefined;
+      await updateInvoice(
+        id,
+        {
+          guest,
+          guests: additionalGuests.length > 0 ? additionalGuests : undefined, // Multiple guests
         billingType: billingType,
         travelCompanyId: billingType === "company" && selectedTravelCompanyId ? selectedTravelCompanyId : undefined,
         referenceNumber: billingType === "company" && referenceNumber ? referenceNumber : undefined,
@@ -534,7 +591,9 @@ export default function EditInvoicePage({
         selectedBankDetailIds: selectedBankDetailIds.length > 0 ? selectedBankDetailIds : undefined,
         checksPayableTo: paymentMethods.includes("cheque") ? checksPayableTo : undefined,
         notes: notes || undefined,
-      });
+      },
+        options
+      );
       
       alert("Invoice updated successfully!");
       router.push(`/invoices/${id}`);
@@ -587,24 +646,87 @@ export default function EditInvoicePage({
         </div>
       </div>
 
-      {isPaid && (
+      {isPaid && !isUnlockedForEdit && (
         <Card className="border-amber-200 bg-amber-50">
           <CardContent className="pt-6">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5" />
-              <div>
-                <h3 className="font-semibold text-amber-900 mb-1">Invoice is Paid</h3>
-                <p className="text-sm text-amber-800">
-                  This invoice has been marked as paid and cannot be edited or deleted. 
-                  Paid invoices are protected to maintain financial records integrity.
-                </p>
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5" />
+                <div>
+                  <h3 className="font-semibold text-amber-900 mb-1">Invoice is Paid</h3>
+                  <p className="text-sm text-amber-800">
+                    Paid invoices are protected. Enter your PIN and a reason to unlock editing.
+                  </p>
+                </div>
               </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsUnlockDialogOpen(true)}
+                className="shrink-0"
+              >
+                <KeyRound className="h-4 w-4 mr-2" />
+                Unlock to Edit
+              </Button>
             </div>
           </CardContent>
         </Card>
       )}
 
-      <form onSubmit={handleSubmit} className={`space-y-6 relative ${isPaid ? 'pointer-events-none opacity-60' : ''}`}>
+      {isPaid && isUnlockedForEdit && (
+        <Card className="border-green-200 bg-green-50">
+          <CardContent className="pt-4 pb-4">
+            <p className="text-sm text-green-800">
+              Unlocked for editing. Your edit reason will be logged.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      <Dialog open={isUnlockDialogOpen} onOpenChange={setIsUnlockDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Unlock Paid Invoice for Editing</DialogTitle>
+            <DialogDescription>
+              Enter your secure PIN and explain why this invoice is being edited.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="secure-edit-pin">PIN</Label>
+              <Input
+                id="secure-edit-pin"
+                type="password"
+                inputMode="numeric"
+                autoComplete="off"
+                placeholder="Enter PIN"
+                value={secureEditPin}
+                onChange={(e) => setSecureEditPin(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-reason">Reason for editing *</Label>
+              <Textarea
+                id="edit-reason"
+                placeholder="Why is this invoice being edited?"
+                value={editReason}
+                onChange={(e) => setEditReason(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsUnlockDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleUnlock} disabled={unlockVerifying}>
+              {unlockVerifying ? "Verifying..." : "Unlock"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <form onSubmit={handleSubmit} className={`space-y-6 relative ${isPaid && !isUnlockedForEdit ? 'pointer-events-none opacity-60' : ''}`}>
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
             <CardHeader>
@@ -1828,14 +1950,7 @@ export default function EditInvoicePage({
                         type="button"
                         variant="ghost"
                         size="icon"
-                        onClick={async () => {
-                          if (confirm("Are you sure you want to delete this bank transfer/deposit account?")) {
-                            await deleteBankDetail(bank.id);
-                            const banks = await getBankDetails();
-                            setBankDetails(banks);
-                            setSelectedBankDetailIds(selectedBankDetailIds.filter((id) => id !== bank.id));
-                          }
-                        }}
+                        onClick={() => setDeleteBankConfirm(bank)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -2049,6 +2164,18 @@ export default function EditInvoicePage({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDeleteDialog
+        open={!!deleteBankConfirm}
+        onOpenChange={(open) => !open && setDeleteBankConfirm(null)}
+        title="Delete Bank Account"
+        description={
+          deleteBankConfirm
+            ? "Are you sure you want to delete this bank transfer/deposit account? This cannot be undone."
+            : ""
+        }
+        onConfirm={handleDeleteBankConfirm}
+      />
     </div>
   );
 }

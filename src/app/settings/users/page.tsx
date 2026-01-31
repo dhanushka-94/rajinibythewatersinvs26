@@ -33,9 +33,11 @@ import { Badge } from "@/components/ui/badge";
 import { formatDateTimeSL } from "@/lib/date-sl";
 import { Plus, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
 import { User, UserRole } from "@/types/user";
+import { ConfirmDeleteDialog } from "@/components/ui/confirm-delete-dialog";
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -63,7 +65,18 @@ export default function UsersPage() {
 
   useEffect(() => {
     loadUsers();
+    loadCurrentUser();
   }, []);
+
+  const loadCurrentUser = async () => {
+    try {
+      const res = await fetch("/api/auth/me");
+      const data = await res.json();
+      if (data.success && data.user) setCurrentUser(data.user);
+    } catch {
+      // ignore
+    }
+  };
 
   const loadUsers = async () => {
     try {
@@ -176,19 +189,22 @@ export default function UsersPage() {
     }
   };
 
-  const handleDeleteUser = async (id: string, username: string) => {
-    if (!confirm(`Are you sure you want to delete user "${username}"? This action cannot be undone.`)) {
-      return;
-    }
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; username: string } | null>(null);
 
+  const handleDeleteUserClick = (id: string, username: string) => {
+    setDeleteConfirm({ id, username });
+  };
+
+  const handleDeleteUserConfirm = async () => {
+    if (!deleteConfirm) return;
     try {
-      const response = await fetch(`/api/users/${id}`, {
+      const response = await fetch(`/api/users/${deleteConfirm.id}`, {
         method: "DELETE",
       });
-
       const data = await response.json();
       if (data.success) {
         await loadUsers();
+        setDeleteConfirm(null);
       } else {
         alert(data.error || "Failed to delete user");
       }
@@ -200,15 +216,23 @@ export default function UsersPage() {
 
   const getRoleBadge = (role: UserRole) => {
     const roleStyles: Record<UserRole, string> = {
+      super_admin: "bg-purple-100 text-purple-800 border-purple-200",
       admin: "bg-red-100 text-red-800 border-red-200",
       manager: "bg-blue-100 text-blue-800 border-blue-200",
       staff: "bg-green-100 text-green-800 border-green-200",
       viewer: "bg-gray-100 text-gray-800 border-gray-200",
     };
 
+    const labels: Record<UserRole, string> = {
+      super_admin: "Super Admin",
+      admin: "Admin",
+      manager: "Manager",
+      staff: "Staff",
+      viewer: "Viewer",
+    };
     return (
-      <Badge variant="outline" className={roleStyles[role]}>
-        {role.charAt(0).toUpperCase() + role.slice(1)}
+      <Badge variant="outline" className={roleStyles[role] || "bg-gray-100"}>
+        {labels[role] || role}
       </Badge>
     );
   };
@@ -306,6 +330,9 @@ export default function UsersPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
+                    {currentUser?.role === "super_admin" && (
+                      <SelectItem value="super_admin">Super Admin - Full Access + Delete Paid/Checked-out</SelectItem>
+                    )}
                     <SelectItem value="admin">Admin - Full Access</SelectItem>
                     <SelectItem value="manager">Manager - Manage Invoices</SelectItem>
                     <SelectItem value="staff">Staff - Create/Edit Invoices</SelectItem>
@@ -387,22 +414,26 @@ export default function UsersPage() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleEditUser(user)}
-                          title="Edit"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteUser(user.id, user.username)}
-                          title="Delete"
-                        >
-                          <Trash2 className="h-4 w-4 text-red-600" />
-                        </Button>
+                        {(user.role !== "super_admin" || currentUser?.role === "super_admin") && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditUser(user)}
+                              title="Edit"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteUserClick(user.id, user.username)}
+                              title="Delete"
+                            >
+                              <Trash2 className="h-4 w-4 text-red-600" />
+                            </Button>
+                          </>
+                        )}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -470,20 +501,23 @@ export default function UsersPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="editRole">Role *</Label>
-              <Select
-                value={editUser.role}
-                onValueChange={(value) => setEditUser({ ...editUser, role: value as UserRole })}
-              >
-                <SelectTrigger id="editRole">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin">Admin - Full Access</SelectItem>
-                  <SelectItem value="manager">Manager - Manage Invoices</SelectItem>
-                  <SelectItem value="staff">Staff - Create/Edit Invoices</SelectItem>
-                  <SelectItem value="viewer">Viewer - Read Only</SelectItem>
-                </SelectContent>
-              </Select>
+                <Select
+                  value={editUser.role}
+                  onValueChange={(value) => setEditUser({ ...editUser, role: value as UserRole })}
+                >
+                  <SelectTrigger id="editRole">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {currentUser?.role === "super_admin" && (
+                      <SelectItem value="super_admin">Super Admin - Full Access + Delete Paid/Checked-out</SelectItem>
+                    )}
+                    <SelectItem value="admin">Admin - Full Access</SelectItem>
+                    <SelectItem value="manager">Manager - Manage Invoices</SelectItem>
+                    <SelectItem value="staff">Staff - Create/Edit Invoices</SelectItem>
+                    <SelectItem value="viewer">Viewer - Read Only</SelectItem>
+                  </SelectContent>
+                </Select>
             </div>
             <div className="flex items-center space-x-2">
               <input
@@ -506,6 +540,18 @@ export default function UsersPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDeleteDialog
+        open={!!deleteConfirm}
+        onOpenChange={(open) => !open && setDeleteConfirm(null)}
+        title="Delete User"
+        description={
+          deleteConfirm
+            ? `Are you sure you want to delete user "${deleteConfirm.username}"? This action cannot be undone.`
+            : ""
+        }
+        onConfirm={handleDeleteUserConfirm}
+      />
     </div>
   );
 }

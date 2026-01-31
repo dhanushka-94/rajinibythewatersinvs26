@@ -8,6 +8,8 @@ import {
 } from "@/lib/bookings";
 import { getSession } from "@/lib/auth";
 import { createInvoiceFromBooking } from "@/lib/create-invoice-from-booking";
+import { createActivityLog } from "@/lib/activity-logs";
+import { verifySecureEditPin, isSecureEditConfigured } from "@/lib/verify-secure-edit";
 import { Booking } from "@/types/booking";
 
 export async function GET(
@@ -62,6 +64,34 @@ export async function PATCH(
     if (!currentBooking) {
       return NextResponse.json({ error: "Booking not found" }, { status: 404 });
     }
+
+    // Checked-out bookings: require PIN + note to edit. Only PIN owner can edit.
+    if (currentBooking.status === "checked_out") {
+      const configured = await isSecureEditConfigured(session.userId);
+      if (!configured) {
+        return NextResponse.json(
+          { error: "You do not have a secure edit PIN. Ask an admin to assign one." },
+          { status: 403 }
+        );
+      }
+      const pin = typeof body.secureEditPin === "string" ? body.secureEditPin.trim() : "";
+      const reason = typeof body.editReason === "string" ? body.editReason.trim() : "";
+      if (!pin || !reason) {
+        return NextResponse.json(
+          { error: "PIN and edit reason are required to edit a checked-out booking." },
+          { status: 400 }
+        );
+      }
+      const valid = await verifySecureEditPin(session.userId, pin);
+      if (!valid) {
+        return NextResponse.json(
+          { error: "Invalid PIN. Cannot edit checked-out booking." },
+          { status: 403 }
+        );
+      }
+      // Store for logging after update; remove from body so we don't persist to DB
+      (body as any)._secureEditReason = reason;
+    }
     
     const isChangingToCheckedOut = 
       body.status === "checked_out" && 
@@ -69,8 +99,10 @@ export async function PATCH(
     
     // Filter out undefined values and invalid UUID strings to prevent UUID errors
     // Only include fields that are explicitly provided and valid
+    const secureEditReason = (body as any)._secureEditReason;
     const filteredBody: any = {};
     Object.keys(body).forEach((key) => {
+      if (key === "secureEditPin" || key === "editReason" || key === "_secureEditReason") return;
       const value = body[key];
       
       // Skip if value is undefined or the string "undefined"
@@ -121,6 +153,21 @@ export async function PATCH(
     await updateBooking(id, filteredBody);
 
     const updatedBooking = await getBookingById(id);
+
+    // Log secure edit if it was a checked-out booking
+    if (secureEditReason && currentBooking.status === "checked_out") {
+      await createActivityLog(
+        "booking_updated",
+        "booking",
+        `Updated checked-out booking ${updatedBooking?.bookingNumber || id} (reason: ${secureEditReason})`,
+        {
+          entityId: id,
+          entityName: updatedBooking?.bookingNumber,
+          metadata: { secureEdit: true, editReason: secureEditReason },
+        }
+      );
+    }
+
     return NextResponse.json({ success: true, booking: updatedBooking });
   } catch (error) {
     console.error("Error updating booking:", error);
@@ -141,7 +188,7 @@ export async function DELETE(
     }
 
     // Check if user has permission to delete bookings
-    if (!["admin", "manager"].includes(session.role)) {
+    if (!["admin", "manager", "super_admin"].includes(session.role)) {
       return NextResponse.json(
         { error: "Insufficient permissions" },
         { status: 403 }
@@ -149,6 +196,17 @@ export async function DELETE(
     }
 
     const { id } = await params;
+    const bookingToDelete = await getBookingById(id);
+    if (bookingToDelete?.status === "checked_out") {
+      // Only super_admin can delete checked_out bookings
+      if (session.role !== "super_admin") {
+        return NextResponse.json(
+          { error: "Cannot delete checked-out bookings. Super Admin only." },
+          { status: 403 }
+        );
+      }
+    }
+
     await deleteBooking(id);
     return NextResponse.json({ success: true });
   } catch (error) {

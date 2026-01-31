@@ -26,6 +26,7 @@ import { getTravelCompanies, createTravelCompany, updateTravelCompany, deleteTra
 import { type TravelCompany } from "@/types/travel-company";
 import { Plus, Pencil, Trash2, Search } from "lucide-react";
 import { CountrySelector } from "@/components/country-selector";
+import { ConfirmDeleteDialog } from "@/components/ui/confirm-delete-dialog";
 
 export default function TravelCompaniesPage() {
   const [companies, setCompanies] = useState<TravelCompany[]>([]);
@@ -122,14 +123,18 @@ export default function TravelCompaniesPage() {
     }
   };
 
-  const handleDeleteCompany = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this travel company?")) {
-      return;
-    }
+  const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
 
+  const handleDeleteCompanyClick = (id: string, name: string) => {
+    setDeleteConfirm({ id, name });
+  };
+
+  const handleDeleteCompanyConfirm = async () => {
+    if (!deleteConfirm) return;
     try {
-      await deleteTravelCompany(id);
+      await deleteTravelCompany(deleteConfirm.id);
       await loadCompanies();
+      setDeleteConfirm(null);
     } catch (error) {
       console.error("Error deleting travel company:", error);
       alert("Error deleting travel company. Please try again.");
@@ -216,7 +221,7 @@ export default function TravelCompaniesPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => handleDeleteCompany(company.id)}
+                          onClick={() => handleDeleteCompanyClick(company.id, company.name)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -509,6 +514,18 @@ export default function TravelCompaniesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDeleteDialog
+        open={!!deleteConfirm}
+        onOpenChange={(open) => !open && setDeleteConfirm(null)}
+        title="Delete Travel Company"
+        description={
+          deleteConfirm
+            ? `Are you sure you want to delete ${deleteConfirm.name}? This cannot be undone.`
+            : ""
+        }
+        onConfirm={handleDeleteCompanyConfirm}
+      />
     </div>
   );
 }
