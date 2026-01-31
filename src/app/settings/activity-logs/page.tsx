@@ -50,7 +50,7 @@ const formatDistanceToNow = (date: Date): string => {
     return `${years} year${years !== 1 ? 's' : ''} ago`;
   }
 };
-import { Search, Filter, RefreshCw, FileText, User, Building2, CreditCard, Settings, Calendar, Mail } from "lucide-react";
+import { Search, Filter, RefreshCw, FileText, User, Building2, CreditCard, Settings, Calendar, Mail, BedDouble } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const activityTypeLabels: Record<ActivityType, string> = {
@@ -82,6 +82,9 @@ const activityTypeLabels: Record<ActivityType, string> = {
   booking_created: "Booking Created",
   booking_updated: "Booking Updated",
   booking_deleted: "Booking Deleted",
+  room_created: "Room Created",
+  room_updated: "Room Updated",
+  room_deleted: "Room Deleted",
   other: "Other",
 };
 
@@ -114,6 +117,9 @@ const activityTypeColors: Record<ActivityType, string> = {
   booking_created: "bg-sky-100 text-sky-800 border-sky-200",
   booking_updated: "bg-violet-100 text-violet-800 border-violet-200",
   booking_deleted: "bg-rose-100 text-rose-800 border-rose-200",
+  room_created: "bg-teal-100 text-teal-800 border-teal-200",
+  room_updated: "bg-cyan-100 text-cyan-800 border-cyan-200",
+  room_deleted: "bg-red-100 text-red-800 border-red-200",
   other: "bg-gray-100 text-gray-800 border-gray-200",
 };
 
@@ -122,6 +128,7 @@ const entityTypeIcons: Record<string, any> = {
   email: Mail,
   guest: User,
   travel_company: Building2,
+  hotel_room: BedDouble,
   bank_detail: CreditCard,
   user: User,
   settings: Settings,

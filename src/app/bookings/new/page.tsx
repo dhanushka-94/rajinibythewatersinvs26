@@ -37,6 +37,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getSavedItems } from "@/lib/invoice-items";
+import { getRooms } from "@/lib/rooms";
 import { formatCurrency } from "@/lib/currency";
 import { toDateStrLocal } from "@/lib/date-sl";
 
@@ -74,7 +75,10 @@ function NewBookingPageContent() {
   });
   const [checkIn, setCheckIn] = useState("");
   const [checkOut, setCheckOut] = useState("");
+  const [selectedRoomAssignments, setSelectedRoomAssignments] = useState<Array<{ roomId: string; rateTypeId: string }>>([]);
   const [roomType, setRoomType] = useState("");
+  const [availableRooms, setAvailableRooms] = useState<{ id: string; roomNumber: string; roomType: string; ratePerNight: number; currency: string }[]>([]);
+  const [rateTypes, setRateTypes] = useState<Array<{ id: string; name: string }>>([]);
   const [adults, setAdults] = useState<number | undefined>(undefined);
   const [children, setChildren] = useState<number | undefined>(undefined);
   const [babies, setBabies] = useState<number | undefined>(undefined);
@@ -123,8 +127,19 @@ function NewBookingPageContent() {
       const items = await getSavedItems();
       setSavedItems(items);
     };
+    const loadRooms = async () => {
+      const rooms = await getRooms();
+      setAvailableRooms(rooms);
+    };
+    const loadRateTypes = async () => {
+      const res = await fetch("/api/rate-types");
+      const data = await res.json();
+      if (data.success) setRateTypes(data.rateTypes);
+    };
     loadGuests();
     loadSavedItems();
+    loadRooms();
+    loadRateTypes();
   }, []);
 
   // Handle guest selection
@@ -404,6 +419,7 @@ function NewBookingPageContent() {
           guests: additionalGuests.length > 0 ? additionalGuests : undefined,
           checkIn,
           checkOut,
+          roomAssignments: selectedRoomAssignments.length > 0 ? selectedRoomAssignments : undefined,
           roomType: roomType || undefined,
           adults: adults || undefined,
           children: children || undefined,
@@ -687,13 +703,71 @@ function NewBookingPageContent() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="roomType">Room Type</Label>
-                  <Input
-                    id="roomType"
-                    value={roomType}
-                    onChange={(e) => setRoomType(e.target.value)}
-                    placeholder="e.g., Deluxe Room, Suite"
-                  />
+                  <Label>Rooms</Label>
+                  <div className="flex flex-col gap-2 max-h-48 overflow-y-auto border rounded-md p-3">
+                    {availableRooms.map((room) => {
+                      const isSelected = selectedRoomAssignments.some((a) => a.roomId === room.id);
+                      const assignment = selectedRoomAssignments.find((a) => a.roomId === room.id);
+                      return (
+                        <div key={room.id} className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={(e) => {
+                              const checked = e.target.checked;
+                              const defaultRateType = rateTypes[0]?.id || "";
+                              if (checked) {
+                                setSelectedRoomAssignments([
+                                  ...selectedRoomAssignments.filter((a) => a.roomId !== room.id),
+                                  { roomId: room.id, rateTypeId: defaultRateType },
+                                ]);
+                              } else {
+                                setSelectedRoomAssignments(selectedRoomAssignments.filter((a) => a.roomId !== room.id));
+                              }
+                              const next = checked
+                                ? [...selectedRoomAssignments.filter((a) => a.roomId !== room.id), { roomId: room.id, rateTypeId: defaultRateType }]
+                                : selectedRoomAssignments.filter((a) => a.roomId !== room.id);
+                              const selected = next.map((a) => availableRooms.find((r) => r.id === a.roomId)).filter(Boolean) as typeof availableRooms;
+                              setRoomType(selected.length > 0 ? selected.map((r) => `${r.roomNumber} - ${r.roomType}`).join(", ") : "");
+                            }}
+                            className="rounded"
+                          />
+                          <span className="text-sm shrink-0">{room.roomNumber} - {room.roomType}</span>
+                          {isSelected && rateTypes.length > 0 && (
+                            <Select
+                              value={assignment?.rateTypeId || rateTypes[0]?.id || ""}
+                              onValueChange={(v) => {
+                                setSelectedRoomAssignments(
+                                  selectedRoomAssignments.map((a) =>
+                                    a.roomId === room.id ? { ...a, rateTypeId: v } : a
+                                  )
+                                );
+                              }}
+                            >
+                              <SelectTrigger className="h-8 w-36">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {rateTypes.map((rt) => (
+                                  <SelectItem key={rt.id} value={rt.id}>{rt.name}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                        </div>
+                      );
+                    })}
+                    {availableRooms.length === 0 && (
+                      <p className="text-sm text-muted-foreground">No rooms defined. Add rooms in Settings → Hotel Rooms.</p>
+                    )}
+                  </div>
+                  {selectedRoomAssignments.length === 0 && (
+                    <Input
+                      value={roomType}
+                      onChange={(e) => setRoomType(e.target.value)}
+                      placeholder="Or enter room/type manually (e.g., Deluxe Room)"
+                    />
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="status">Status</Label>

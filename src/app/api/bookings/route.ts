@@ -44,6 +44,8 @@ export async function POST(request: NextRequest) {
       guests,
       checkIn,
       checkOut,
+      roomIds,
+      roomAssignments,
       roomType,
       adults,
       children,
@@ -68,6 +70,11 @@ export async function POST(request: NextRequest) {
       guests,
       checkIn,
       checkOut,
+      roomAssignments: Array.isArray(roomAssignments) && roomAssignments.length > 0
+        ? roomAssignments
+        : Array.isArray(roomIds) && roomIds.length > 0
+        ? roomIds.map((roomId: string) => ({ roomId, rateTypeId: undefined }))
+        : undefined,
       roomType,
       adults,
       children,

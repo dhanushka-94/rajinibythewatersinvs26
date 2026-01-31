@@ -2,6 +2,9 @@ import { Booking } from "@/types/booking";
 import { Invoice, InvoiceItem, Currency } from "@/types/invoice";
 import { createInvoice } from "./invoices";
 import { generateInvoiceNumber, calculateInvoiceTotal } from "./data";
+import { getBookingRooms } from "./booking-rooms";
+import { getRoomById } from "./rooms";
+import { getRoomRate } from "./room-rates";
 
 /**
  * Creates an invoice from a booking when checking out
@@ -23,32 +26,71 @@ export async function createInvoiceFromBooking(
       id: item.id || `item-${Date.now()}-${index}`,
     }));
   } else {
-    // Create a default item based on room type and stay duration
+    // Create default items based on rooms and stay duration
     const checkInDate = new Date(booking.checkIn);
     const checkOutDate = new Date(booking.checkOut);
     const nights = Math.ceil(
       (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)
     );
-    
-    const roomDescription = booking.roomType 
-      ? `${booking.roomType} - ${nights} night${nights !== 1 ? 's' : ''}`
-      : `Accommodation - ${nights} night${nights !== 1 ? 's' : ''}`;
-    
-    // Default price per night (can be adjusted later)
-    const defaultPricePerNight = 100;
-    const totalPrice = defaultPricePerNight * nights;
-    
-    items = [
-      {
-        id: `item-${Date.now()}`,
-        description: roomDescription,
-        quantity: nights,
-        quantityType: "days",
-        unitPrice: defaultPricePerNight,
-        total: totalPrice,
-        currency,
-      },
-    ];
+
+    // Get rooms with rate info: booking.rooms, or build from roomAssignments, or fetch from DB
+    let rooms = booking.rooms ?? [];
+    if (rooms.length === 0 && (booking.roomIds?.length || booking.roomAssignments?.length)) {
+      if (booking.roomAssignments?.length) {
+        // Use roomAssignments (e.g. from pending update during checkout) - get rate per type
+        const withRates = await Promise.all(
+          booking.roomAssignments.map(async (a) => {
+            const room = await getRoomById(a.roomId);
+            if (!room) return null;
+            let ratePerNight = room.ratePerNight;
+            let currency = room.currency;
+            if (a.rateTypeId) {
+              const rr = await getRoomRate(a.roomId, a.rateTypeId);
+              if (rr) {
+                ratePerNight = rr.ratePerNight;
+                currency = rr.currency;
+              }
+            }
+            return { ...room, ratePerNight, currency };
+          })
+        );
+        rooms = withRates.filter((r): r is NonNullable<typeof r> => r != null);
+      } else if (booking.id && booking.roomIds?.length) {
+        rooms = await getBookingRooms(booking.id);
+      }
+    }
+
+    if (rooms.length > 0) {
+      items = rooms.map((room, i) => {
+        const ratePerNight = (room as { ratePerNight?: number }).ratePerNight ?? room.ratePerNight;
+        const roomCurrency = (room as { currency?: string }).currency ?? room.currency;
+        return {
+          id: `item-${Date.now()}-${i}`,
+          description: `${room.roomNumber} - ${room.roomType} - ${nights} night${nights !== 1 ? "s" : ""}`,
+          quantity: nights,
+          quantityType: "days" as const,
+          unitPrice: ratePerNight,
+          total: ratePerNight * nights,
+          currency: roomCurrency,
+        };
+      });
+    } else {
+      // No rooms: fallback to roomType or "Accommodation"
+      const roomDescription = booking.roomType
+        ? `${booking.roomType} - ${nights} night${nights !== 1 ? "s" : ""}`
+        : `Accommodation - ${nights} night${nights !== 1 ? "s" : ""}`;
+      items = [
+        {
+          id: `item-${Date.now()}`,
+          description: roomDescription,
+          quantity: nights,
+          quantityType: "days" as const,
+          unitPrice: 100,
+          total: 100 * nights,
+          currency,
+        },
+      ];
+    }
   }
 
   // Default rates (can be customized)

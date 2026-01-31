@@ -28,6 +28,10 @@ export type ActivityType =
   | "booking_created"
   | "booking_updated"
   | "booking_deleted"
+  // Room-related activities
+  | "room_created"
+  | "room_updated"
+  | "room_deleted"
   | "other";
 
 export interface ActivityLog {

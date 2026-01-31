@@ -22,6 +22,7 @@ import {
   CalendarDays,
   ChevronDown,
   ChevronRight,
+  BedDouble,
 } from "lucide-react";
 import { getHotelInfo, type HotelInfo } from "@/lib/hotel-info";
 import { User as UserType } from "@/types/user";
@@ -39,6 +40,7 @@ type NavItem = {
 const allNavigation: NavItem[] = [
   // Group 1: Dashboard, Bookings, Guests
   { name: "Dashboard", href: "/", icon: LayoutDashboard, roles: ["admin", "super_admin", "manager", "staff", "viewer"] },
+  { name: "Room Status", href: "/rooms", icon: BedDouble, roles: ["admin", "super_admin", "manager", "staff", "viewer"] },
   { name: "Bookings", href: "/bookings", icon: Calendar, roles: ["admin", "super_admin", "manager", "staff", "viewer"] },
   { name: "Booking Calendar", href: "/bookings/calendar", icon: CalendarDays, roles: ["admin", "super_admin", "manager", "staff", "viewer"] },
   { name: "Guests", href: "/settings/guests", icon: Users, roles: ["admin", "super_admin", "manager", "staff", "viewer"] },
@@ -60,6 +62,7 @@ const allNavigation: NavItem[] = [
     separatorBefore: true,
     children: [
       { name: "Hotel Info", href: "/settings" },
+      { name: "Hotel Rooms", href: "/settings/hotel-rooms" },
       { name: "Bank Accounts", href: "/settings/bank-accounts" },
       { name: "Users", href: "/settings/users" },
       { name: "Secure Edit PINs", href: "/settings/secure-edit-pins" },
@@ -104,7 +107,7 @@ export function Sidebar() {
     return item.roles.includes(currentUser.role);
   });
 
-  const settingsChildPaths = ["/settings", "/settings/bank-accounts", "/settings/users", "/settings/secure-edit-pins", "/settings/email-logs"];
+  const settingsChildPaths = ["/settings", "/settings/hotel-rooms", "/settings/bank-accounts", "/settings/users", "/settings/secure-edit-pins", "/settings/email-logs"];
   const isSettingsPath = settingsChildPaths.includes(pathname);
   const [settingsOpen, setSettingsOpen] = useState(isSettingsPath);
 

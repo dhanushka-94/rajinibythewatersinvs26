@@ -186,10 +186,14 @@ export default function BookingDetailPage({
                   </p>
                 )}
               </div>
-              {booking.roomType && (
+              {(booking.roomType || (booking.rooms && booking.rooms.length > 0)) && (
                 <div>
-                  <p className="text-sm text-muted-foreground">Room Type</p>
-                  <p className="font-medium">{booking.roomType}</p>
+                  <p className="text-sm text-muted-foreground">Rooms</p>
+                  <p className="font-medium">
+                    {booking.rooms?.length
+                      ? booking.rooms.map((r) => `${r.roomNumber} - ${r.roomType}`).join(", ")
+                      : booking.roomType}
+                  </p>
                 </div>
               )}
               <div>

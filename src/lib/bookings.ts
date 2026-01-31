@@ -3,6 +3,7 @@ import { Booking, BookingStatus } from '@/types/booking';
 import { Guest } from '@/types/invoice';
 import { createActivityLog } from './activity-logs';
 import { nowISOStringSL } from './date-sl';
+import { getBookingRooms, setBookingRooms } from './booking-rooms';
 
 // In-memory fallback if Supabase is not configured
 let fallbackBookings: Booking[] = [];
@@ -167,8 +168,18 @@ export async function getBookingById(id: string): Promise<Booking | undefined> {
       console.warn('No booking found with id:', id);
       return undefined;
     }
-    
-    return mapDbToBooking(data);
+
+    const booking = mapDbToBooking(data);
+    const rooms = await getBookingRooms(booking.id);
+    if (rooms.length > 0) {
+      booking.roomIds = rooms.map((r) => r.id);
+      booking.rooms = rooms;
+      booking.roomAssignments = rooms.map((r) => ({
+        roomId: r.id,
+        rateTypeId: r.rateTypeId || "",
+      }));
+    }
+    return booking;
   } catch (error) {
     // Handle unexpected errors
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -305,6 +316,17 @@ export async function createBooking(booking: Omit<Booking, "id" | "bookingNumber
     }
 
     const createdBooking = mapDbToBooking(data);
+
+    // Set rooms in junction table
+    const assignments = booking.roomAssignments?.length
+      ? booking.roomAssignments
+      : (booking.roomIds || []).map((roomId) => ({ roomId, rateTypeId: undefined }));
+    if (assignments.length > 0) {
+      await setBookingRooms(createdBooking.id, assignments);
+      const rooms = await getBookingRooms(createdBooking.id);
+      createdBooking.roomIds = rooms.map((r) => r.id);
+      createdBooking.rooms = rooms;
+    }
     
     // Log activity
     await createActivityLog(
@@ -496,7 +518,24 @@ export async function updateBooking(id: string, booking: Partial<Booking>): Prom
     if (error) {
       console.error('Error updating booking:', error);
       throw new Error(`Failed to update booking: ${error.message || 'Unknown error'}`);
-    } else {
+    }
+
+    // Update rooms in junction table
+    if (booking.roomAssignments !== undefined) {
+      const valid = (Array.isArray(booking.roomAssignments) ? booking.roomAssignments : [])
+        .filter((a): a is { roomId: string; rateTypeId?: string } =>
+          a && typeof a === "object" && typeof (a as { roomId: string }).roomId === "string" &&
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test((a as { roomId: string }).roomId)
+        )
+        .map((a) => ({ roomId: a.roomId, rateTypeId: a.rateTypeId || undefined }));
+      await setBookingRooms(id, valid);
+    } else if (booking.roomIds !== undefined) {
+      const validIds = (Array.isArray(booking.roomIds) ? booking.roomIds : [])
+        .filter((v): v is string => typeof v === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v));
+      await setBookingRooms(id, validIds.map((roomId) => ({ roomId })));
+    }
+
+    {
       // Get booking details for logging
       const updatedBooking = await getBookingById(id);
       if (updatedBooking) {
@@ -517,7 +556,7 @@ export async function updateBooking(id: string, booking: Partial<Booking>): Prom
       }
     }
   } catch (error) {
-    console.error('Error updating booking:', error);
+    console.error("Error updating booking:", error);
     throw error;
   }
 }

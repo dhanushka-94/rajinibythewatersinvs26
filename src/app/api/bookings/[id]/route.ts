@@ -110,7 +110,7 @@ export async function PATCH(
         return;
       }
       
-      // For UUID fields, validate them
+      // For UUID fields, validate them (roomIds is array, handled separately)
       if ((key === 'guestId' || key === 'invoiceId') && value !== null) {
         // Check if it's a valid UUID format
         const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

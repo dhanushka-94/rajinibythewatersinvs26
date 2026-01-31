@@ -1,4 +1,5 @@
 import { Guest, InvoiceItem } from "./invoice";
+import { Room } from "./room";
 
 export type BookingStatus = "booked" | "confirmed" | "checked_in" | "checked_out" | "cancelled";
 
@@ -10,7 +11,10 @@ export interface Booking {
   guests?: Guest[]; // Additional guests array (optional)
   checkIn: string; // Date in YYYY-MM-DD format
   checkOut: string; // Date in YYYY-MM-DD format
-  roomType?: string;
+  roomIds?: string[]; // References to hotel_rooms (legacy/derived)
+  roomAssignments?: Array<{ roomId: string; rateTypeId?: string }>; // Room + rate type per booking
+  rooms?: Array<Room & { rateTypeId?: string; ratePerNight?: number; currency?: string }>; // Populated with rate info
+  roomType?: string; // Display summary
   adults?: number;
   children?: number;
   babies?: number;
