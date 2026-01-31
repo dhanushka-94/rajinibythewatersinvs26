@@ -376,24 +376,6 @@ export default function BookingsPage() {
     URL.revokeObjectURL(url);
   };
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || (e.target as HTMLElement).closest("button")) return;
-      if (e.key === "n" || e.key === "N") {
-        e.preventDefault();
-        router.push("/bookings/new");
-      } else if (e.key === "r" || e.key === "R") {
-        e.preventDefault();
-        loadBookings();
-      } else if (e.key === "/") {
-        e.preventDefault();
-        document.getElementById("bookings-search")?.focus();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [router, loadBookings]);
-
   const confirmedCount = bookings.filter((b) => b.status === "confirmed").length;
   const checkedInCount = bookings.filter((b) => b.status === "checked_in").length;
   const checkedOutCount = bookings.filter((b) => b.status === "checked_out").length;
@@ -890,9 +872,6 @@ export default function BookingsPage() {
           )}
         </CardContent>
       </Card>
-      <p className="text-xs text-muted-foreground">
-        Shortcuts: N = New booking, R = Refresh, / = Focus search
-      </p>
 
       <ConfirmDeleteDialog
         open={!!deleteConfirm}

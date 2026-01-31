@@ -149,6 +149,15 @@ export default function NewInvoicePage() {
   const [damageCharge, setDamageCharge] = useState(0);
   const [discount, setDiscount] = useState(0);
   const [discountType, setDiscountType] = useState<"percentage" | "fixed">("percentage");
+  const [couponCode, setCouponCode] = useState("");
+  const [appliedDiscount, setAppliedDiscount] = useState<{
+    discountId: string;
+    couponCodeId?: string;
+    discountAmount: number;
+    discountType: "percentage" | "fixed";
+    discountValueUsed: number;
+    guestId?: string;
+  } | null>(null);
   const [priceAdjustment, setPriceAdjustment] = useState(0);
   const [priceAdjustmentReason, setPriceAdjustmentReason] = useState("");
   const [notes, setNotes] = useState("");
@@ -521,7 +530,11 @@ export default function NewInvoicePage() {
 
       // Import and use the createInvoice function
       const { createInvoice } = await import("@/lib/invoices");
-      await createInvoice(invoiceData);
+      await createInvoice(invoiceData, {
+        appliedDiscount: appliedDiscount && calculations.discount > 0
+          ? { ...appliedDiscount, discountAmount: calculations.discount }
+          : undefined,
+      });
       
       alert("Invoice created successfully!");
       router.push("/invoices");
@@ -1474,6 +1487,78 @@ export default function NewInvoicePage() {
                   value={taxRate}
                   onChange={(e) => setTaxRate(Number(e.target.value))}
                 />
+              </div>
+              <Separator />
+              <div className="space-y-2">
+                <Label>Coupon Code</Label>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Enter coupon code"
+                    value={couponCode}
+                    onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                    className="font-mono"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={async () => {
+                      if (!couponCode.trim()) return;
+                      try {
+                        const lookup = await fetch("/api/coupon-codes/lookup", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ code: couponCode.trim() }),
+                        });
+                        const lookupData = await lookup.json();
+                        if (!lookupData.success || !lookupData.coupon?.discount) {
+                          alert(lookupData.error || "Invalid coupon code");
+                          return;
+                        }
+                        const nights = checkIn && checkOut ? Math.max(0, Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (24 * 60 * 60 * 1000))) : 0;
+                        const validate = await fetch("/api/discounts/validate", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            discountId: lookupData.coupon.discountId,
+                            couponCode: couponCode.trim(),
+                            subtotal: calculations.subtotal,
+                            currency,
+                            checkIn: checkIn || new Date().toISOString().slice(0, 10),
+                            checkOut: checkOut || new Date().toISOString().slice(0, 10),
+                            nights,
+                            roomTypes: [],
+                            rateTypeIds: [],
+                            guestId: guest?.id,
+                          }),
+                        });
+                        const valData = await validate.json();
+                        if (!valData.valid) {
+                          alert(valData.error || "Coupon cannot be applied");
+                          return;
+                        }
+                        setDiscount(valData.discountType === "percentage" ? valData.discountValue : valData.discountAmount);
+                        setDiscountType(valData.discountType);
+                        setAppliedDiscount({
+                          discountId: lookupData.coupon.discountId,
+                          couponCodeId: lookupData.coupon.id,
+                          discountAmount: valData.discountAmount,
+                          discountType: valData.discountType,
+                          discountValueUsed: valData.discountValue,
+                          guestId: guest?.id,
+                        });
+                      } catch (e) {
+                        alert("Failed to apply coupon");
+                      }
+                    }}
+                  >
+                    Apply
+                  </Button>
+                  {appliedDiscount && (
+                    <Button type="button" variant="ghost" size="sm" onClick={() => { setCouponCode(""); setAppliedDiscount(null); setDiscount(0); setDiscountType("percentage"); }}>
+                      Clear
+                    </Button>
+                  )}
+                </div>
               </div>
               <Separator />
               <div className="space-y-2">

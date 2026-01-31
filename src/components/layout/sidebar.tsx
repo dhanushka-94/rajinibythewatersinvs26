@@ -23,6 +23,7 @@ import {
   ChevronDown,
   ChevronRight,
   BedDouble,
+  Tag,
 } from "lucide-react";
 import { getHotelInfo, type HotelInfo } from "@/lib/hotel-info";
 import { User as UserType } from "@/types/user";
@@ -50,8 +51,19 @@ const allNavigation: NavItem[] = [
   { name: "Create Invoice", href: "/invoices/new", icon: PlusCircle, roles: ["admin", "super_admin", "manager", "staff"] },
   { name: "Payments", href: "/payments", icon: CreditCard, roles: ["admin", "super_admin", "manager", "viewer"] },
   { name: "Invoice Items", href: "/settings/invoice-items", icon: Package, roles: ["admin", "super_admin", "manager", "staff", "viewer"] },
-  // Group 3: Reports, Activity Logs
+  // Group 3: Reports, Offers & Promotions, Activity Logs
   { name: "Reports", href: "/reports", icon: BarChart3, roles: ["admin", "super_admin", "manager", "viewer"], separatorBefore: true },
+  {
+    name: "Offers & Promotions",
+    href: "/promotions",
+    icon: Tag,
+    roles: ["admin", "super_admin", "manager"],
+    children: [
+      { name: "Offers", href: "/promotions/offers" },
+      { name: "Discounts", href: "/promotions/discounts" },
+      { name: "Coupon Codes", href: "/promotions/coupon-codes" },
+    ],
+  },
   { name: "Activity Logs", href: "/settings/activity-logs", icon: History, roles: ["admin", "super_admin"] },
   // Group 4: Settings (Hotel Info, Bank Accounts, Users, Email Log)
   {
@@ -108,12 +120,18 @@ export function Sidebar() {
   });
 
   const settingsChildPaths = ["/settings", "/settings/hotel-rooms", "/settings/bank-accounts", "/settings/users", "/settings/secure-edit-pins", "/settings/email-logs"];
+  const promotionsChildPaths = ["/promotions", "/promotions/offers", "/promotions/discounts", "/promotions/coupon-codes"];
   const isSettingsPath = settingsChildPaths.includes(pathname);
+  const isPromotionsPath = promotionsChildPaths.includes(pathname);
   const [settingsOpen, setSettingsOpen] = useState(isSettingsPath);
 
+  const [promotionsOpen, setPromotionsOpen] = useState(isPromotionsPath);
   useEffect(() => {
     if (isSettingsPath) setSettingsOpen(true);
   }, [isSettingsPath]);
+  useEffect(() => {
+    if (isPromotionsPath) setPromotionsOpen(true);
+  }, [isPromotionsPath]);
 
   return (
     <div className="flex h-full w-64 flex-col border-r bg-card">
@@ -142,13 +160,15 @@ export function Sidebar() {
             <div key={`sep-${item.name}`} className="my-2 border-t border-border" aria-hidden />
           ) : null;
           if (item.children) {
-            const isParentActive = isSettingsPath;
+            const isOpen = item.name === "Settings" ? settingsOpen : promotionsOpen;
+            const setOpen = item.name === "Settings" ? setSettingsOpen : setPromotionsOpen;
+            const isParentActive = item.name === "Settings" ? isSettingsPath : isPromotionsPath;
             return (
               <div key={item.name} className="space-y-0.5">
                 {sep}
                 <button
                   type="button"
-                  onClick={() => setSettingsOpen((o) => !o)}
+                  onClick={() => setOpen((o) => !o)}
                   className={cn(
                     "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                     isParentActive
@@ -158,13 +178,13 @@ export function Sidebar() {
                 >
                   <item.icon className="h-5 w-5 flex-shrink-0" />
                   <span className="flex-1 text-left">{item.name}</span>
-                  {settingsOpen ? (
+                  {isOpen ? (
                     <ChevronDown className="h-4 w-4 flex-shrink-0" />
                   ) : (
                     <ChevronRight className="h-4 w-4 flex-shrink-0" />
                   )}
                 </button>
-                {settingsOpen && (
+                {isOpen && (
                   <div className="ml-4 mt-0.5 space-y-0.5 border-l border-border pl-2">
                     {item.children.map((child) => {
                       const isChildActive = pathname === child.href;

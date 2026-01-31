@@ -32,6 +32,16 @@ export type ActivityType =
   | "room_created"
   | "room_updated"
   | "room_deleted"
+  // Offers & Promotions
+  | "offer_created"
+  | "offer_updated"
+  | "offer_deleted"
+  | "discount_created"
+  | "discount_updated"
+  | "discount_deleted"
+  | "discount_status_changed"
+  | "coupon_code_created"
+  | "coupon_code_deleted"
   | "other";
 
 export interface ActivityLog {

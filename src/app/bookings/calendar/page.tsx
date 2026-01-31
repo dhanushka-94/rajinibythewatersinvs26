@@ -103,32 +103,6 @@ export default function BookingCalendarPage() {
     loadBookings();
   }, [loadBookings]);
 
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (agendaOpen) return;
-      if (
-        e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement ||
-        (e.target as HTMLElement).closest("button")?.getAttribute("role") === "combobox"
-      )
-        return;
-      if (e.key === "ArrowLeft") {
-        e.preventDefault();
-        setCurrentDate(new Date(year, month - 1, 1));
-      } else if (e.key === "ArrowRight") {
-        e.preventDefault();
-        setCurrentDate(new Date(year, month + 1, 1));
-      } else if (e.key === "t" || e.key === "T") {
-        e.preventDefault();
-        const { year: y, month: m } = getTodaySLParts();
-        setCurrentDate(new Date(y, m, 1));
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [agendaOpen, year, month]);
-
   const firstDay = new Date(year, month, 1);
   const lastDay = new Date(year, month + 1, 0);
   const daysInMonth = lastDay.getDate();

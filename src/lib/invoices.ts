@@ -4,6 +4,7 @@ import { createActivityLog } from './activity-logs';
 import { nowISOStringSL } from './date-sl';
 import { getSession } from './auth';
 import { verifySecureEditPin, isSecureEditConfigured } from './verify-secure-edit';
+import { setInvoiceDiscount } from './invoice-discounts';
 
 // In-memory fallback if Supabase is not configured
 let fallbackInvoices: Invoice[] = [];
@@ -204,7 +205,19 @@ export async function getInvoiceById(id: string, logView: boolean = false): Prom
   }
 }
 
-export async function createInvoice(invoice: Omit<Invoice, "id" | "createdAt" | "updatedAt">): Promise<Invoice> {
+export interface AppliedDiscountInfo {
+  discountId: string;
+  couponCodeId?: string;
+  discountAmount: number;
+  discountType: "percentage" | "fixed";
+  discountValueUsed: number;
+  guestId?: string;
+}
+
+export async function createInvoice(
+  invoice: Omit<Invoice, "id" | "createdAt" | "updatedAt">,
+  options?: { appliedDiscount?: AppliedDiscountInfo }
+): Promise<Invoice> {
   if (!isSupabaseConfigured()) {
     const newInvoice: Invoice = {
       ...invoice,
@@ -292,6 +305,7 @@ export async function createInvoice(invoice: Omit<Invoice, "id" | "createdAt" | 
 export interface UpdateInvoiceOptions {
   secureEditPin?: string;
   editReason?: string;
+  appliedDiscount?: AppliedDiscountInfo;
 }
 
 export async function updateInvoice(
@@ -466,7 +480,14 @@ export async function updateInvoice(
         fullError: error
       });
       throw new Error(`Failed to update invoice: ${error.message || 'Unknown error'}`);
-    } else {
+    }
+    if (options?.appliedDiscount) {
+      await setInvoiceDiscount(id, {
+        ...options.appliedDiscount,
+        incrementUsage: options.appliedDiscount.discountAmount > 0,
+      });
+    }
+    {
       // Get invoice details for logging
       const updatedInvoice = await getInvoiceById(id);
       if (updatedInvoice) {
@@ -500,6 +521,7 @@ export async function updateInvoice(
     }
   } catch (error) {
     console.error('Error updating invoice:', error);
+    throw error;
   }
 }
 

@@ -24,7 +24,6 @@ import { getGuests } from "@/lib/guests";
 import { formatCurrency } from "@/lib/currency";
 import { formatDateSL, todaySL } from "@/lib/date-sl";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Invoice } from "@/types/invoice";
@@ -81,7 +80,6 @@ function getNext7Days(today: string): string[] {
 }
 
 export default function Dashboard() {
-  const router = useRouter();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [guests, setGuests] = useState<{ id?: string }[]>([]);
@@ -112,26 +110,6 @@ export default function Dashboard() {
   useEffect(() => {
     loadData();
   }, [loadData]);
-
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (
-        (e.target as HTMLElement)?.closest("input") ||
-        (e.target as HTMLElement)?.closest("button") ||
-        (e.target as HTMLElement)?.closest("a")
-      )
-        return;
-      if (e.key === "n" || e.key === "N") {
-        e.preventDefault();
-        router.push("/invoices/new");
-      } else if (e.key === "r" || e.key === "R") {
-        e.preventDefault();
-        loadData();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [router, loadData]);
 
   const today = todaySL();
   const paidList = useMemo(() => invoices.filter((i) => i.status === "paid"), [invoices]);
@@ -771,8 +749,6 @@ export default function Dashboard() {
           </Card>
         </>
       )}
-
-      <p className="text-xs text-muted-foreground">Shortcuts: N = New invoice, R = Refresh</p>
     </div>
   );
 }

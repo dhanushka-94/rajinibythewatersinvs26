@@ -402,29 +402,6 @@ export default function InvoicesPage() {
     URL.revokeObjectURL(url);
   };
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (
-        e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement ||
-        (e.target as HTMLElement).closest("button")
-      )
-        return;
-      if (e.key === "n" || e.key === "N") {
-        e.preventDefault();
-        router.push("/invoices/new");
-      } else if (e.key === "r" || e.key === "R") {
-        e.preventDefault();
-        loadInvoices();
-      } else if (e.key === "/") {
-        e.preventDefault();
-        document.getElementById("invoices-search")?.focus();
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [router, loadInvoices]);
-
   const paidCount = invoices.filter((i) => i.status === "paid").length;
   const draftCount = invoices.filter((i) => i.status === "draft").length;
 
@@ -932,7 +909,6 @@ export default function InvoicesPage() {
           )}
         </CardContent>
       </Card>
-      <p className="text-xs text-muted-foreground">Shortcuts: N = New invoice, R = Refresh, / = Focus search</p>
 
       <ConfirmDeleteDialog
         open={!!deleteConfirm}

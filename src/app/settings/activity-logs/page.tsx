@@ -50,7 +50,7 @@ const formatDistanceToNow = (date: Date): string => {
     return `${years} year${years !== 1 ? 's' : ''} ago`;
   }
 };
-import { Search, Filter, RefreshCw, FileText, User, Building2, CreditCard, Settings, Calendar, Mail, BedDouble } from "lucide-react";
+import { Search, Filter, RefreshCw, FileText, User, Building2, CreditCard, Settings, Calendar, Mail, BedDouble, Tag, Percent, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const activityTypeLabels: Record<ActivityType, string> = {
@@ -85,6 +85,15 @@ const activityTypeLabels: Record<ActivityType, string> = {
   room_created: "Room Created",
   room_updated: "Room Updated",
   room_deleted: "Room Deleted",
+  offer_created: "Offer Created",
+  offer_updated: "Offer Updated",
+  offer_deleted: "Offer Deleted",
+  discount_created: "Discount Created",
+  discount_updated: "Discount Updated",
+  discount_deleted: "Discount Deleted",
+  discount_status_changed: "Discount Status Changed",
+  coupon_code_created: "Coupon Code Created",
+  coupon_code_deleted: "Coupon Code Deleted",
   other: "Other",
 };
 
@@ -120,6 +129,15 @@ const activityTypeColors: Record<ActivityType, string> = {
   room_created: "bg-teal-100 text-teal-800 border-teal-200",
   room_updated: "bg-cyan-100 text-cyan-800 border-cyan-200",
   room_deleted: "bg-red-100 text-red-800 border-red-200",
+  offer_created: "bg-emerald-100 text-emerald-800 border-emerald-200",
+  offer_updated: "bg-teal-100 text-teal-800 border-teal-200",
+  offer_deleted: "bg-red-100 text-red-800 border-red-200",
+  discount_created: "bg-violet-100 text-violet-800 border-violet-200",
+  discount_updated: "bg-purple-100 text-purple-800 border-purple-200",
+  discount_deleted: "bg-red-100 text-red-800 border-red-200",
+  discount_status_changed: "bg-indigo-100 text-indigo-800 border-indigo-200",
+  coupon_code_created: "bg-cyan-100 text-cyan-800 border-cyan-200",
+  coupon_code_deleted: "bg-red-100 text-red-800 border-red-200",
   other: "bg-gray-100 text-gray-800 border-gray-200",
 };
 
@@ -134,6 +152,9 @@ const entityTypeIcons: Record<string, any> = {
   settings: Settings,
   report: FileText,
   payment: CreditCard,
+  offer: Tag,
+  discount: Percent,
+  coupon_code: Ticket,
 };
 
 export default function ActivityLogsPage() {

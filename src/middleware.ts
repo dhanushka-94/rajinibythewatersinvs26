@@ -13,6 +13,7 @@ const roleRoutes: Record<string, string[]> = {
   "/settings": ["admin", "super_admin"],
   "/reports": ["admin", "manager", "viewer"],
   "/payments": ["admin", "manager", "viewer"],
+  "/promotions": ["admin", "super_admin", "manager"],
 };
 
 export function middleware(request: NextRequest) {
