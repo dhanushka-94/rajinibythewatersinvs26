@@ -11,7 +11,7 @@ const roleRoutes: Record<string, string[]> = {
   "/settings/activity-logs": ["admin", "super_admin"],
   "/settings/email-logs": ["admin", "super_admin"],
   "/settings": ["admin", "super_admin"],
-  "/reports": ["admin", "manager", "viewer"],
+  "/reports": ["admin", "super_admin", "manager", "viewer"],
   "/payments": ["admin", "manager", "viewer"],
   "/promotions": ["admin", "super_admin", "manager"],
 };

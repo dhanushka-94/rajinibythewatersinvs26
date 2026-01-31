@@ -17,6 +17,9 @@ import {
   LogOut,
   UserCheck,
   Calendar,
+  BedDouble,
+  Tag,
+  Wrench,
 } from "lucide-react";
 import { getInvoices } from "@/lib/invoices";
 import { getBookings } from "@/lib/bookings";
@@ -79,10 +82,16 @@ function getNext7Days(today: string): string[] {
   return out;
 }
 
+type RoomWithStatus = { operationalStatus: string };
+
 export default function Dashboard() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [guests, setGuests] = useState<{ id?: string }[]>([]);
+  const [roomsWithStatus, setRoomsWithStatus] = useState<RoomWithStatus[]>([]);
+  const [discounts, setDiscounts] = useState<{ validUntil: string; status: string }[]>([]);
+  const [offers, setOffers] = useState<unknown[]>([]);
+  const [currentUser, setCurrentUser] = useState<{ role: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [period, setPeriod] = useState<RevenuePeriod>("all");
@@ -91,14 +100,26 @@ export default function Dashboard() {
     setError(null);
     setLoading(true);
     try {
-      const [invData, bookData, guestData] = await Promise.all([
+      const [invData, bookData, guestData, authRes, roomsRes, discountsRes, offersRes] = await Promise.all([
         getInvoices(),
         getBookings(),
         getGuests(),
+        fetch("/api/auth/me"),
+        fetch("/api/rooms/status"),
+        fetch("/api/discounts?includeInactive=true"),
+        fetch("/api/offers"),
       ]);
       setInvoices(invData);
       setBookings(bookData);
       setGuests(guestData);
+      const authData = await authRes.json();
+      if (authData.success) setCurrentUser(authData.user);
+      const roomsData = await roomsRes.json();
+      if (roomsData.success) setRoomsWithStatus(roomsData.rooms || []);
+      const discountsData = await discountsRes.json();
+      if (discountsData.success) setDiscounts(discountsData.discounts || []);
+      const offersData = await offersRes.json();
+      if (offersData.success) setOffers(offersData.offers || []);
     } catch (e) {
       console.error("Dashboard load error:", e);
       setError("Failed to load dashboard. Please try again.");
@@ -211,6 +232,30 @@ export default function Dashboard() {
     [invoices]
   );
 
+  const roomStats = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const r of roomsWithStatus) {
+      counts[r.operationalStatus] = (counts[r.operationalStatus] || 0) + 1;
+    }
+    const total = roomsWithStatus.length;
+    const available = counts["available"] || 0;
+    const occupied = (counts["checked_in"] || 0) + (counts["booked"] || 0);
+    const maintenance = counts["maintenance"] || 0;
+    const checkedOut = counts["checked_out"] || 0;
+    return { total, available, occupied, maintenance, checkedOut };
+  }, [roomsWithStatus]);
+
+  const expiringDiscounts = useMemo(() => {
+    const in7Days = new Date();
+    in7Days.setDate(in7Days.getDate() + 7);
+    const cutoff = in7Days.toISOString().slice(0, 10);
+    return discounts.filter(
+      (d) => d.status === "active" && d.validUntil >= today && d.validUntil <= cutoff
+    );
+  }, [discounts, today]);
+
+  const showPromotions = currentUser && ["admin", "super_admin", "manager"].includes(currentUser.role);
+
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
       paid: "bg-green-100 text-green-800 border-green-200",
@@ -302,11 +347,31 @@ export default function Dashboard() {
           )}
         </div>
       )}
+      {roomStats.maintenance > 0 && (
+        <Link href="/rooms">
+          <div className="rounded-lg border border-orange-200 bg-orange-50 px-4 py-2 text-sm font-medium text-orange-800 hover:bg-orange-100 transition-colors flex items-center gap-2">
+            <Wrench className="h-4 w-4" />
+            {roomStats.maintenance} room{roomStats.maintenance !== 1 ? "s" : ""} in maintenance
+          </div>
+        </Link>
+      )}
+      {showPromotions && expiringDiscounts.length > 0 && (
+        <Link href="/promotions/discounts">
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-800 hover:bg-amber-100 transition-colors">
+            {expiringDiscounts.length} discount{expiringDiscounts.length !== 1 ? "s" : ""} expiring in 7 days
+          </div>
+        </Link>
+      )}
 
       {loading ? (
         <div className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-28 rounded-lg bg-muted animate-pulse" />
+            ))}
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2].map((i) => (
               <div key={i} className="h-28 rounded-lg bg-muted animate-pulse" />
             ))}
           </div>
@@ -384,6 +449,48 @@ export default function Dashboard() {
                 </p>
               </CardContent>
             </Card>
+          </div>
+
+          {/* Room Status & Promotions row */}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <Link href="/rooms">
+              <Card className="border-l-4 border-l-teal-500 hover:bg-accent/50 transition-colors cursor-pointer h-full">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Room Status</CardTitle>
+                  <div className="p-2 rounded-lg bg-teal-50">
+                    <BedDouble className="h-5 w-5 text-teal-600" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-teal-600">{roomStats.total} rooms</div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {roomStats.available} available · {roomStats.occupied} occupied
+                    {roomStats.maintenance > 0 ? ` · ${roomStats.maintenance} maintenance` : ""}
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+            {showPromotions && (
+              <Link href="/promotions/discounts">
+                <Card className="border-l-4 border-l-violet-500 hover:bg-accent/50 transition-colors cursor-pointer h-full">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Offers & Promotions</CardTitle>
+                    <div className="p-2 rounded-lg bg-violet-50">
+                      <Tag className="h-5 w-5 text-violet-600" />
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-violet-600">
+                      {discounts.filter((d) => d.status === "active").length} active
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {offers.length} offers
+                      {expiringDiscounts.length > 0 ? ` · ${expiringDiscounts.length} expiring soon` : ""}
+                    </p>
+                  </CardContent>
+                </Card>
+              </Link>
+            )}
           </div>
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -497,6 +604,14 @@ export default function Dashboard() {
                     </span>
                     <span className="font-bold text-green-700">{checkedInNow}</span>
                   </div>
+                  {roomStats.total > 0 && (
+                    <div className="flex items-center justify-between p-3 bg-teal-50 rounded-lg">
+                      <span className="text-sm font-medium flex items-center gap-2">
+                        <BedDouble className="h-4 w-4" /> Rooms
+                      </span>
+                      <span className="font-bold text-teal-700">{roomStats.available} / {roomStats.total} available</span>
+                    </div>
+                  )}
                   {upcomingCheckIns > 0 && (
                     <p className="text-xs text-muted-foreground">{upcomingCheckIns} check-ins in next 7 days</p>
                   )}
@@ -506,12 +621,20 @@ export default function Dashboard() {
                       <span className="text-sm font-semibold">{guests.length}</span>
                     </div>
                   </Link>
-                  <Link href="/bookings/calendar">
-                    <Button variant="outline" size="sm" className="w-full mt-2">
-                      <CalendarDays className="mr-2 h-4 w-4" />
-                      View Calendar
-                    </Button>
-                  </Link>
+                  <div className="flex gap-2 mt-2">
+                    <Link href="/rooms" className="flex-1">
+                      <Button variant="outline" size="sm" className="w-full">
+                        <BedDouble className="mr-2 h-4 w-4" />
+                        Room Status
+                      </Button>
+                    </Link>
+                    <Link href="/bookings/calendar" className="flex-1">
+                      <Button variant="outline" size="sm" className="w-full">
+                        <CalendarDays className="mr-2 h-4 w-4" />
+                        Calendar
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -708,6 +831,20 @@ export default function Dashboard() {
                     New Booking
                   </Button>
                 </Link>
+                <Link href="/rooms">
+                  <Button variant="outline" className="w-full">
+                    <BedDouble className="mr-2 h-4 w-4" />
+                    Room Status
+                  </Button>
+                </Link>
+                {showPromotions && (
+                  <Link href="/promotions/discounts">
+                    <Button variant="outline" className="w-full">
+                      <Tag className="mr-2 h-4 w-4" />
+                      Promotions
+                    </Button>
+                  </Link>
+                )}
                 <Link href="/invoices">
                   <Button variant="outline" className="w-full">
                     <FileText className="mr-2 h-4 w-4" />
