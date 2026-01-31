@@ -5,8 +5,8 @@ export function Footer() {
   const version = "0.1.0"; // You can import from package.json if needed
 
   return (
-    <footer className="border-t bg-card mt-auto">
-      <div className="container mx-auto px-6 py-4">
+    <footer className="border-t bg-card flex-shrink-0 shadow-[0_-1px_3px_rgba(0,0,0,0.05)]">
+      <div className="container mx-auto px-6 py-3">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
           <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4">
             <span>© {currentYear} Rajini by The Waters. All rights reserved.</span>
